@@ -2,7 +2,6 @@ library(tidyverse)
 library(openapi)
 library(httr)
 
-setwd("/Users/jokedurnez/Documents/accounts/CAFE/CAFE/dashboard/")
 source("pipelines/constants.R")
 
 edmApi <- EdmApi$new()
@@ -46,10 +45,6 @@ load_data <- function(jwt, local=FALSE) {
       n_child = nrow(datasets$people)
     )
   )
-}
-
-for (nm in TUD_entities){
-  print(get_id(nm,entsets))
 }
 
 get_id <- function(cafename, entsets){

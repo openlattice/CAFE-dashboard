@@ -1,7 +1,5 @@
 library(tidyverse)
 
-setwd("/Users/jokedurnez/Documents/accounts/CAFE/CAFE/dashboard")
-source("pipelines/time_use_diary.R")
 source("pipelines/load_data.R")
 source("pipelines/transform_data.R")
 
