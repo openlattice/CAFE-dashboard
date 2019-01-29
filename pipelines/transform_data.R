@@ -3,7 +3,7 @@ library(lubridate)
 
 ## combine everything
 process_activities <- function(rawdata){
-  
+
   if (rawdata$n_act == 0) {
     return (tibble())
   }
@@ -13,25 +13,26 @@ process_activities <- function(rawdata){
   media_exposure_by_activity <- process_media_exposure(rawdata)
   adults_by_activity <- process_adult_use(rawdata)
   activity <- process_activity(rawdata)
-  
+
   activity <- activity %>%
     left_join(relatives, by = "primary_activity_id") %>%
     left_join(device_by_activity, by = "primary_activity_id") %>%
     left_join(media_exposure_by_activity, by = "primary_activity_id") %>%
     left_join(adults_by_activity, by = "primary_activity_id")
-  
+
   # factor vars to factor
   ndist <- activity %>%
     summarise_all(funs(n_distinct(.)))
-  colndistinct <- as_tibble(cbind(nms = names(ndist), t(ndist))) %>% 
-    mutate(nums = as.numeric(V1))
+  colndistinct <- as_tibble(cbind(nms = names(ndist), t(ndist)))
+  names(colndistinct) <- c("nms", "cnt")
+  colndistinct <- colndistinct %>% mutate(nums = as.numeric(cnt))
   factcols <- colndistinct %>% filter(nums > 3) %>% filter(nums <= 6)
   boolcols <- colndistinct %>% filter(nums <= 2)
-  
-  activity <- activity %>% 
-    mutate_at(factcols$nms, as.factor) %>% 
+
+  activity <- activity %>%
+    mutate_at(factcols$nms, as.factor) %>%
     mutate_at(boolcols$nms, as.logical)
-  
+
   return(activity)
 }
 
@@ -149,11 +150,11 @@ process_activity <- function(rawdata){
       ) %>%
     mutate(duration = as.numeric(endtime - starttime) / 60) %>%
     mutate(duration = ifelse(duration < 0, duration + 24, duration)) %>% arrange(child_id, starttime)
-  
+
   ## add time to sleep (OMG THIS WAS A DIFFICULT FUNCTION :-o )
-  activity <- activity %>% 
-    group_by(child_id) %>% 
-    nest() %>% 
+  activity <- activity %>%
+    group_by(child_id) %>%
+    nest() %>%
     mutate(data = map(data, add_time_to_sleep)) %>%
     unnest() %>%
     select("primary_activity_id", "child_id", "time_to_sleep", "starttime", "endtime", "duration", "ol.activity")
@@ -174,5 +175,3 @@ get_closest <- function(startdt, slaapkes) {
   closest_sleep <- min(difs[difs>=0], na.rm=TRUE)
   return(closest_sleep)
 }
-
-
