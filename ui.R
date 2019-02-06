@@ -1,7 +1,7 @@
 library(shiny)
 library(shinydashboard)
 
-source("UIcomponents/tabs.R")
+source("uicomponents/tabs.R")
 
 # Define UI for application that draws a histogram
 shinyUI(
