@@ -12,7 +12,8 @@ shinyUI(
              src = "logomark.png",
              class = "logo"
            ),
-           "Cafe"
+           "Cafe",
+           class = "navbar-title"
          ),
       theme = "custom.css",
       # fluid = TRUE,
