@@ -16,7 +16,9 @@ shinyUI(
            class = "navbar-title"
          ),
       theme = "custom.css",
-      # fluid = TRUE,
+      fluid = TRUE,
+      windowTitle = "CAFE",
+      collapsible = TRUE,
       header = tags$head(
         tags$style(HTML("#page-nav > li:first-child { display: none; }")),
         tags$link(rel= "stylesheet", type = "text/css", href = "http://fonts.googleapis.com/css?family=Chivo"),
