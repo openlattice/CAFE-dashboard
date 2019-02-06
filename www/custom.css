@@ -7,7 +7,7 @@
 }
 
 .navbar-title {
-  font-family: Open Sans, sans serif;
+  font-family: Chivo;
   font-size: 14px;
   font-weight: 600;
   font-style: normal;
@@ -33,7 +33,7 @@
 .portalname {
   width: 64px;
   height: 25.3px;
-  font-family: Open Sans, sans serif;
+  font-family: Open Sans, sans-serif;
   font-size: 14px;
   font-weight: 600;
   font-style: normal;
@@ -48,7 +48,7 @@
     float: left;
     margin: 0;
   height: 55px;
-  font-family: Open Sans, sans serif;
+  font-family: Open Sans, sans-serif;
   font-size: 12px;
   color: #8e929b;
 
@@ -110,7 +110,7 @@
 }
 
 .box-title{
-  font-family: Open Sans, sans serif;
+  font-family: Open Sans, sans-serif;
   font-size: 18px;
   font-weight: 600;
   font-style: normal;
