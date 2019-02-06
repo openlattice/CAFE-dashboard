@@ -1,6 +1,7 @@
 library(tidyverse)
 library(openapi)
 library(httr)
+library(yaml)
 
 source("pipelines/constants.R")
 
@@ -12,7 +13,7 @@ searchApi <- SearchApi$new()
 load_data <- function(jwt, local=FALSE) {
   print("Getting the data !")
   
-  basepath = ifelse(local == TRUE, "http://localhost:8080", "https://api.openlattice.com")
+  basepath = ifelse(local == FALSE, "http://localhost:8080", "https://api.openlattice.com")
   header_params = unlist(list("Authorization" = paste("Bearer", jwt)))
   client <- ApiClient$new(
     defaultHeaders = header_params,
@@ -29,22 +30,25 @@ load_data <- function(jwt, local=FALSE) {
     return (list(data = list(), edges = list(), auth=FALSE, n_act=0, n_child = 0))
   }
   
-  datasets <- TUD_entities %>% map(get_dataset, entsets)
-  names(datasets) <- TUD_entities
-  
-  edges <- TUD_associations %>% map(get_edge_table, datasets, entsets)
-  names(edges) <- TUD_associations %>% map_chr(function(x){return (paste0(x['src'], "_", x['dst']))})
-  
-  print("Got the data !")
-  return (
-    list(
+
+    datasets <- TUD_entities %>% map(get_dataset, entsets)
+    names(datasets) <- TUD_entities
+    
+    edges <- TUD_associations %>% map(get_edge_table, datasets, entsets)
+    names(edges) <- TUD_associations %>% map_chr(function(x){return (paste0(x['src'], "_", x['dst']))})
+    
+    outdata <- list(
       nodes = datasets,
       edges = edges,
       auth = TRUE,
       n_act = nrow(datasets$primary_activity),
       n_child = nrow(datasets$people)
     )
-  )
+    
+    out <- as.yaml(outdata)
+    write(out, cachename)
+    print("Got the data !")
+    return (outdata)
 }
 
 get_id <- function(cafename, entsets){

@@ -1,11 +1,125 @@
-.main-header .logo {
-  font-weight: bold;
-  font-size: 24px;
+.container-fluid {
+  min-height: 20px;
 }
 
-/*
-.box-header {
-  background-color: #4c14c4;
-  color: white;
+.navbar-header {
+  height: 55px;
 }
-*/
+
+.nav .navbar, .navbar-default {
+  height: 55px;
+  background-color: #ffffff;
+  font-family: Open Sans, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #2e2e34;
+}
+
+.portalname {
+  width: 64px;
+  height: 25.3px;
+  font-family: Open Sans;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #2e2e34;
+
+}
+
+.navbar-nav {
+    float: left;
+    margin: 0;
+  height: 55px;
+  font-family: Open Sans;
+  font-size: 12px;
+  color: #8e929b;
+
+}
+
+.navbar-nav > .active > a {
+  background-color: #ffffff!important;
+  color: #6124e2!important;
+  border-bottom: #6124e2 solid 3px!important;
+}
+
+.navbar-nav li a:hover {
+  background-color: #ffffff!important;
+  color: #6124e2!important;
+}
+
+.tab-content, body {
+    background-color: #f9f9fd!important;
+
+}
+
+
+.logo {
+  width: 13px;
+  height: 26px;
+}
+
+.well {
+  background-color: #f9f9fd;
+    border-radius: 3px;
+}
+
+
+.js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {
+  background: #6124e2;
+  border-color: #6124e2;
+
+}
+
+.content-wrapper{
+  background-color:#f9f9fd!important;
+}
+.content{
+  background-color:#f9f9fd!important;
+}
+.box, .box-solid , .box-primary, .box-header {
+  background-color:#b6bbc7!important;
+  border-bottom-color:#dcdce7!important;
+  border-left-color:#dcdce7!important;
+  border-right-color:#dcdce7!important;
+  border-top-color:#dcdce7!important;
+  color: #2e2e34!important;
+  background:#ffffff!important;
+  border-bottom-width:1px!important;
+  border-left-width:1px!important;
+  border-right-width:1px!important;
+  border-top-width:1px!important;
+
+}
+
+.box-title{
+  font-family: Open Sans;
+  font-size: 18px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #2e2e34;
+  padding: 25px;
+  padding-left: 10px;
+  padding-bottom: 5px;
+}
+
+
+
+.small-box{
+  background-color:#b6bbc7!important;
+}
+
+
+@font-face {  
+  font-family: Open Sans!important;
+}
+

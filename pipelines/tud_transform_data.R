@@ -26,8 +26,8 @@ process_activities <- function(rawdata){
   colndistinct <- as_tibble(cbind(nms = names(ndist), t(ndist)))
   names(colndistinct) <- c("nms", "cnt")
   colndistinct <- colndistinct %>% mutate(nums = as.numeric(cnt))
-  factcols <- colndistinct %>% filter(nums > 3) %>% filter(nums <= 6)
-  boolcols <- colndistinct %>% filter(nums <= 2)
+  factcols <- colndistinct %>% filter(nums >= 4) %>% filter(nums <= 6)
+  boolcols <- colndistinct %>% filter(nums <= 3)
 
   activity <- activity %>%
     mutate_at(factcols$nms, as.factor) %>%
@@ -149,7 +149,7 @@ process_activity <- function(rawdata){
       endtime = ymd_hms(ol.datetimeend)
       ) %>%
     mutate(duration = as.numeric(endtime - starttime) / 60) %>%
-    mutate(duration = ifelse(duration < 0, duration + 24, duration)) %>% arrange(child_id, starttime)
+    mutate(duration = ifelse(duration < 0, duration + 24*60, duration)) %>% arrange(child_id, starttime)
 
   ## add time to sleep (OMG THIS WAS A DIFFICULT FUNCTION :-o )
   activity <- activity %>%
@@ -157,7 +157,7 @@ process_activity <- function(rawdata){
     nest() %>%
     mutate(data = map(data, add_time_to_sleep)) %>%
     unnest() %>%
-    select("primary_activity_id", "child_id", "time_to_sleep", "starttime", "endtime", "duration", "ol.activity")
+    select("primary_activity_id", "child_id", "time_to_sleep", "starttime", "endtime", "duration", "ol.activity", "nc.SubjectIdentification")
   return(activity)
 }
 
