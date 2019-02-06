@@ -19,6 +19,7 @@ shinyUI(
       # fluid = TRUE,
       header = tags$head(
         tags$style(HTML("#page-nav > li:first-child { display: none; }")),
+        tags$link(rel= "stylesheet", type = "text/css", href = "http://fonts.googleapis.com/css?family=Chivo"),
         tags$link(rel= "stylesheet", type = "text/css", href = "http://fonts.googleapis.com/css?family=Open+Sans"),
         tags$link(rel= "stylesheet", type = "text/css", href = "AdminLTE.css"),
         tags$link(rel= "stylesheet", type = "text/css", href = "shinydashboard.css"),
