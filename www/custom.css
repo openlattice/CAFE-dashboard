@@ -66,7 +66,7 @@
 }
 
 .tab-content, body {
-    background-color: #f9f9fd!important;
+  background-color: #f9f9fd!important;
 
 }
 
@@ -123,7 +123,20 @@
   padding-bottom: 5px;
 }
 
+.btn, .btn-primary {
+  border-radius: 3px;
+  background-color: #6124e2;
+  font-family: Open Sans, sans-serif;
+  border-color: #6124e2;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: #ffffff;
 
+}
 
 .small-box{
   background-color:#b6bbc7!important;

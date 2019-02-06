@@ -10,24 +10,24 @@ cols <-
 nacol <- "#dcdce7"
 
 plot_hours_by_activity <- function(activitydata, grouper = NULL) {
-  if ('child_id' %in% names(activitydata)){
+  if ('child_id' %in% names(activitydata)) {
     if (is.null(grouper)) {
       act_by_child <- activitydata %>%
         group_by(child_id, ol.activity) %>%
         summarise(duration = sum(duration) / 60)
       plt <- ggplot(act_by_child,
-                     aes(x = ol.activity, y = duration))
+                    aes(x = ol.activity, y = duration))
     } else {
       act_by_child <- activitydata %>%
         group_by_('child_id', 'ol.activity', grouper) %>%
         summarise(duration = sum(duration) / 60)
       plt <- ggplot(act_by_child,
-                     aes_string(x = 'ol.activity', y = 'duration', fill = grouper))
+                    aes_string(x = 'ol.activity', y = 'duration', fill = grouper))
     }
     
     plt <- plt +
       geom_bar(stat = "summary", fun.y = "mean") +
-      theme_light() + 
+      theme_light() +
       coord_flip() +
       scale_fill_manual(values = cols,
                         aesthetics = "fill",
@@ -38,32 +38,34 @@ plot_hours_by_activity <- function(activitydata, grouper = NULL) {
 }
 
 plot_total_hour_distribution <- function(activitydata) {
-  if ('child_id' %in% names(activitydata)){
+  if ('child_id' %in% names(activitydata)) {
     dur_by_child <- activitydata %>%
       group_by(child_id) %>%
       summarise(duration = sum(duration) / 60)
     
-    plot <- ggplot(dur_by_child, aes(x=duration)) +
-      geom_histogram(binwidth=2, fill = cols[1]) +
-      theme_light() + 
+    plot <- ggplot(dur_by_child, aes(x = duration)) +
+      geom_histogram(binwidth = 2, fill = cols[1]) +
+      theme_light() +
       labs(x = "Total hours per day", y = "Frequency")
     
     plot
   }
 }
 
-plot_summary_histogram <- function(summarydata, column){
-  ggplot(summarydata,
-         aes_string(x = column)) +
-    geom_histogram(binwidth = 1,
-                   fill = "#4c14c4") +
-    scale_fill_manual(values = cols,
-                      aesthetics = "fill",
-                      na.value = nacol)
+plot_summary_histogram <- function(summarydata, column) {
+  if (column %in% names(summarydata)) {
+    ggplot(summarydata,
+           aes_string(x = column)) +
+      geom_histogram(binwidth = 1,
+                     fill = "#4c14c4") +
+      scale_fill_manual(values = cols,
+                        aesthetics = "fill",
+                        na.value = nacol)
+  }
 }
 
 
-plot_crossplot <- function(summarydata, crosscols){
+plot_crossplot <- function(summarydata, crosscols) {
   if (length(crosscols) > 0) {
     ggpairs(
       summarydata[, crosscols],
@@ -74,18 +76,16 @@ plot_crossplot <- function(summarydata, crosscols){
   }
 }
 
-plot_barchart_activities <- function(activitydata, grouper1, grouper2) {
-  ggplot(
-    activitydata,
-    aes_string(
-      x = grouper1,
-      fill = grouper2
-    )
-  ) +
-    geom_bar() + theme_light() +
-    scale_fill_manual(values = cols,
-                      aesthetics = "fill",
-                      na.value = nacol)
-}
-
-
+plot_barchart_activities <-
+  function(activitydata, grouper1, grouper2) {
+    if (grouper1 %in% names(activitydata) &
+        grouper2 %in% names(activitydata)) {
+      ggplot(activitydata,
+             aes_string(x = grouper1,
+                        fill = grouper2)) +
+        geom_bar() + theme_light() +
+        scale_fill_manual(values = cols,
+                          aesthetics = "fill",
+                          na.value = nacol)
+    }
+  }
