@@ -21,15 +21,15 @@ shinyServer(function(input, output, session) {
   # rawdata <- reactive({load_data("null", local=TRUE, auth=TRUE)})
   # rawdata <- eventReactive(input$login, {load_data(input$jwt, local=TRUE)})
   
-  activitydata <- reactive({
-    adata <- read_csv("/Users/jokedurnez/Documents/tud.csv")
-    adata
-    })
   # activitydata <- reactive({
-  #   print("processing")
-  #   process_activities(rawdata())
-  # })
-  # 
+  #   adata <- read_csv("/Users/jokedurnez/Documents/tud.csv")
+  #   adata
+  #   })
+  activitydata <- reactive({
+    print("processing")
+    process_activities(rawdata())
+  })
+
   subset_activitydata <- reactive({
     activitydata()
     if (rawdata()$auth) {

@@ -40,7 +40,13 @@ process_activities <- function(rawdata){
 
 process_relatives <- function(rawdata) {
   if (dim(rawdata$edges$relatives_primary_activity)[1] == 0){
-    return (tibble(primary_activity_id=as.character()))
+    return (
+      tibble(primary_activity_id=as.character(),
+             adults_present_num=as.character(),
+             adult_present=as.character(),
+             otherkids_present=as.character(),
+             alone=as.character()
+             ))
   }
   adults_by_activity <- rawdata$edges$relatives_primary_activity %>%
     # add relatives
@@ -130,7 +136,13 @@ process_media_exposure <- function(rawdata){
 
 process_adult_use <- function(rawdata){
   if (dim(rawdata$edges$primary_activity_adult_use)[1] == 0){
-    return (tibble(primary_activity_id=as.character()))
+    return (
+      tibble(
+        primary_activity_id=as.character(),
+        adult_use = as.character(),
+        adult_no_use=as.character()
+        )
+      )
   }
   adult_use_by_activity <- rawdata$edges$primary_activity_adult_use %>%
     # add media_exposure
