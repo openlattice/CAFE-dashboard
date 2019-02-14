@@ -1,40 +1,40 @@
 library(tidyverse)
-library(openapi)
+library(openlattice)
 library(httr)
 library(yaml)
 
 source("pipelines/constants.R")
 
-edmApi <- EdmApi$new()
-dataApi <- DataApi$new()
-searchApi <- SearchApi$new()
-
-
-load_data <- function(jwt, local=FALSE) {
+load_data <- function(jwt, local=FALSE, auth=FALSE) {
   print("Getting the data !")
   
-  basepath = ifelse(local == FALSE, "http://localhost:8080", "https://api.openlattice.com")
+  # setting up configuration
+  basepath = ifelse(local == TRUE, "http://localhost:8080", "https://api.openlattice.com")
   header_params = unlist(list("Authorization" = paste("Bearer", jwt)))
   client <- ApiClient$new(
     defaultHeaders = header_params,
     basePath = basepath
   )
 
-  edmApi <<- EdmApi$new(apiClient = client)
-  dataApi <<- DataApi$new(apiClient = client)
-  searchApi <<- SearchApi$new(apiClient = client)
+  edmApi <- EdmApi$new(apiClient = client)
+  dataApi <- DataApi$new(apiClient = client)
+  searchApi <- SearchApi$new(apiClient = client)
   
+  # read all entity sets --> is a basic step for data access
   entsets <- edmApi$get_all_entity_sets()
 
   if (typeof(entsets) != "list"){
-    return (list(data = list(), edges = list(), auth=FALSE, n_act=0, n_child = 0))
+    return (list(data = list(), edges = list(), auth=auth, n_act=0, n_child = 0))
   }
+    # the constant TUD_entities comes from constants.R and  is a general name that appears in all entity sets
+    # since we're combining different entity sets
   
-
-    datasets <- TUD_entities %>% map(get_dataset, entsets)
+    print("-- Getting data.")
+    datasets <- TUD_entities %>% map(get_dataset, entsets, dataApi)
     names(datasets) <- TUD_entities
-    
-    edges <- TUD_associations %>% map(get_edge_table, datasets, entsets)
+ 
+    print("-- Getting edges")
+    edges <- TUD_associations %>% map(get_edge_table, datasets, entsets, searchApi)
     names(edges) <- TUD_associations %>% map_chr(function(x){return (paste0(x['src'], "_", x['dst']))})
     
     outdata <- list(
@@ -46,26 +46,49 @@ load_data <- function(jwt, local=FALSE) {
     )
     
     out <- as.yaml(outdata)
-    write(out, cachename)
     print("Got the data !")
     return (outdata)
 }
 
 get_id <- function(cafename, entsets){
-  # get entities and check if response came back
-  return(entsets %>% as_tibble() %>% filter(str_detect(name, cafename) & str_detect(name, "CAFE")) %>% pull(id))
+  
+  # function that maps general name from constants.R to entitysetid's that 
+  # this person has access to.
+  
+  return(entsets[c("id", "name")] %>% as_tibble() %>% filter(str_detect(name, cafename) & str_detect(name, "CAFE")) %>% pull(id))
 }
 
-get_dataset <- function(cafename, entsets){
-  entid <- get_id(cafename, entsets)
-  data <- dataApi$load_entity_set_data(entid) %>% sapply(as.character) %>% as_tibble()
+get_dataset <- function(cafename, entsets, dataApi){
+  
+  # function to get and combine data from different entity sets
+  
+  entids <- get_id(cafename, entsets)
+  datalist <- list()
+  for (num in 1:length(entids)){
+    entid = entids[num]
+    dat <- dataApi$load_entity_set_data(entid)
+    if (is.null(dim(dat))){
+      return (tibble())
+    } else if (dim(dat)[1] == 1){
+      dat <- lapply(dat, as.character)
+    } else {
+      dat <- dat %>% sapply(as.character)
+    }
+    datalist[[num]] <- dat %>% as_tibble()
+  }
+  data <- do.call(bind_rows, datalist)
   return( data )
 }
 
-
 transform_edges <- function(name, edges){
+  
+  # from edge table --> create | src | dst |
+  # with the entity key ids to link data tables
+  
   neighdetails <- edges[[name]][['neighborDetails']]
-  if (dim(neighdetails)[1] == 1){
+  if (is.null(neighdetails)){
+    return (tibble())
+  } else if (dim(neighdetails)[1] == 1){
     newtable <- lapply(neighdetails, as.character)
   } else {
     newtable <- neighdetails %>% sapply(as.character)
@@ -76,7 +99,9 @@ transform_edges <- function(name, edges){
   return (newtable)
 }
 
-get_edge_table <- function(input, datasets, entsets){
+get_edge_table <- function(input, datasets, entsets, searchApi){
+  
+  # get edge table from api
   
   if (dim(datasets[[input$src]])[1] == 0) {
     return (tibble())
@@ -89,8 +114,15 @@ get_edge_table <- function(input, datasets, entsets){
     src = c(get_id(input$src, entsets))
   )
   
-  edges <- searchApi$execute_filtered_entity_neighbor_search(get_id(input$src, entsets), filter)
-  edge_table <- names(edges) %>% map_dfr(transform_edges, edges)
+  srcids <- get_id(input$src, entsets)
+  edgelist <- list()
+  for (num in 1:length(srcids)){
+    srcid = srcids[num]
+    edges <- searchApi$execute_filtered_entity_neighbor_search(srcid, filter)
+    edge_table <- names(edges) %>% map_dfr(transform_edges, edges)
+    edgelist[[num]] <- edge_table
+  }
+  edge_table <- do.call(bind_rows, edgelist)
   return (edge_table)
 }
 

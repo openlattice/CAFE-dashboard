@@ -36,11 +36,12 @@ process_activities <- function(rawdata){
   return(activity)
 }
 
-
-
 # summarise relatives related to primary activities
 
 process_relatives <- function(rawdata) {
+  if (dim(rawdata$edges$relatives_primary_activity)[1] == 0){
+    return (tibble(primary_activity_id=as.character()))
+  }
   adults_by_activity <- rawdata$edges$relatives_primary_activity %>%
     # add relatives
     left_join(rawdata$nodes$relatives, by = c(src = "openlattice.@id")) %>%
@@ -61,6 +62,9 @@ process_relatives <- function(rawdata) {
 # summarise devices by media exposures by activity
 
 process_devices <- function(rawdata){
+  if (dim(rawdata$edges$devices_media_exposure)[1] == 0){
+    return (tibble(primary_activity_id=as.character()))
+  }
   device_by_activity <- rawdata$edges$devices_media_exposure %>%
     # add devices
     left_join(rawdata$nodes$devices, by = c(src = "openlattice.@id")) %>%
@@ -92,6 +96,9 @@ process_devices <- function(rawdata){
 # summarise media exposures by activity
 
 process_media_exposure <- function(rawdata){
+  if (dim(rawdata$edges$media_exposure_primary_activity)[1] == 0){
+    return (tibble(primary_activity_id=as.character()))
+  }
   media_exposure_by_activity <- rawdata$edges$media_exposure_primary_activity %>%
     # add media_exposure
     left_join(rawdata$nodes$media_exposure, by = c(src = "openlattice.@id")) %>%
@@ -122,6 +129,9 @@ process_media_exposure <- function(rawdata){
 # summarise adult coviewing by activity
 
 process_adult_use <- function(rawdata){
+  if (dim(rawdata$edges$primary_activity_adult_use)[1] == 0){
+    return (tibble(primary_activity_id=as.character()))
+  }
   adult_use_by_activity <- rawdata$edges$primary_activity_adult_use %>%
     # add media_exposure
     left_join(rawdata$nodes$primary_activity, by = c(src = "openlattice.@id")) %>%
@@ -140,6 +150,9 @@ process_adult_use <- function(rawdata){
 # clean up activity rawdata (need to add child ID to find next sleep !)
 
 process_activity <- function(rawdata){
+  if (dim(rawdata$edges$people_primary_activity)[1] == 0){
+    return (tibble(primary_activity_id=as.character()))
+  }
   activity <- rawdata$edges$people_primary_activity %>%
     left_join(rawdata$nodes$people, by = c(src = "openlattice.@id")) %>%
     left_join(rawdata$nodes$primary_activity, by = c(dst = "openlattice.@id")) %>%

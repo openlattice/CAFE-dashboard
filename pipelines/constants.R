@@ -13,27 +13,27 @@ TUD_associations <- list(
   list(
     src = 'devices',
     dst = 'media_exposure',
-    edge = 'involved_in'
+    edge = 'involvedin'
   ),
   list(
     src = 'media_exposure',
     dst = 'primary_activity',
-    edge = 'involved_in'
+    edge = 'involvedin'
   ),
   list(
     src = 'relatives',
     dst = 'primary_activity',
-    edge = 'involved_in'
+    edge = 'involvedin'
   ),
   list(
     src = 'media_exposure',
     dst = 'adult_use',
-    edge = 'concurrent_to'
+    edge = 'concurrentto'
   ),
   list(
     src = 'primary_activity',
     dst = 'adult_use',
-    edge = 'concurrent_to'
+    edge = 'concurrentto'
   ),
   list(
     src = 'primary_activity',
@@ -43,11 +43,11 @@ TUD_associations <- list(
   list(
     src = 'primary_activity',
     dst = 'survey_metadata',
-    edge = 'recorded_via'
+    edge = 'recorded'
   ),
   list(
     src = 'people',
     dst = 'primary_activity',
-    edge = 'engaged_in'
+    edge = 'engagedin'
   )
 )

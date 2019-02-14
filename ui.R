@@ -26,14 +26,11 @@ shinyUI(
       tags$link(rel = "icon", type = "image/png", href = "favicon.png")
     ),
     home,
-    conditionalPanel(
-      condition = "output.auth==1",
-      preprocessed_table,
-      summarised_table,
-      activity_barcharts,
-      preprocessed_barcharts,
-      summarised_histograms,
-      summarised_crossplots
-    )
+    preprocessed_table,
+    summarised_table,
+    activity_barcharts,
+    preprocessed_barcharts,
+    summarised_histograms,
+    summarised_crossplots
   )
 )
