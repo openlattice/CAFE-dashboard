@@ -106,7 +106,10 @@
   border-left-width:1px!important;
   border-right-width:1px!important;
   border-top-width:1px!important;
+}
 
+.box, .box-solid , .box-primary {
+  min-height: 300px;
 }
 
 .box-title{
