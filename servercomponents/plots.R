@@ -32,6 +32,9 @@ nacol <- "#dcdce7"
 #               aes(x = ol.activity, y = hours, fill = grouper))
 # plt + geom_bar(stat="summary", fun.y = "mean") + coord_flip()
 
+empty_plot <- function() {
+  plot(0,type='n',axes=FALSE,ann=FALSE)
+}
 
 
 plot_hours_by_activity <- function(activitydata, grouper = NULL) {
