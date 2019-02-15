@@ -69,7 +69,20 @@ process_relatives <- function(rawdata) {
 
 process_devices <- function(rawdata){
   if (dim(rawdata$edges$devices_media_exposure)[1] == 0){
-    return (tibble(primary_activity_id=as.character()))
+    return (tibble(
+      primary_activity_id=as.character(),
+      primary_tv = as.character(),
+      primary_computer = as.character(),
+      primary_smartphone = as.character(),
+      primary_tablet = as.character(),
+      primary_book = as.character(),
+      primary_video = as.character(),
+      primary_console = as.character(),
+      primary_handheldgame = as.character(),
+      primary_radio = as.character(),
+      primary_theater = as.character(),
+      primary_other = as.character()
+    ))
   }
   device_by_activity <- rawdata$edges$devices_media_exposure %>%
     # add devices
@@ -103,7 +116,23 @@ process_devices <- function(rawdata){
 
 process_media_exposure <- function(rawdata){
   if (dim(rawdata$edges$media_exposure_primary_activity)[1] == 0){
-    return (tibble(primary_activity_id=as.character()))
+    return (tibble(
+      primary_activity_id=as.character(),
+      background_media = as.character(),
+      background_media_tv = as.character(),
+      background_media_audio = as.character(),
+      background_media_other = as.character(),
+      primary_media = as.character(),
+      primary_media_age_child = as.character(),
+      primary_media_age_younger = as.character(),
+      primary_media_age_older = as.character(),
+      primary_media_age_adult = as.character(),
+      secondary_media_age_child = as.character(),
+      secondary_media_age_younger = as.character(),
+      secondary_media_age_older = as.character(),
+      secondary_media_age_adult = as.character(),
+      screen = as.character()
+      ))
   }
   media_exposure_by_activity <- rawdata$edges$media_exposure_primary_activity %>%
     # add media_exposure
@@ -163,7 +192,13 @@ process_adult_use <- function(rawdata){
 
 process_activity <- function(rawdata){
   if (dim(rawdata$edges$people_primary_activity)[1] == 0){
-    return (tibble(primary_activity_id=as.character()))
+    return (tibble(
+      primary_activity_id=as.character(),
+      child_id=as.character(),
+      time_to_sleep=as.character(),
+      duration = as.character(),
+      ol.activity=as.character()
+      ))
   }
   activity <- rawdata$edges$people_primary_activity %>%
     left_join(rawdata$nodes$people, by = c(src = "openlattice.@id")) %>%
