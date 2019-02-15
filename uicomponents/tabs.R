@@ -2,6 +2,13 @@ library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
 
+cols <- c("#ff3c5d",
+          "#6124e2",
+          "#ffe671",
+          "#ff9a58",
+          "#dd9e00",
+          "#00be84")
+
 home <- tabPanel(
   title = 'home',
   fluidRow(
