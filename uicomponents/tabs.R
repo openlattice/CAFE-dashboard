@@ -5,16 +5,24 @@ home <- tabPanel(
   title = 'home',
   fluidRow(
     box(
-      width = 6,
+      width = 4,
       solidHeader =  FALSE,
       status = "primary",
       HTML('<center><img src="cafe-logo.png" width="300px"></center>')
     ),
     box(
       title = "CAFE analytics dashboard",
-      width = 6,
+      width = 4,
       solidHeader =  TRUE,
       status = "primary",
+      'This application shows results from the \"Children and Screens\" study.  \
+      To load the data, enter your jwt-token in the input above. \
+      You can find your jwt-token',
+      tags$a(href = "https://openlattice.com/gallery/", "here"),
+      'in your account settings after logging in.',
+      br(),
+      br(),
+      br(),
       column(
         textInput(inputId = "jwt",
                   label = "Enter your jwt-token."),
@@ -22,18 +30,21 @@ home <- tabPanel(
       ),
       column(
         actionButton(inputId = "login",
-                     icon("sign-in"),),
+                     icon("sign-in")),
         width = 4,
         style = "padding-top: 25px"
       )
     ),
     box(
-      'This application shows results from the \"Children and Screens\" study.  \
-      To load the data, enter your jwt-token in the input above. \
-      You can find your jwt-token',
-      tags$a(href = "https://openlattice.com/gallery/", "here"),
-      'in your account settings after logging in.',
-      width = 12
+      width = 4,
+      solidHeader =  FALSE,
+      status = "primary",
+      column(addSpinner(
+        plotOutput("emptyplot", height = "200px"),
+        spin = "bounce",
+        color = cols[1]
+      ),
+      width = 12)
     )
   ),
   fluidRow(
@@ -63,14 +74,14 @@ home <- tabPanel(
 )
 
 preprocessed_table <- tabPanel("preprocessed_table",
-                               # fluidRow(box(
-                               #   width = 12,
-                               #   column(
-                               #     12,
-                               #     align = "center",
-                               #     downloadButton("download_preprocessed", "Download")
-                               #   )
-                               # )),
+                               fluidRow(box(
+                                 width = 12,
+                                 column(
+                                   12,
+                                   align = "center",
+                                   downloadButton("download_preprocessed", "Download")
+                                 )
+                               )),
                                fluidRow(
                                  box(
                                    width = 12,
@@ -81,10 +92,10 @@ preprocessed_table <- tabPanel("preprocessed_table",
                                ))
 
 summarised_table <- tabPanel("summarised_table",
-                             # fluidRow(box(
-                             #   width = 12,
-                             #   column(12, align = "center", downloadButton("download_summarised", "Download"))
-                             # )),
+                             fluidRow(box(
+                               width = 12,
+                               column(12, align = "center", downloadButton("download_summarised", "Download"))
+                             )),
                              fluidRow(
                                box(
                                  width = 12,
@@ -114,7 +125,8 @@ activity_barcharts <- tabPanel("activity_barcharts",
                                    width = 12,
                                    solidHeader = TRUE,
                                    status = "primary",
-                                   plotOutput("A_hours_by_activity_grouped")
+                                   addSpinner(plotOutput("A_hours_by_activity_grouped"),spin = "bounce", color = cols[1])
+                                              
                                  )
                                )))
 
@@ -143,7 +155,7 @@ preprocessed_barcharts <- tabPanel("preprocessed_barcharts",
                                        width = 12,
                                        solidHeader = TRUE,
                                        title = "Barplot",
-                                       plotOutput(outputId = "A_activities_cross")
+                                       addSpinner(plotOutput(outputId = "A_activities_cross"),spin = "bounce", color = cols[1])
                                      )
                                    )))
 
@@ -166,7 +178,7 @@ summarised_histograms <- tabPanel("summarised_histograms",
                                       width = 12,
                                       solidHeader = TRUE,
                                       title = "Histogram",
-                                      plotOutput(outputId = "histogram")
+                                      addSpinner(plotOutput(outputId = "histogram"),spin = "bounce", color = cols[1])
                                     )
                                   )))
 
@@ -188,6 +200,6 @@ summarised_crossplots <- tabPanel("summarised_crossplots",
                                       width = 12,
                                       solidHeader = TRUE,
                                       title = "Cross-plot",
-                                      plotOutput("crossplot")
+                                      addSpinner(plotOutput("crossplot"),spin = "bounce", color = cols[1])
                                     )
                                   )))
