@@ -1,14 +1,21 @@
 library(shiny)
 library(shinydashboard)
+library(shinyWidgets)
 
 source("pipelines/tud_load_data.R")
 source("pipelines/tud_transform_data.R")
 source("pipelines/tud_summarise_data.R")
 source("servercomponents/plots.R")
 
-latticecols <- c("#cdd1db", "#6124e2", "#44beff", "#bc0000")
+cols <- c("#ff3c5d",
+    "#6124e2",
+    "#ffe671",
+    "#ff9a58",
+    "#dd9e00",
+    "#00be84")
 
 shinyServer(function(input, output, session) {
+  
   ###########################################
   # loading data and observing column names #
   ###########################################
@@ -16,15 +23,9 @@ shinyServer(function(input, output, session) {
   # load data
   rawdata <-
     eventReactive(input$login, {
-      load_data(input$jwt, local = FALSE)
-    })
-  # rawdata <- reactive({load_data("null", local=TRUE, auth=TRUE)})
-  # rawdata <- eventReactive(input$login, {load_data(input$jwt, local=TRUE)})
+      load_data(input$jwt)
+    }, ignoreNULL=FALSE)
   
-  # activitydata <- reactive({
-  #   adata <- read_csv("/Users/jokedurnez/Documents/tud.csv")
-  #   adata
-  #   })
   activitydata <- reactive({
     print("processing")
     process_activities(rawdata())
@@ -47,8 +48,7 @@ shinyServer(function(input, output, session) {
       print("summarising")
       summarise_data(subset_activitydata())
     }
-  })
-  
+    })
   
   
   activity_coltypes <- reactive({
@@ -183,23 +183,26 @@ shinyServer(function(input, output, session) {
       plot_crossplot(summarydata(), input$cross_columns)
     })
   
-  # output$download_preprocessed <- downloadHandler(
-  #   filename = "CAFE_TUD_preprocessed.csv",
-  #   content = function(file) {
-  #     write.csv(activitydata(), file, row.names = FALSE)
-  #   }
-  # )
-  #
-  # output$download_summarised <- downloadHandler(
-  #   filename = "CAFE_TUD_summarised.csv",
-  #   content = function(file) {
-  #     write.csv(summarydata(), file, row.names = FALSE)
-  #   }
-  # )
+  output$emptyplot <- 
+    renderPlot({
+      data <- rawdata()
+      empty_plot()
+    })
+  
+  output$download_preprocessed <- downloadHandler(
+    filename = "CAFE_TUD_preprocessed.csv",
+    content = function(file) {
+      write.csv(activitydata(), file, row.names = FALSE)
+    }
+  )
+
+  output$download_summarised <- downloadHandler(
+    filename = "CAFE_TUD_summarised.csv",
+    content = function(file) {
+      write.csv(summarydata(), file, row.names = FALSE)
+    }
+  )
   
   outputOptions(output, 'auth', suspendWhenHidden = FALSE)
-  
-  
-  
-  
+
 })
