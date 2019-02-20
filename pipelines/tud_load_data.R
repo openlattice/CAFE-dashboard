@@ -4,126 +4,155 @@ library(httr)
 library(yaml)
 
 source("pipelines/constants.R")
+source("pipelines/configuration.R")
 
 load_data <- function(jwt, local=FALSE, auth=FALSE) {
-  print("Getting the data !")
-  
-  # setting up configuration
-  basepath = ifelse(local == TRUE, "http://localhost:8080", "https://api.openlattice.com")
-  header_params = unlist(list("Authorization" = paste("Bearer", jwt)))
-  client <- ApiClient$new(
-    defaultHeaders = header_params,
-    basePath = basepath
-  )
+    
+    print("Getting authenticated !")
+    
+    apis <- get_apis(jwt)
+    
+    print("Getting the data !")
+    
+    # read all entity sets --> is a basic step for data access
+    
+    if (is.null(apis)) {
+        return (list(data = list(), edges = list(), auth=auth, n_act=0, n_child = 0))
+    }
 
-  edmApi <- EdmApi$new(apiClient = client)
-  dataApi <- DataApi$new(apiClient = client)
-  searchApi <- SearchApi$new(apiClient = client)
-  
-  # read all entity sets --> is a basic step for data access
-  entsets <- edmApi$get_all_entity_sets()
-
-  if (typeof(entsets) != "list"){
-    return (list(data = list(), edges = list(), auth=auth, n_act=0, n_child = 0))
-  }
     # the constant TUD_entities comes from constants.R and  is a general name that appears in all entity sets
     # since we're combining different entity sets
-  
-    print("-- Getting data.")
-    datasets <- TUD_entities %>% map(get_dataset, entsets, dataApi)
+    
+    print("-- Getting nodes.")
+    
+    datasets <- TUD_entities %>% map(get_node_table, apis)
     names(datasets) <- TUD_entities
- 
-    print("-- Getting edges")
-    edges <- TUD_associations %>% map(get_edge_table, datasets, entsets, searchApi)
+    
+    lengths <- datasets %>% map(nrow)
+
+    print("-- Getting edges.")
+    
+    edges <- TUD_associations %>% map(get_edge_table, datasets, apis)
     names(edges) <- TUD_associations %>% map_chr(function(x){return (paste0(x['src'], "_", x['dst']))})
     
     outdata <- list(
-      nodes = datasets,
-      edges = edges,
-      auth = TRUE,
-      n_act = nrow(datasets$primary_activity),
-      n_child = nrow(datasets$people)
+        nodes = datasets,
+        edges = edges,
+        auth = TRUE,
+        n_act = nrow(datasets$primary_activity),
+        n_child = nrow(datasets$people)
     )
     
-    out <- as.yaml(outdata)
     print("Got the data !")
     return (outdata)
 }
 
-get_id <- function(cafename, entsets){
-  
-  # function that maps general name from constants.R to entitysetid's that 
-  # this person has access to.
-  
-  return(entsets[c("id", "name")] %>% as_tibble() %>% filter(str_detect(name, cafename) & str_detect(name, "CAFE")) %>% pull(id))
-}
 
-get_dataset <- function(cafename, entsets, dataApi){
-  
-  # function to get and combine data from different entity sets
-  
-  entids <- get_id(cafename, entsets)
-  datalist <- list()
-  for (num in 1:length(entids)){
-    entid = entids[num]
-    dat <- dataApi$load_entity_set_data(entid)
-    if (is.null(dim(dat))){
-      return (tibble())
-    } else if (dim(dat)[1] == 1){
-      dat <- lapply(dat, as.character)
-    } else {
-      dat <- dat %>% sapply(as.character)
+get_node_table <- function(cafename, apis){
+    
+    personal_all_entsets <- apis$personal$edmApi$get_all_entity_sets()
+    master_all_entsets <- apis$master$edmApi$get_all_entity_sets()
+    
+    # get master data
+    
+    entsetnames <- master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,5}",cafename))) %>% pull(name)
+
+    entsets <- tibble()
+    
+    for (entsetname in entsetnames) {
+        
+        # load data
+        entid <- apis$master$edmApi$get_entity_set_id(entsetname)
+        dat <- apis$master$dataApi$load_entity_set_data(entid)
+        
+        if (length(dat["openlattice.@id"]) == 1){
+            dat <- dat %>% lapply( function(x){x <- gsub("NULL", NA, as.character(x))}) %>% as_tibble()
+        } else {
+            dat <- dat %>% sapply( function(x){x <- gsub("NULL", NA, as.character(x))}) %>% as_tibble()
+        }
+
+        # add column for table access
+        
+        if (dim(dat)[1] > 0){
+            if (entsetname %in% personal_all_entsets$name){
+                dat['table_access'] = TRUE
+            } else {
+                dat['table_access'] = FALSE
+            }
+        }
+        
+        # bind to table
+        
+        entsets <- bind_rows(entsets, dat)
     }
-    datalist[[num]] <- dat %>% as_tibble()
-  }
-  data <- do.call(bind_rows, datalist)
-  return( data )
+    
+    return( entsets )
+    
 }
 
-transform_edges <- function(name, edges){
-  
-  # from edge table --> create | src | dst |
-  # with the entity key ids to link data tables
-  
-  neighdetails <- edges[[name]][['neighborDetails']]
-  if (is.null(neighdetails)){
-    return (tibble())
-  } else if (dim(neighdetails)[1] == 1){
-    newtable <- lapply(neighdetails, as.character)
-  } else {
-    newtable <- neighdetails %>% sapply(as.character)
-  }
-  newtable <- newtable %>% as_tibble() %>% select('openlattice.@id')
-  names(newtable) <- 'dst'
-  newtable['src'] <- name
-  return (newtable)
+
+transform_edges <- function(table){
+
+    # with the entity key ids to link data tables
+
+    table <- table[['neighborDetails']]
+    
+    if (length(table["openlattice.@id"]) == 1){
+        table <- table %>% lapply( function(x){x <- gsub("NULL", NA, as.character(x))}) %>% as_tibble()
+    } else {
+        table <- table %>% sapply( function(x){x <- gsub("NULL", NA, as.character(x))}) %>% as_tibble()
+    }
+
+    newtable <- table %>% select('openlattice.@id')
+    return (newtable)
 }
 
-get_edge_table <- function(input, datasets, entsets, searchApi){
-  
-  # get edge table from api
-  
-  if (dim(datasets[[input$src]])[1] == 0) {
-    return (tibble())
-  }
-  entkeys = as.vector(unlist(datasets[[input$src]]['openlattice.@id']))
-  filter = NeighborSearchFilter$new(
-    entityKeyIds = entkeys,
-    edge = c(get_id(input$edge, entsets)),
-    dst = c(get_id(input$dst, entsets)),
-    src = c(get_id(input$src, entsets))
-  )
-  
-  srcids <- get_id(input$src, entsets)
-  edgelist <- list()
-  for (num in 1:length(srcids)){
-    srcid = srcids[num]
-    edges <- searchApi$execute_filtered_entity_neighbor_search(srcid, filter)
-    edge_table <- names(edges) %>% map_dfr(transform_edges, edges)
-    edgelist[[num]] <- edge_table
-  }
-  edge_table <- do.call(bind_rows, edgelist)
-  return (edge_table)
+get_edge_table <- function(cafeedge, datasets, apis){
+    
+    master_all_entsets <- apis$master$edmApi$get_all_entity_sets()
+    
+    # get entity set ids for this edge
+    
+    entsetids <- list()
+    for (part in c("src", 'edge', 'dst')){
+        entsetnames <- master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,5}",cafeedge[part]))) %>% pull(name)
+        entsetids[[part]] <- entsetnames %>% map_chr( apis$master$edmApi$get_entity_set_id )
+    }
+
+    # get entity keys for source and filter
+    
+    if (!'openlattice.@id' %in% names(datasets[[cafeedge$src]])){
+        return (tibble())
+        }
+    
+    entkeys <- datasets[[cafeedge$src]] %>% pull('openlattice.@id')
+    
+    filter = NeighborSearchFilter$new(
+        entityKeyIds = entkeys,
+        edge = entsetids[['edge']],
+        dst = entsetids[['dst']],
+        src = entsetids[['src']]
+    )
+    
+    # get edges
+    
+    edges_table <- tibble()
+    
+    for (src_id in entsetids[['src']]){
+        
+        edges <- apis$master$searchApi$execute_filtered_entity_neighbor_search(src_id, filter)
+        
+        # process edges response and append
+        
+        edges_trans <- edges %>% map(transform_edges) %>% map2_dfr(names(edges), ~mutate(.x, name=.y))
+        if (dim(edges_trans)[1] == 0){next}
+        
+        names(edges_trans) <- c("dst", "src")
+        edges_table <- bind_rows(edges_table, edges_trans)
+       
+    }
+    
+    return (edges_table)
 }
 
 

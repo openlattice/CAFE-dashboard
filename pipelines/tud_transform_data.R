@@ -12,6 +12,7 @@ process_activities <- function(rawdata){
   device_by_activity <- process_devices(rawdata)
   media_exposure_by_activity <- process_media_exposure(rawdata)
   adults_by_activity <- process_adult_use(rawdata)
+  locations_by_activity <- process_locations(rawdata)
   activity <- process_activity(rawdata)
 
   activity <- activity %>%
@@ -60,7 +61,7 @@ process_relatives <- function(rawdata) {
       adults_present_num = sum(str_detect(ol.name, "Mother|Father|Grandparent|Childcare") , na.rm=TRUE),
       adult_present = sum(str_detect(ol.name, "Mother|Father|Grandparent|Childcare")) > 0,
       otherkids_present = sum(str_detect(ol.name, "Sibling|kids"), na.rm=TRUE),
-      alone = sum(str_detect(ol.name, "Alone"), na.rm=TRUE),
+      alone = sum(str_detect(ol.name, "Alone"), na.rm=TRUE)
     )
   return(adults_by_activity)
 }
@@ -97,6 +98,7 @@ process_devices <- function(rawdata){
     # summarise
     group_by(primary_activity_id) %>%
     summarise(
+      primary_number_devices = n(),
       primary_tv = sum(str_detect(ol.name.x, 'TV') > 0, na.rm=TRUE),
       primary_computer = sum(str_detect(ol.name.x, 'Computer') > 0, na.rm=TRUE),
       primary_smartphone = sum(str_detect(ol.name.x, 'Smartphone') > 0, na.rm=TRUE),
@@ -107,7 +109,7 @@ process_devices <- function(rawdata){
       primary_handheldgame = sum(str_detect(ol.name.x, 'HandheldGamingDevice') > 0, na.rm=TRUE),
       primary_radio = sum(str_detect(ol.name.x, 'RadioCD') > 0, na.rm=TRUE),
       primary_theater = sum(str_detect(ol.name.x, 'Theater') > 0, na.rm=TRUE),
-      primary_other = sum(str_detect(ol.name.x, 'Other') > 0, na.rm=TRUE),
+      primary_other = sum(str_detect(ol.name.x, 'Other') > 0, na.rm=TRUE)
     )
   return(device_by_activity)
 }
@@ -148,10 +150,12 @@ process_media_exposure <- function(rawdata){
       background_media_audio = str_detect(ol.type, "audio") && str_detect(ol.priority, "secondary"),
       background_media_other = str_detect(ol.type, "other") && str_detect(ol.priority, "secondary"),
       primary_media = sum(str_detect(ol.priority, "primary")) > 0,
+      primary_media_age = ifelse(str_detect(ol.priority, "primary"), ol.category, NA),
       primary_media_age_child = str_detect(ol.category, "Child's age") && str_detect(ol.priority, "primary"),
       primary_media_age_younger = str_detect(ol.category, "Younger") && str_detect(ol.priority, "primary"),
       primary_media_age_older = str_detect(ol.category, "Older") && str_detect(ol.priority, "primary"),
       primary_media_age_adult = str_detect(ol.category, "Adults") && str_detect(ol.priority, "primary"),
+      secondary_media_age = ifelse(str_detect(ol.priority, "secondary"), ol.category, NA),
       secondary_media_age_child = str_detect(ol.category, "Child's age") && str_detect(ol.priority, "secondary"),
       secondary_media_age_younger = str_detect(ol.category, "Younger") && str_detect(ol.priority, "secondary"),
       secondary_media_age_older = str_detect(ol.category, "Older") && str_detect(ol.priority, "secondary"),
@@ -209,7 +213,10 @@ process_activity <- function(rawdata){
       endtime = ymd_hms(ol.datetimeend)
       ) %>%
     mutate(duration = as.numeric(endtime - starttime) / 60) %>%
-    mutate(duration = ifelse(duration < 0, duration + 24*60, duration)) %>% arrange(child_id, starttime)
+    mutate(duration = ifelse(duration < 0, duration + 24*60, duration)) %>% 
+    arrange(child_id, starttime) %>%
+    mutate(table_access = (table_access.x & table_access.y))
+      
 
   ## add time to sleep (OMG THIS WAS A DIFFICULT FUNCTION :-o )
   activity <- activity %>%
@@ -217,9 +224,33 @@ process_activity <- function(rawdata){
     nest() %>%
     mutate(data = map(data, add_time_to_sleep)) %>%
     unnest() %>%
-    select("primary_activity_id", "child_id", "time_to_sleep", "starttime", "endtime", "duration", "ol.activity", "nc.SubjectIdentification")
+    select("primary_activity_id", "child_id", "time_to_sleep", "starttime", "endtime", "duration", "ol.activity", "nc.SubjectIdentification", "table_access")
   return(activity)
 }
+
+## locations
+
+process_locations <- function(rawdata) {
+    if (dim(rawdata$edges$primary_activity_locations)[1] == 0){
+        return (
+            tibble(primary_activity_id=as.character(),
+                   site=as.character()
+            ))
+    }
+    adults_by_activity <- rawdata$edges$primary_activity_locations %>%
+        # add relatives
+        left_join(rawdata$nodes$primary_activity, by = c(src = "openlattice.@id")) %>%
+        # add activities
+        left_join(rawdata$nodes$locations, by = c(dst = "openlattice.@id")) %>%
+        # summarise
+        rename(primary_activity_id = dst) %>%
+        group_by(primary_activity_id) %>%
+        summarise(site = names(which.max(table(ol.id.y))))
+
+    return(adults_by_activity)
+}
+
+
 
 ## HELPER FUNCTIONS
 

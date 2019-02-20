@@ -135,6 +135,12 @@ activity_barcharts <- tabPanel("activity_barcharts",
                                    status = "primary",
                                    addSpinner(plotOutput("A_hours_by_activity_grouped"),spin = "bounce", color = cols[1])
                                               
+                                 ),
+                                 box(
+                                     width=12,
+                                     solidHeader=FALSE,
+                                     downloadButton("A_hours_by_activity_grouped_download", "Download figure"),
+                                     align = "left"
                                  )
                                )))
 
@@ -164,6 +170,12 @@ preprocessed_barcharts <- tabPanel("preprocessed_barcharts",
                                        solidHeader = TRUE,
                                        title = "Barplot",
                                        addSpinner(plotOutput(outputId = "A_activities_cross"),spin = "bounce", color = cols[1])
+                                     ),
+                                     box(
+                                         width=12,
+                                         solidHeader=FALSE,
+                                         downloadButton("A_activities_cross_download", "Download figure"),
+                                         align = "left"
                                      )
                                    )))
 
@@ -187,6 +199,12 @@ summarised_histograms <- tabPanel("summarised_histograms",
                                       solidHeader = TRUE,
                                       title = "Histogram",
                                       addSpinner(plotOutput(outputId = "histogram"),spin = "bounce", color = cols[1])
+                                    ),
+                                    box(
+                                        width=12,
+                                        solidHeader=FALSE,
+                                        downloadButton("histogram_download", "Download figure"),
+                                        align = "left"
                                     )
                                   )))
 
@@ -209,5 +227,11 @@ summarised_crossplots <- tabPanel("summarised_crossplots",
                                       solidHeader = TRUE,
                                       title = "Cross-plot",
                                       addSpinner(plotOutput("crossplot"),spin = "bounce", color = cols[1])
+                                    ),
+                                    box(
+                                        width=12,
+                                        solidHeader=FALSE,
+                                        downloadButton("crossplot_download", "Download figure"),
+                                        align = "left"
                                     )
                                   )))
