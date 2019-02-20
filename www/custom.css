@@ -108,7 +108,7 @@
   border-top-width:1px!important;
 }
 
-.box, .box-solid , .box-primary {
+.box-primary {
   min-height: 300px;
 }
 

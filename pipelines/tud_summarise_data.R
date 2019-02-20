@@ -78,7 +78,9 @@ summarise_data <- function(activitydata) {
       age_child_secondary_media = sum(duration[secondary_media_age_child], na.rm=TRUE),
       age_older_secondary_media = sum(duration[secondary_media_age_older], na.rm=TRUE),
       age_younger_secondary_media = sum(duration[secondary_media_age_younger], na.rm=TRUE),
-      age_adults_secondary_media = sum(duration[secondary_media_age_adult], na.rm=TRUE)
+      age_adults_secondary_media = sum(duration[secondary_media_age_adult], na.rm=TRUE),
+      
+      table_access = mean(table_access)==1
     )
   return(summarydata)
 }
