@@ -10,28 +10,6 @@ cols <-
     "#00be84")
 nacol <- "#dcdce7"
 
-# plot_hours_by_activity(adata, grouper="adult_use")
-# 
-# 
-# activitydata <- data.frame(
-#   child_id = c(1,1,1,2,2, 1, 2),
-#   ol.activity = c(rep("sleep", 5), rep("play", 2)),
-#   grouper = c("1","0","1","1","1", "1","1"),
-#   othergrouper =c("1","1","1","1","0","1","1"),
-#   duration = c(5,2,7,10, 10,7,2)
-# )
-# 
-# 
-# act_by_child <- activitydata %>%
-#   group_by(child_id, ol.activity, grouper) %>%
-#   summarise(hours = sum(duration)) %>%
-#   complete(child_id, ol.activity, grouper) %>% replace_na(list(hours=0))
-# 
-# 
-# plt <- ggplot(act_by_child,
-#               aes(x = ol.activity, y = hours, fill = grouper))
-# plt + geom_bar(stat="summary", fun.y = "mean") + coord_flip()
-
 empty_plot <- function() {
   plot(0,type='n',axes=FALSE,ann=FALSE)
 }
