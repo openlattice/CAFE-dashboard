@@ -45,14 +45,14 @@ summarise_data <- function(activitydata) {
       screen_1hfromsleeping_blocks = sum(screen & time_to_sleep<1, na.rm=TRUE),
       screen_while_feeding_hours = sum(duration[screen & str_detect(ol.activity, "Eating")], na.rm=TRUE)/60,
       
-      screen_adult_coviewing_hours = sum(duration[screen & adult_present], na.rm=TRUE)/60,
+      screen_adult_coviewing_hours = sum(duration[screen & adult_present==TRUE], na.rm=TRUE)/60,
       sleeping_hours = sum(duration[str_detect(ol.activity, "Sleeping")], na.rm=TRUE)/60,
       sleeping_blocks = sum(str_detect(ol.activity, "Sleeping"), na.rm=TRUE),
-      sleeping_btv_hours = sum(duration[str_detect(ol.activity, "Sleeping") & background_media_tv], na.rm=TRUE)/60,
+      sleeping_btv_hours = sum(duration[str_detect(ol.activity, "Sleeping") & background_media_tv==TRUE], na.rm=TRUE)/60,
       
       feeding_hours = sum(duration[str_detect(ol.activity, "Eating")], na.rm=TRUE)/60,
       feeding_blocks = sum(str_detect(ol.activity, "Eating"), na.rm=TRUE),
-      feeding_btv_hours = sum(duration[str_detect(ol.activity, "Eating") & background_media_tv], na.rm=TRUE)/60,
+      feeding_btv_hours = sum(duration[str_detect(ol.activity, "Eating") & background_media_tv==TRUE], na.rm=TRUE)/60,
       
       bathroom_hours = sum(duration[str_detect(ol.activity, "Grooming")], na.rm=TRUE)/60,
       childcare_hours = sum(duration[str_detect(ol.activity, "Childcare")], na.rm=TRUE)/60,
