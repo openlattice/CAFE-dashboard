@@ -8,8 +8,8 @@ TUD_entities <- c(
   "media_exposure", 
   "locations",
   "sites",
-  "respondents",
-  "visits"
+  "survey_respondents",
+  "survey_visits"
   )
 
 TUD_associations <- list(
@@ -19,12 +19,12 @@ TUD_associations <- list(
     edge = 'involvedin'
   ),
   list(
-      src = 'respondents',
+      src = 'survey_respondents',
       dst = 'primary_activity',
       edge = 'involvedin'
   ),
   list(
-      src = 'visits',
+      src = 'survey_visits',
       dst = 'primary_activity',
       edge = 'involvedin'
   ),

@@ -32,7 +32,8 @@ process_activities <- function(rawdata){
 
   activity <- activity %>%
     mutate_at(factcols$nms, as.factor) %>%
-    mutate_at(boolcols$nms, as.logical)
+    mutate_at(boolcols$nms, as.logical) %>%
+    mutate(day = paste(,separator="-"))
 
   return(activity)
 }
@@ -150,12 +151,12 @@ process_media_exposure <- function(rawdata){
       background_media_audio = str_detect(ol.type, "audio") && str_detect(ol.priority, "secondary"),
       background_media_other = str_detect(ol.type, "other") && str_detect(ol.priority, "secondary"),
       primary_media = sum(str_detect(ol.priority, "primary")) > 0,
-      primary_media_age = ifelse(str_detect(ol.priority, "primary"), ol.category, NA),
+      # primary_media_age = ifelse((str_detect(ol.priority, "primary")), ol.category, NA),
       primary_media_age_child = str_detect(ol.category, "Child's age") && str_detect(ol.priority, "primary"),
       primary_media_age_younger = str_detect(ol.category, "Younger") && str_detect(ol.priority, "primary"),
       primary_media_age_older = str_detect(ol.category, "Older") && str_detect(ol.priority, "primary"),
       primary_media_age_adult = str_detect(ol.category, "Adults") && str_detect(ol.priority, "primary"),
-      secondary_media_age = ifelse(str_detect(ol.priority, "secondary"), ol.category, NA),
+      # secondary_media_age = ifelse(str_detect(ol.priority, "secondary"), ol.category, NA),
       secondary_media_age_child = str_detect(ol.category, "Child's age") && str_detect(ol.priority, "secondary"),
       secondary_media_age_younger = str_detect(ol.category, "Younger") && str_detect(ol.priority, "secondary"),
       secondary_media_age_older = str_detect(ol.category, "Older") && str_detect(ol.priority, "secondary"),
@@ -263,6 +264,7 @@ add_time_to_sleep <- function(df){
 get_closest <- function(startdt, slaapkes) {
   difs <- difftime(slaapkes, startdt, units = "hours")
   if (length(difs) == 1){return (difs)}
+  if (length(difs[difs>=0]) == 0){return (NA)}
   closest_sleep <- min(difs[difs>=0], na.rm=TRUE)
   return(closest_sleep)
 }
