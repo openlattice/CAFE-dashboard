@@ -66,9 +66,9 @@ get_node_table <- function(cafename, apis){
         dat <- apis$master$dataApi$load_entity_set_data(entid)
         
         if (length(dat["openlattice.@id"]) == 1){
-            dat <- dat %>% lapply( function(x){x <- gsub("NULL", NA, as.character(x))}) %>% as_tibble()
+            dat <- dat %>% lapply( function(x){x <- gsub("NULL", NA, paste(x))}) %>% as_tibble()
         } else {
-            dat <- dat %>% sapply( function(x){x <- gsub("NULL", NA, as.character(x))}) %>% as_tibble()
+            dat <- dat %>% sapply( function(x){x <- gsub("NULL", NA, paste(x))}) %>% as_tibble()
         }
 
         # add column for table access
