@@ -37,11 +37,12 @@ get_apis <- function(jwt, local = FALSE) {
     authorizationsApi <- AuthorizationsApi$new(apiClient = client)
     
     if ("CAFE TUD read" %in% prinApi$get_current_roles()$title) {
-        if (local == TRUE){
+        master = get_master_jwt()
+        if (local == TRUE or master==NULL){
             print("You're not authorized to see all figures !")
             master_jwt <- jwt
         } else {
-            master_jwt <- get_master_jwt()
+            master_jwt <- master
         }
     } else {
         print("You're not authorized to see this data !")
