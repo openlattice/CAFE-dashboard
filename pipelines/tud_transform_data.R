@@ -213,7 +213,7 @@ process_activity <- function(rawdata) {
     ppl <- rawdata$edges$people_primary_activity %>%
         left_join(rawdata$nodes$people, by = c(src = "openlattice.@id")) %>%
         left_join(rawdata$nodes$primary_activity,
-                  by = c(dst = "openlattice.@id")) %>%
+                  by = c(dst = "openlattice.@id"), all=TRUE) %>%
         rename(primary_activity_id = dst, child_id = src)
     vis <- rawdata$edges$survey_visits_primary_activity %>%
         left_join(rawdata$nodes$survey_visits, by = c(src = "openlattice.@id")) %>%
@@ -240,7 +240,9 @@ process_activity <- function(rawdata) {
                endtime = ymd_hms(ol.datetimeend)) %>%
         mutate(duration = as.numeric(endtime - starttime) / 60) %>%
         mutate(duration = ifelse(duration < 0, duration + 24 * 60, duration)) %>%
+        mutate(duration = ifelse(duration > 24, duration %% 24, duration)) %>%
         arrange(child_id, starttime) %>%
+        mutate(unique_day = paste(c(child_id, visit_id, respondent_id), collapse="-")) %>%
         mutate(table_access = (table_access.x & table_access.y))
     
     
