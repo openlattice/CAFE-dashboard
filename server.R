@@ -27,13 +27,12 @@ shinyServer(function(input, output, session) {
   # load data
   rawdata <-
     eventReactive(input$login, {
-        # load_data("ladida", auth=TRUE)
+        load_data(input$login, auth=TRUE)
       load_data(input$jwt)
     }, ignoreNULL=FALSE)
   
   activitydata <- reactive({
     print("processing")
-    # read_csv("/Users/jokedurnez/Desktop/test.csv")
     process_activities(rawdata())
   })
 
@@ -49,7 +48,6 @@ shinyServer(function(input, output, session) {
   })
   
   summarydata <- reactive({
-      # read_csv("/Users/jokedurnez/Desktop/test_sum.csv")
       if (rawdata()$auth) {
       print("summarising")
       summarise_data(subset_activitydata())
