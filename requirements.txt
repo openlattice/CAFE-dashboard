@@ -1,4 +1,0 @@
-shiny
-tidyverse
-shinydashboard
-GGally
