@@ -27,7 +27,6 @@ shinyServer(function(input, output, session) {
   # load data
   rawdata <-
     eventReactive(input$login, {
-        load_data(input$login, auth=TRUE)
       load_data(input$jwt)
     }, ignoreNULL=FALSE)
   
@@ -39,7 +38,7 @@ shinyServer(function(input, output, session) {
   subset_activitydata <- reactive({
     if (rawdata()$auth) {
       dur_by_child <- activitydata() %>%
-        group_by(child_id) %>%
+        group_by(unique_day) %>%
         summarise(duration = sum(duration) / 60) %>%
         filter(duration > 18 & duration < 26) %>%
         select("child_id")
