@@ -1,11 +1,14 @@
 library(shiny)
 library(shinydashboard)
+library(shinyjs)
 
 source("uicomponents/tabs.R")
 
 # Define UI for application that draws a histogram
-shinyUI(
+tagList(
+    useShinyjs(),
   navbarPage(
+      id = "navbar",
     title =
       div(img(src = "logomark.png",
               class = "logo"),
@@ -26,11 +29,18 @@ shinyUI(
       tags$link(rel = "icon", type = "image/png", href = "favicon.png")
     ),
     home,
-    preprocessed_table,
-    summarised_table,
-    activity_barcharts,
-    preprocessed_barcharts,
-    summarised_histograms,
-    summarised_crossplots
+    navbarMenu("tables",
+        preprocessed_table,
+        summarised_table,
+        chronicle_table
+        ),
+    navbarMenu("plots",
+        activity_barcharts,
+        preprocessed_barcharts,
+        summarised_histograms,
+        summarised_crossplots,
+        summarised_SBP,
+        chronicle_tud
+    )
   )
 )
