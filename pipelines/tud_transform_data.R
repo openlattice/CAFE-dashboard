@@ -3,7 +3,7 @@ library(lubridate)
 
 ## combine everything
 process_activities <- function(rawdata) {
-    if (rawdata$n_act == 0) {
+    if (rawdata$auth == FALSE) {
         return (tibble())
     }
     
@@ -12,14 +12,17 @@ process_activities <- function(rawdata) {
     media_exposure_by_activity <- process_media_exposure(rawdata)
     adults_by_activity <- process_adult_use(rawdata)
     locations_by_activity <- process_locations(rawdata)
+    sites_by_activity <- process_sites(rawdata)
     activity <- process_activity(rawdata)
     
     activity <- activity %>%
         left_join(relatives, by = "primary_activity_id") %>%
         left_join(device_by_activity, by = "primary_activity_id") %>%
         left_join(media_exposure_by_activity, by = "primary_activity_id") %>%
-        left_join(adults_by_activity, by = "primary_activity_id")
-    
+        left_join(adults_by_activity, by = "primary_activity_id") %>%
+        left_join(locations_by_activity, by = "primary_activity_id") %>%
+        left_join(sites_by_activity, by = "primary_activity_id")
+        
     # factor vars to factor
     ndist <- activity %>%
         summarise_all(funs(n_distinct(.)))
@@ -33,6 +36,15 @@ process_activities <- function(rawdata) {
     activity <- activity %>%
         mutate_at(factcols$nms, as.factor) %>%
         mutate_at(boolcols$nms, as.logical)
+
+wiamp <- activity %>% group_by(child_id) %>% summarise(duration = sum(duration) / 60)
+        
+    dur_by_session <- activity %>%
+        group_by(day_id) %>%
+        summarise(duration = sum(duration) / 60) %>%
+        filter(duration > 18 & duration < 26) %>%
+        select("day_id")
+    activity <- activity %>% filter(day_id %in% as_vector(dur_by_session))
     
     return(activity)
 }
@@ -40,16 +52,16 @@ process_activities <- function(rawdata) {
 # summarise relatives related to primary activities
 
 process_relatives <- function(rawdata) {
-    if (dim(rawdata$edges$relatives_primary_activity)[1] == 0) {
+    if (dim(rawdata$tud$edges$relatives_primary_activity)[1] == 0) {
         return (tibble(primary_activity_id = as.character()))
     }
     adults_by_activity <-
-        rawdata$edges$relatives_primary_activity %>%
+        rawdata$tud$edges$relatives_primary_activity %>%
         # add relatives
-        left_join(rawdata$nodes$relatives, by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$tud$nodes$relatives, by = c(src = "openlattice.@id")) %>%
         # add activities
         left_join(
-            rawdata$nodes$primary_activity %>% select("openlattice.@id"),
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
             by = c(dst = "openlattice.@id")
         ) %>%
         # summarise
@@ -73,20 +85,20 @@ process_relatives <- function(rawdata) {
 # summarise devices by media exposures by activity
 
 process_devices <- function(rawdata) {
-    if (dim(rawdata$edges$devices_media_exposure)[1] == 0) {
+    if (dim(rawdata$tud$edges$devices_media_exposure)[1] == 0) {
         return (tibble(primary_activity_id = as.character()))
     }
-    device_by_activity <- rawdata$edges$devices_media_exposure %>%
+    device_by_activity <- rawdata$tud$edges$devices_media_exposure %>%
         # add devices
-        left_join(rawdata$nodes$devices, by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$tud$nodes$devices, by = c(src = "openlattice.@id")) %>%
         # add media_exposure
-        left_join(rawdata$nodes$media_exposure,
+        left_join(rawdata$tud$nodes$media_exposure,
                   by = c(dst = "openlattice.@id")) %>%
         rename(media_exposure_id = dst) %>%
         # add activities
-        left_join(rawdata$edges$media_exposure_primary_activity,
+        left_join(rawdata$tud$edges$media_exposure_primary_activity,
                   by = c(media_exposure_id = "src")) %>%
-        left_join(rawdata$nodes$primary_activity,
+        left_join(rawdata$tud$nodes$primary_activity,
                   by = c(dst = "openlattice.@id")) %>%
         rename(primary_activity_id = dst) %>%
         # summarise
@@ -119,17 +131,17 @@ process_devices <- function(rawdata) {
 # summarise media exposures by activity
 
 process_media_exposure <- function(rawdata) {
-    if (dim(rawdata$edges$media_exposure_primary_activity)[1] == 0) {
+    if (dim(rawdata$tud$edges$media_exposure_primary_activity)[1] == 0) {
         return (tibble(primary_activity_id = as.character()))
     }
     media_exposure_by_activity <-
-        rawdata$edges$media_exposure_primary_activity %>%
+        rawdata$tud$edges$media_exposure_primary_activity %>%
         # add media_exposure
-        left_join(rawdata$nodes$media_exposure,
+        left_join(rawdata$tud$nodes$media_exposure,
                   by = c(src = "openlattice.@id")) %>%
         # add primary activities
         left_join(
-            rawdata$nodes$primary_activity %>% select("openlattice.@id"),
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
             by = c(dst = "openlattice.@id")
         ) %>%
         # summarise
@@ -176,18 +188,18 @@ process_media_exposure <- function(rawdata) {
 # summarise adult coviewing by activity
 
 process_adult_use <- function(rawdata) {
-    if (dim(rawdata$edges$primary_activity_adult_use)[1] == 0) {
+    if (dim(rawdata$tud$edges$primary_activity_adult_use)[1] == 0) {
         return (tibble(primary_activity_id = as.character()))
     }
     adult_use_by_activity <-
-        rawdata$edges$primary_activity_adult_use %>%
+        rawdata$tud$edges$primary_activity_adult_use %>%
         # add media_exposure
         left_join(
-            rawdata$nodes$primary_activity %>% select("openlattice.@id"),
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
             by = c(src = "openlattice.@id")
         ) %>%
         # add primary activities
-        left_join(rawdata$nodes$adult_use, by = c(dst = "openlattice.@id")) %>%
+        left_join(rawdata$tud$nodes$adult_use, by = c(dst = "openlattice.@id")) %>%
         # summarise
         rename(primary_activity_id = src) %>%
         group_by(primary_activity_id) %>%
@@ -206,63 +218,64 @@ process_adult_use <- function(rawdata) {
 # clean up activity rawdata (need to add child ID to find next sleep !)
 
 process_activity <- function(rawdata) {
-    if (dim(rawdata$edges$people_primary_activity)[1] == 0) {
+    if (dim(rawdata$tud$edges$people_primary_activity)[1] == 0) {
         return (tibble(primary_activity_id = as.character()))
     }
     
-    ppl <- rawdata$edges$people_primary_activity %>%
-        left_join(rawdata$nodes$people, by = c(src = "openlattice.@id")) %>%
-        left_join(rawdata$nodes$primary_activity,
+    ppl <- rawdata$tud$edges$people_primary_activity %>%
+        left_join(rawdata$tud$nodes$people, by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$tud$nodes$primary_activity,
                   by = c(dst = "openlattice.@id"), all=TRUE) %>%
         rename(primary_activity_id = dst, child_id = src)
-    vis <- rawdata$edges$survey_visits_primary_activity %>%
-        left_join(rawdata$nodes$survey_visits, by = c(src = "openlattice.@id")) %>%
+    vis <- rawdata$tud$edges$survey_visits_primary_activity %>%
+        left_join(rawdata$tud$nodes$survey_visits, by = c(src = "openlattice.@id")) %>%
         left_join(
-            rawdata$nodes$primary_activity %>% select("openlattice.@id"),
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
             by = c(dst = "openlattice.@id")
         ) %>%
         rename(primary_activity_id = dst, visit_id = src)
-    res <- rawdata$edges$survey_respondents_primary_activity %>%
-        left_join(rawdata$nodes$survey_respondents,
+    res <- rawdata$tud$edges$survey_respondents_primary_activity %>%
+        left_join(rawdata$tud$nodes$survey_respondents,
                   by = c(src = "openlattice.@id")) %>%
         left_join(
-            rawdata$nodes$primary_activity %>% select("openlattice.@id"),
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
             by = c(dst = "openlattice.@id")
         ) %>%
         rename(primary_activity_id = dst,
                respondent_id = src)
     activity <- ppl %>%
-        left_join(vis) %>%
+        left_join(vis, by="primary_activity_id") %>%
         left_join(res)
     
     activity <- activity %>%
         mutate(starttime = ymd_hms(ol.datetimestart),
                endtime = ymd_hms(ol.datetimeend)) %>%
-        mutate(duration = as.numeric(endtime - starttime) / 60) %>%
-        mutate(duration = ifelse(duration < 0, duration + 24 * 60, duration)) %>%
-        mutate(duration = ifelse(duration > 24, duration %% 24, duration)) %>%
-        arrange(child_id, starttime) %>%
-        mutate(unique_day = paste(c(child_id, visit_id, respondent_id), collapse="-")) %>%
+        mutate(duration = as.numeric(endtime - starttime)/60) %>%
+        mutate(duration = ifelse(duration < 0, duration + 24*60, duration)) %>%
+        mutate(duration = ifelse(duration > 24*60, duration %% 24*60, duration)) %>%
+        unite_("day_id", c('child_id', 'visit_id', 'respondent_id'), sep="-", remove=FALSE) %>%
+        arrange(day_id, starttime) %>%
         mutate(table_access = (table_access.x & table_access.y))
     
     
     ## add time to sleep (OMG THIS WAS A DIFFICULT FUNCTION :-o )
     activity <- activity %>%
-        group_by(child_id, visit_id, respondent_id) %>%
+        group_by(day_id) %>%
         nest() %>%
         mutate(data = map(data, add_time_to_sleep)) %>%
         unnest() %>%
         select(
             "primary_activity_id",
+            "nc.SubjectIdentification",
             "child_id",
             "respondent_id",
             "visit_id",
+            "day_id",
             "time_to_sleep",
             "starttime",
             "endtime",
             "duration",
             "ol.activity",
-            "nc.SubjectIdentification",
             "table_access"
         )
     return(activity)
@@ -271,19 +284,19 @@ process_activity <- function(rawdata) {
 ## sites
 
 process_sites <- function(rawdata) {
-    if (dim(rawdata$edges$primary_activity_sites)[1] == 0) {
+    if (dim(rawdata$tud$edges$primary_activity_sites)[1] == 0) {
         return (tibble(primary_activity_id = as.character(),
                        site = as.character()))
     }
     adults_by_activity <-
-        rawdata$edges$primary_activity_sites %>%
+        rawdata$tud$edges$primary_activity_sites %>%
         # add relatives
         left_join(
-            rawdata$nodes$primary_activity %>% select("openlattice.@id"),
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
             by = c(src = "openlattice.@id")
         ) %>%
         # add activities
-        left_join(rawdata$nodes$sites, by = c(dst = "openlattice.@id")) %>%
+        left_join(rawdata$tud$nodes$sites, by = c(dst = "openlattice.@id")) %>%
         # summarise
         rename(primary_activity_id = src, site_id = dst) %>%
         group_by(primary_activity_id) %>%
@@ -294,21 +307,21 @@ process_sites <- function(rawdata) {
 ## locations
 
 process_locations <- function(rawdata) {
-    if (dim(rawdata$edges$primary_activity_locations)[1] == 0) {
+    if (dim(rawdata$tud$edges$primary_activity_locations)[1] == 0) {
         return (tibble(primary_activity_id = as.character(),
                        site = as.character()))
     }
     adults_by_activity <-
-        rawdata$edges$primary_activity_locations %>%
+        rawdata$tud$edges$primary_activity_locations %>%
         # add relatives
-        left_join(rawdata$nodes$primary_activity,
+        left_join(rawdata$tud$nodes$primary_activity,
                   by = c(src = "openlattice.@id")) %>%
         # add activities
-        left_join(rawdata$nodes$locations, by = c(dst = "openlattice.@id")) %>%
+        left_join(rawdata$tud$nodes$locations, by = c(dst = "openlattice.@id")) %>%
         # summarise
         rename(primary_activity_id = dst) %>%
         group_by(primary_activity_id) %>%
-        summarise(site = names(which.max(table(location.name))))
+        summarise(location = names(which.max(table(location.name))))
     
     return(adults_by_activity)
 }
@@ -321,7 +334,7 @@ add_time_to_sleep <- function(df) {
     sleeps <-
         df %>% filter(str_detect(ol.activity, "Sleep")) %>% pull(starttime)
     df['time_to_sleep'] <-
-        df$starttime %>% lapply(get_closest, sleeps) %>% unlist()
+        df$endtime %>% lapply(get_closest, sleeps) %>% unlist()
     return(df)
 }
 
