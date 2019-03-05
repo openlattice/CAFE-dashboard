@@ -2,6 +2,7 @@ library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
 library(yaml)
+library(shinyjs)
 
 source("pipelines/tud_load_data.R")
 source("pipelines/tud_transform_data.R")
@@ -23,36 +24,35 @@ shinyServer(function(input, output, session) {
   ###########################################
   # loading data and observing column names #
   ###########################################
-  
+    
+    hide(selector = "#navbar li a[data-value=tables]")
+    hide(selector = "#navbar li a[data-value=plots]")
+
   # load data
   rawdata <-
     eventReactive(input$login, {
-      load_data(input$jwt)
+        print("reading...")
+        rawdata <- get_data(input$jwt, cache=TRUE)
+        rawdata
     }, ignoreNULL=FALSE)
   
   activitydata <- reactive({
-    print("processing")
+    print("processing...")
     process_activities(rawdata())
   })
 
-  subset_activitydata <- reactive({
-    if (rawdata()$auth) {
-      dur_by_child <- activitydata() %>%
-        group_by(unique_day) %>%
-        summarise(duration = sum(duration) / 60) %>%
-        filter(duration > 18 & duration < 26) %>%
-        select("child_id")
-      activitydata() %>% filter(child_id %in% as_vector(dur_by_child))
-    }
-  })
-  
   summarydata <- reactive({
-      if (rawdata()$auth) {
-      print("summarising")
-      summarise_data(subset_activitydata())
-    }
+      print("summarising...")
+      summarise_data(activitydata())
     })
   
+  observe({
+      if (rawdata()$auth) {
+          shinyjs::show(selector = "#navbar li a[data-value=tables]")
+          shinyjs::show(selector = "#navbar li a[data-value=plots]")
+      }
+  })
+
   
   activity_coltypes <- reactive({
     if (rawdata()$auth) {
@@ -78,7 +78,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  observe({
+      observe({
     updateSelectInput(
       session,
       "barchart_columns",
@@ -87,7 +87,7 @@ shinyServer(function(input, output, session) {
         activity_coltypes()$boolean
       )
     )
-    updateSelectInput(
+      updateSelectInput(
       session,
       "barchart_grouper_columns",
       choices = c(
@@ -106,16 +106,22 @@ shinyServer(function(input, output, session) {
   })
   
   observe({
-    updateRadioButtons(session, "hist_column", choices = summary_coltypes()$numeric)
+    updateRadioButtons(session, "hist_column", choices = summary_coltypes()$numeric[summary_coltypes()$numeric != "nc.SubjectIdentification"])
     updateCheckboxGroupInput(
       session,
       "cross_columns",
       choices = c(
-        summary_coltypes()$numeric,
+        summary_coltypes()$numeric[summary_coltypes()$numeric != "nc.SubjectIdentification"],
         summary_coltypes()$factorial,
         summary_coltypes()$boolean
       )
     )
+    updateRadioButtons(
+        session,
+        "tud_chron_tud",
+        choices = summary_coltypes()$numeric[summary_coltypes()$numeric != "nc.SubjectIdentification"]
+    )
+    
   })
   
   # authenticated
@@ -152,8 +158,18 @@ shinyServer(function(input, output, session) {
     summarydata() %>% filter(table_access==TRUE)
   },
   options = list(scrollX = TRUE))
+  
+  output$chronicle <- renderDataTable({
+      rawdata()$chronicle$processed %>% filter(table_access==TRUE)
+  },
+  options = list(scrollX = TRUE))
 
-  output$download_preprocessed <- downloadHandler(
+  output$chronicle_raw <- renderDataTable({
+      rawdata()$chronicle$raw %>% filter(table_access==TRUE)
+  },
+  options = list(scrollX = TRUE))
+
+    output$download_preprocessed <- downloadHandler(
       filename = "CAFE_TUD_preprocessed.csv",
       content = function(file) {
           write.csv(activitydata() %>% filter(table_access==TRUE) %>% select(-c("nc.SubjectIdentification")), file, row.names = FALSE)
@@ -167,32 +183,38 @@ shinyServer(function(input, output, session) {
       }
   )
   
+  output$download_chronicle <- downloadHandler(
+      filename = "CAFE_chronicle.csv",
+      content = function(file) {
+          write.csv(rawdata()$chronicle$raw %>% filter(table_access==TRUE) %>% select(-c("study", "pid")), file, row.names = FALSE)
+      }
+  )
   #################
   # showing plots #
   #################
   
   output$A_hours_by_activity <-
     renderPlot({
-      plot_hours_by_activity(subset_activitydata())
+      plot_hours_by_activity(activitydata())
     })
   
   output$A_hours_by_activity_download <- 
       downloadHandler(
           filename = "hours_by_activity.png",
           content = function(file) {
-              ggsave(file, plot_hours_by_activity(subset_activitydata()), width=8,height=5)
+              ggsave(file, plot_hours_by_activity(activitydata()), width=8,height=5)
           })
   
   output$A_hours_by_activity_grouped <-
     renderPlot({
-      plot_hours_by_activity(subset_activitydata(), input$activity_columns)
+      plot_hours_by_activity(activitydata(), input$activity_columns)
     })
   
   output$A_hours_by_activity_grouped_download <- 
       downloadHandler(
           filename = "hours_by_activity_grouped.png",
           content = function(file) {
-              ggsave(file, plot_hours_by_activity(subset_activitydata(), input$activity_columns), width=8,height=5)
+              ggsave(file, plot_hours_by_activity(activitydata(), input$activity_columns), width=8,height=5)
           })
   
   output$A_hours_total <-
@@ -211,7 +233,7 @@ shinyServer(function(input, output, session) {
   output$A_activities_cross <-
     renderPlot({
       plot_barchart_activities(
-        subset_activitydata(),
+        activitydata(),
         input$barchart_columns,
         input$barchart_grouper_columns
       )
@@ -222,7 +244,7 @@ shinyServer(function(input, output, session) {
           filename = "activities_cross.png",
           content = function(file) {
               ggsave(file, plot_barchart_activities(
-                  subset_activitydata(),
+                  activitydata(),
                   input$barchart_columns,
                   input$barchart_grouper_columns
               ), width=8,height=5)
@@ -251,6 +273,34 @@ shinyServer(function(input, output, session) {
             content = function(file) {
                 ggsave(file, plot_crossplot(summarydata(), input$cross_columns), width=8,height=5)
             })
+    
+    output$tud_chron_plot <-
+        renderPlot({
+            plot_tud_chron(summarydata(), rawdata()$chronicle$processed, "meantime", input$tud_chron_tud)
+        })
+    
+
+    
+    output$tudchronplot_download <- 
+        downloadHandler(
+            filename = "tudchronplot.png",
+            content = function(file) {
+                ggsave(file, plot_tud_chron(summarydata(), rawdata()$chronicle$processed, input$tud_chron_tud, input$tud_chron_chron), width=8,height=5)
+            })
+
+    output$sbp_plot <-
+        renderPlot({
+            plot_sbp(summarydata())
+        })
+
+    output$sbp_plot_download <- 
+        downloadHandler(
+            filename = "bestpractices.png",
+            content = function(file) {
+                ggsave(file, plot_sbp(summarydata()), width=8,height=5)
+            })
+    
+    
     
     output$emptyplot <- 
     renderPlot({
