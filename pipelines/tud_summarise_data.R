@@ -4,13 +4,13 @@ source("pipelines/tud_load_data.R")
 source("pipelines/tud_transform_data.R")
 
 summarise_data <- function(activitydata) {
-
-    if (dim(activitydata)[1] == 0) {
+    
+    if (dim(activitydata)[1]==0) {
     return (tibble())
   }
 
     summarydata <- activitydata %>% 
-    group_by(child_id) %>%
+    group_by(site, nc.SubjectIdentification, day_id) %>%
     summarise(
       total_time = sum(duration)/60,
       total_blocks = n(),
@@ -36,7 +36,7 @@ summarise_data <- function(activitydata) {
       primary_handheld_hours = sum(duration[primary_handheldgame], na.rm=TRUE)/60,
       primary_radio_hours = sum(duration[primary_radio], na.rm=TRUE)/60,
       primary_theater_hours = sum(duration[primary_theater], na.rm=TRUE)/60,
-      
+
       screen_hours = sum(duration[screen], na.rm=TRUE)/60,
       screen_blocks = sum(screen, na.rm=TRUE),
       screen_mean_hours = mean(duration[screen], na.rm=TRUE)/60,
@@ -53,7 +53,7 @@ summarise_data <- function(activitydata) {
       feeding_hours = sum(duration[str_detect(ol.activity, "Eating")], na.rm=TRUE)/60,
       feeding_blocks = sum(str_detect(ol.activity, "Eating"), na.rm=TRUE),
       feeding_btv_hours = sum(duration[str_detect(ol.activity, "Eating") & background_media_tv==TRUE], na.rm=TRUE)/60,
-      
+
       bathroom_hours = sum(duration[str_detect(ol.activity, "Grooming")], na.rm=TRUE)/60,
       childcare_hours = sum(duration[str_detect(ol.activity, "Childcare")], na.rm=TRUE)/60,
       play_inside_hours = sum(duration[str_detect(ol.activity, "Play_recreating inside")], na.rm=TRUE)/60,
@@ -80,7 +80,17 @@ summarise_data <- function(activitydata) {
       age_younger_secondary_media = sum(duration[secondary_media_age_younger], na.rm=TRUE),
       age_adults_secondary_media = sum(duration[secondary_media_age_adult], na.rm=TRUE),
       
-      table_access = mean(table_access)==1
+      table_access = mean(table_access)==1,
+      
+      SBP_TV_lessthan_1h = total_tv_hours<= 1,
+      SBP_avoid_screen_before_bedtime = screen_1hfromsleeping_hours==0,
+      SBP_balance_media_with_reading = primary_book_hours>=0.5,
+      SBP_balance_media_with_play = primary_media_hours <= play_hours,
+      SBP_minimise_background_media_play = play_bmedia_hours == 0,
+      SBP_avoid_media_meals = feeding_btv_hours == 0,
+      SBP_coview = screen_adult_coviewing_hours/screen_hours >= 0.5,
+      SBP_content = ((age_child_primary_media + age_younger_primary_media)/
+          (age_child_primary_media + age_older_primary_media+ age_younger_primary_media + age_adults_primary_media))==1
     )
   return(summarydata)
 }
