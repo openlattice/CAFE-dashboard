@@ -12,6 +12,101 @@ TUD_entities <- c(
   "survey_visits"
   )
 
+MAQ_entities <- c(
+    
+    # SUBJECTS
+    
+    "Subjects",
+    "HouseHolds",
+    "ChildCare_Weekdays",
+    "ChildCare_Weekends",
+    "Household_Communication",
+    "Respondents",
+    "Subject_Details",
+    "Caregiver_Communication",
+    
+    # RESPONDENTS
+    
+    "RespondentDetails", 
+    "Employment", 
+    "Education", 
+    "Incomes", 
+    "ImmigrationStatus"
+)
+
+MAQ_associations <- list(
+    
+    # SUBJECTS
+    
+    list(
+        src = "Subjects",
+        dst = "Households",
+        edge = "PartOf"
+    ),
+    list(
+        src = "Subjects",
+        dst = "ChildCare_Weekdays",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Subjects",
+        dst = "Household_Communication",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "Subjects",
+        edge = "RelatedTo"
+    ),
+    list(
+        src = "Subjects",
+        dst = "Subject_Details",
+        edge = "Has"
+    ),
+    list(
+        src = "Respondents",
+        dst = "ChildCare_Weekends",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Subjects",
+        dst = "Caregiver_Communication",
+        edge = "InvolvedIn"
+    ),
+    
+    # RESPONDENTS
+    
+    list(
+        src = "Respondents",
+        dst = "RespondentDetails",
+        edge = "Has"
+    ),
+    list(
+        src = "Respondents",
+        dst = "Employment",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "Education",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "Incomes",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "ImmigrationStatus",
+        edge = "Reported"
+    )
+    
+    
+)
+
+
+
 TUD_associations <- list(
   list(
     src = 'devices',
@@ -68,4 +163,5 @@ TUD_associations <- list(
     dst = 'primary_activity',
     edge = 'engagedin'
   )
+  
 )
