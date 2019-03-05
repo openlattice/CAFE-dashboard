@@ -81,7 +81,7 @@ home <- tabPanel(
                    ))
 )
 
-preprocessed_table <- tabPanel("preprocessed_table",
+preprocessed_table <- tabPanel(title = "TUD preprocessed",
                                fluidRow(box(
                                  width = 12,
                                  column(
@@ -99,7 +99,7 @@ preprocessed_table <- tabPanel("preprocessed_table",
                                  )
                                ))
 
-summarised_table <- tabPanel("summarised_table",
+summarised_table <- tabPanel("TUD summarised",
                              fluidRow(box(
                                width = 12,
                                column(12, align = "center", downloadButton("download_summarised", "Download"))
@@ -113,7 +113,21 @@ summarised_table <- tabPanel("summarised_table",
                                )
                              ))
 
-activity_barcharts <- tabPanel("activity_barcharts",
+chronicle_table <- tabPanel("Chronicle",
+                             fluidRow(box(
+                                 width = 12,
+                                 column(12, align = "center", downloadButton("download_chronicle", "Download"))
+                             )),
+                             fluidRow(
+                                 box(
+                                     width = 12,
+                                     solidHeader = TRUE,
+                                     title = "Chronicle data",
+                                     dataTableOutput(outputId = "chronicle_raw")
+                                 )
+                             ))
+
+activity_barcharts <- tabPanel("TUD activities",
                                fluidRow(column(
                                  width = 4,
                                  box(
@@ -145,7 +159,7 @@ activity_barcharts <- tabPanel("activity_barcharts",
                                )))
 
 
-preprocessed_barcharts <- tabPanel("preprocessed_barcharts",
+preprocessed_barcharts <- tabPanel("TUD barcharts",
                                    fluidRow(column(
                                      width = 4,
                                      box(
@@ -179,7 +193,7 @@ preprocessed_barcharts <- tabPanel("preprocessed_barcharts",
                                      )
                                    )))
 
-summarised_histograms <- tabPanel("summarised_histograms",
+summarised_histograms <- tabPanel("TUD histograms",
                                   fluidRow(column(
                                     width = 4,
                                     box(
@@ -208,7 +222,7 @@ summarised_histograms <- tabPanel("summarised_histograms",
                                     )
                                   )))
 
-summarised_crossplots <- tabPanel("summarised_crossplots",
+summarised_crossplots <- tabPanel("TUD crossplots",
                                   fluidRow(column(
                                     width = 4,
                                     box(
@@ -234,4 +248,55 @@ summarised_crossplots <- tabPanel("summarised_crossplots",
                                         downloadButton("crossplot_download", "Download figure"),
                                         align = "left"
                                     )
+                                  )))
+
+summarised_SBP <- tabPanel("TUD best practices",
+                                  fluidRow(column(
+                                      width = 4,
+                                      box()
+                                  ),
+                                  column(
+                                      width = 8,
+                                      box(
+                                          width = 12,
+                                          solidHeader = TRUE,
+                                          title = "Screen Best Practices",
+                                          addSpinner(plotOutput("sbp_plot", height=500),spin = "bounce", color = cols[1])
+                                      ),
+                                      box(
+                                          width=12,
+                                          solidHeader=FALSE,
+                                          downloadButton("sbp_download", "Download figure"),
+                                          align = "left"
+                                      )
+                                  )))
+
+chronicle_tud <- tabPanel("TUD + chronicle",
+                                  fluidRow(
+                                  column(
+                                      width = 4,
+                                      box(
+                                          width = 12,
+                                          title = "Select column",
+                                          radioButtons(
+                                              inputId = 'tud_chron_tud',
+                                              choices = c('test'),
+                                              label = 'Column'
+                                          )
+                                      )
+                                  ),
+                                  column(
+                                      width = 8,
+                                      box(
+                                          width = 12,
+                                          solidHeader = TRUE,
+                                          title = "Cross-plot",
+                                          addSpinner(plotOutput("tud_chron_plot"),spin = "bounce", color = cols[1])
+                                      ),
+                                      box(
+                                          width=12,
+                                          solidHeader=FALSE,
+                                          downloadButton("tud_chron_plot_download", "Download figure"),
+                                          align = "left"
+                                      )
                                   )))
