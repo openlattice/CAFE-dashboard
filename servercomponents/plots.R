@@ -11,6 +11,7 @@ cols <-
     "#00be84")
 nacol <- "#dcdce7"
 
+
 empty_plot <- function() {
   plot(0,type='n',axes=FALSE,ann=FALSE)
 }
