@@ -19,6 +19,8 @@ cols <- c("#ff3c5d",
     "#dd9e00",
     "#00be84")
 
+
+
 shinyServer(function(input, output, session) {
   
   ###########################################
@@ -52,7 +54,6 @@ shinyServer(function(input, output, session) {
           shinyjs::show(selector = "#navbar li a[data-value=plots]")
       }
   })
-
   
   activity_coltypes <- reactive({
     if (rawdata()$auth) {
@@ -83,7 +84,7 @@ shinyServer(function(input, output, session) {
       session,
       "barchart_columns",
       choices = c(
-        activity_coltypes()$factorial,
+        activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
         activity_coltypes()$boolean
       )
     )
@@ -91,7 +92,7 @@ shinyServer(function(input, output, session) {
       session,
       "barchart_grouper_columns",
       choices = c(
-        activity_coltypes()$factorial,
+        activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
         activity_coltypes()$boolean
       )
     )
@@ -99,7 +100,7 @@ shinyServer(function(input, output, session) {
       session,
       "activity_columns",
       choices = c(
-        activity_coltypes()$factorial,
+        activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
         activity_coltypes()$boolean
       )
     )
@@ -111,15 +112,15 @@ shinyServer(function(input, output, session) {
       session,
       "cross_columns",
       choices = c(
-        summary_coltypes()$numeric[summary_coltypes()$numeric != "nc.SubjectIdentification"],
-        summary_coltypes()$factorial,
+        summary_coltypes()$numeric,
+        summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
         summary_coltypes()$boolean
       )
     )
     updateRadioButtons(
         session,
         "tud_chron_tud",
-        choices = summary_coltypes()$numeric[summary_coltypes()$numeric != "nc.SubjectIdentification"]
+        choices = summary_coltypes()$numeric
     )
     
   })
