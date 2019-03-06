@@ -1,17 +1,3 @@
-library(shiny)
-library(GGally)
-library(ggcorrplot)
-
-cols <-
-    c("#ff3c5d",
-      "#6124e2",
-      "#ffe671",
-      "#ff9a58",
-      "#dd9e00",
-      "#00be84")
-nacol <- "#dcdce7"
-
-
 empty_plot <- function() {
     plot(0,
          type = 'n',
@@ -154,41 +140,6 @@ plot_barchart_activities <-
                                   na.value = nacol)
         }
     }
-
-plot_tud_chron <-
-    function(summarydata, chronicle, var1, var2) {
-        new <-
-            merge(
-                summarydata,
-                chronicle,
-                how = "inner",
-                by.x = "nc.SubjectIdentification",
-                by.y = "pid"
-            )
-        plt <- ggplot(new, aes_string(x = var1, y = var2)) +
-            geom_point() + theme_light() +
-            stat_smooth(method = "lm", col = cols[1]) +
-            labs(x = "Chronicle: average usage per day",
-                 y = paste("Tud:", var2))
-        return(plt)
-    }
-
-plot_qc_progress <- function(summarydata) {
-    plt <- ggplot(summarydata, aes(x = site, y = progress)) +
-        theme_light() +
-        geom_bar(stat = "summary",
-                 fun.y = "mean", fill=cols[4])
-    return(plt)
-}
-
-plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
-togdata <- summarydata %>% inner_join(maqdata)
-plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) + 
-    theme_light() +
-    geom_bar(stat="summary", fun.y = "mean", fill=cols[5]) +
-    coord_flip()
-return(plt)
-}
 
 
 

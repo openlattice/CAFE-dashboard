@@ -1,52 +1,48 @@
-library(shiny)
-library(shinydashboard)
-library(shinyjs)
-
-source("uicomponents/tabs.R")
+source("global.R")
 
 # Define UI for application that draws a histogram
 tagList(
     useShinyjs(),
-  navbarPage(
-      id = "navbar",
-    title =
-      div(img(src = "logomark.png",
-              class = "logo"),
-          "Cafe",
-          class = "navbar-title"),
-    theme = "custom.css",
-    fluid = TRUE,
-    windowTitle = "CAFE",
-    collapsible = TRUE,
-    header = tags$head(
-      tags$style(HTML(
-        "#page-nav > li:first-child { display: none; }"
-      )),
-      tags$link(rel = "stylesheet", type = "text/css", href = "http://fonts.googleapis.com/css?family=Chivo"),
-      tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css"),
-      tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css"),
-      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
-      tags$link(rel = "icon", type = "image/png", href = "favicon.png")
-    ),
-    home,
-    navbarMenu("tables",
-        preprocessed_table,
-        summarised_table,
-        chronicle_table
+    navbarPage(
+        id = "navbar",
+        title =
+            div(img(src = "logomark.png",
+                    class = "logo"),
+                "Cafe",
+                class = "navbar-title"),
+        theme = "custom.css",
+        fluid = TRUE,
+        windowTitle = "CAFE",
+        collapsible = TRUE,
+        header = tags$head(
+            tags$style(HTML(
+                "#page-nav > li:first-child { display: none; }"
+            )),
+            tags$link(rel = "stylesheet", type = "text/css", href = "http://fonts.googleapis.com/css?family=Chivo"),
+            tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css"),
+            tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css"),
+            tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+            tags$link(rel = "icon", type = "image/png", href = "favicon.png")
         ),
-    navbarMenu("plots",
-        activity_barcharts,
-        preprocessed_barcharts,
-        summarised_histograms,
-        summarised_crossplots,
-        summarised_SBP,
-        chronicle_tud
-    ),
-    navbarMenu("QA",
-        QA_base
-    ),
-    navbarMenu("TUD-MAQ",
-        TUD_MAQ
+        home,
+        navbarMenu(
+            "tables",
+            preprocessed_table("tables"),
+            summarised_table("tables"),
+            chronicle_table("tables")
+        ),
+        navbarMenu(
+            "plots",
+            activity_barcharts("activity"),
+            preprocessed_barcharts("activity"),
+            summarised_histograms("summary"),
+            summarised_crossplots("summary"),
+            sbp_ui("sbp"),
+            chronicle_tud("chrontud")
+        ),
+        navbarMenu("QA",
+                   qa_ui("qa")),
+        navbarMenu("TUD-MAQ",
+                   tud_maq_ui("tud_maq"))
     )
-  )
 )
