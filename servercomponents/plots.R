@@ -181,12 +181,16 @@ plot_qc_progress <- function(summarydata) {
     return(plt)
 }
 
-plot_qc_progress <- function(summarydata) {
-    plt <- ggplot(summarydata, aes(x = site, y = progress)) +
-        theme_light() +
-        geom_bar(stat = "summary",
-                 fun.y = "mean", fill=cols[4])
-    return(plt)
+plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
+togdata <- summarydata %>% inner_join(maqdata)
+plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) + 
+    theme_light() +
+    geom_bar(stat="summary", fun.y = "mean", fill=cols[5]) +
+    coord_flip()
+return(plt)
 }
+
+
+
 
 
