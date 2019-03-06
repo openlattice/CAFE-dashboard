@@ -172,3 +172,21 @@ plot_tud_chron <-
                  y = paste("Tud:", var2))
         return(plt)
     }
+
+plot_qc_progress <- function(summarydata) {
+    plt <- ggplot(summarydata, aes(x = site, y = progress)) +
+        theme_light() +
+        geom_bar(stat = "summary",
+                 fun.y = "mean", fill=cols[4])
+    return(plt)
+}
+
+plot_qc_progress <- function(summarydata) {
+    plt <- ggplot(summarydata, aes(x = site, y = progress)) +
+        theme_light() +
+        geom_bar(stat = "summary",
+                 fun.y = "mean", fill=cols[4])
+    return(plt)
+}
+
+
