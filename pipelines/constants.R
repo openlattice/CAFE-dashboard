@@ -9,7 +9,9 @@ TUD_entities <- c(
   "locations",
   "sites",
   "survey_respondents",
-  "survey_visits"
+  "survey_visits",
+  'survey_recruitment',
+  "recorded"
   )
 
 MAQ_entities <- c(
@@ -106,16 +108,30 @@ MAQ_associations <- list(
 )
 
 
-
 TUD_associations <- list(
-  list(
+    list(
     src = 'devices',
     dst = 'media_exposure',
     edge = 'involvedin'
   ),
+    list(
+        src = "primary_activity",
+        dst = "survey_metadata",
+        edge = "recordedvia"
+    ),
   list(
       src = 'survey_respondents',
       dst = 'primary_activity',
+      edge = 'involvedin'
+  ),
+  list(
+      src = 'survey_respondents',
+      dst = 'primary_activity',
+      edge = 'involvedin'
+  ),
+  list(
+      src = 'survey_recruitment',
+      dst = 'people',
       edge = 'involvedin'
   ),
   list(
