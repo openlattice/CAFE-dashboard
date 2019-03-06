@@ -83,11 +83,12 @@ home <- tabPanel(
 
 QA_base <- tabPanel(title = "Quality Assessment",
                                 fluidRow(
-                                   box(
-                                       width = 12,
-                                       solidHeader = TRUE,
-                                       title = "Quality assessment"
-                                   )
+                                    box(
+                                        width = 12,
+                                        solidHeader = TRUE,
+                                        title = "Quality assessment base",
+                                        addSpinner(plotOutput(outputId = "qc_base"),spin = "bounce", color = cols[1])
+                                    )
                                ))
 
 preprocessed_table <- tabPanel(title = "TUD preprocessed",

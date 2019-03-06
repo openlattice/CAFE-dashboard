@@ -10,8 +10,9 @@ summarise_data <- function(activitydata) {
   }
 
     summarydata <- activitydata %>% 
-    group_by(site, nc.SubjectIdentification, day_id) %>%
+    group_by(recruitment, site, nc.SubjectIdentification, day_id) %>%
     summarise(
+      progress = mean(as.numeric(progress), na.rm=TRUE),
       total_time = sum(duration)/60,
       total_blocks = n(),
       

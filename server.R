@@ -6,6 +6,7 @@ library(shinyjs)
 
 source("pipelines/tud_load_data.R")
 source("pipelines/tud_transform_data.R")
+source("pipelines/maq_transform_data.R")
 source("pipelines/tud_summarise_data.R")
 source("servercomponents/plots.R")
 
@@ -22,6 +23,7 @@ cols <- c("#ff3c5d",
 
 
 shinyServer(function(input, output, session) {
+    
     ###########################################
     # loading data and observing column names #
     ###########################################
@@ -34,13 +36,18 @@ shinyServer(function(input, output, session) {
     rawdata <-
         eventReactive(input$login, {
             print("reading...")
-            rawdata <- get_data(input$jwt, cache = TRUE)
+            rawdata <- get_data(input$jwt, cache = TRUE, auth=TRUE)
             rawdata
         }, ignoreNULL = FALSE)
     
     activitydata <- reactive({
-        print("processing...")
+        print("processing TUD...")
         process_activities(rawdata())
+    })
+    
+    maqdata <- reactive({
+        print("processing MAQ...")
+        processing_maq(rawdata())
     })
     
     summarydata <- reactive({
@@ -381,6 +388,11 @@ shinyServer(function(input, output, session) {
                        height = 5)
             }
         )
+    
+    output$qc_base <- 
+        renderPlot({
+            plot_qc_progress(summarydata())
+        })
     
     
     
