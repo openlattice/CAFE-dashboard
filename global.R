@@ -13,6 +13,16 @@ library(yaml)
 
 httr::set_config(httr::config(http_version = 0))
 
+cols <- c("#ff3c5d",
+          "#6124e2",
+          "#ffe671",
+          "#ff9a58",
+          "#dd9e00",
+          "#00be84")
+
+nacol <- "#dcdce7"
+
+
 source("functions/tud_load_data.R")
 source("functions/tud_transform_data.R")
 source("functions/maq_transform_data.R")
@@ -35,14 +45,5 @@ source("modules/chrontud.R")
 source("uicomponents/tabs.R")
 
 read_yaml("secrets.yaml")
-
-cols <- c("#ff3c5d",
-          "#6124e2",
-          "#ffe671",
-          "#ff9a58",
-          "#dd9e00",
-          "#00be84")
-
-nacol <- "#dcdce7"
 
 
