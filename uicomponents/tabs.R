@@ -310,3 +310,35 @@ chronicle_tud <- tabPanel("TUD + chronicle",
                                           align = "left"
                                       )
                                   )))
+
+TUD_MAQ <- tabPanel("TUD - MAQ",
+                                   fluidRow(column(
+                                       width = 4,
+                                       box(
+                                           width = 12,
+                                           title = "Select TUD columns",
+                                           selectInput(
+                                               inputId = 'tud_maq_column_T',
+                                               choices = c('test'),
+                                               label = 'Column'
+                                           )
+                                       ),
+                                       box(
+                                           width = 12,
+                                           title = "Select MAQ columns",
+                                           selectInput(
+                                               inputId = "tud_maq_column_M",
+                                               choices = c('study', 'employment', 'education'),
+                                               label = 'Column'
+                                           )
+                                       )
+                                       
+                                   ),
+                                   column(
+                                       width = 8,
+                                       box(
+                                           width = 12,
+                                           title = "tud maq",
+                                           addSpinner(plotOutput("plot_maq_tud"),spin = "bounce", color = cols[1])
+                                       )
+                                   )))

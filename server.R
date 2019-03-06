@@ -31,6 +31,7 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=tables]")
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
+    hide(selector = "#navbar li a[data-value=TUD-MAQ]")
     
     # load data
     rawdata <-
@@ -47,7 +48,7 @@ shinyServer(function(input, output, session) {
     
     maqdata <- reactive({
         print("processing MAQ...")
-        processing_maq(rawdata())
+        process_maq(rawdata())
     })
     
     summarydata <- reactive({
@@ -60,6 +61,7 @@ shinyServer(function(input, output, session) {
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
+            shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
         }
     })
     
@@ -110,14 +112,6 @@ shinyServer(function(input, output, session) {
         )
         updateSelectInput(
             session,
-            "barchart_grouper_columns",
-            choices = c(
-                activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
-                activity_coltypes()$boolean
-            )
-        )
-        updateSelectInput(
-            session,
             "activity_columns",
             choices = c(
                 activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
@@ -131,6 +125,15 @@ shinyServer(function(input, output, session) {
         updateCheckboxGroupInput(
             session,
             "cross_columns",
+            choices = c(
+                summary_coltypes()$numeric,
+                summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
+                summary_coltypes()$boolean
+            )
+        )
+        updateSelectInput(
+            session,
+            "tud_maq_column_T",
             choices = c(
                 summary_coltypes()$numeric,
                 summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
@@ -400,6 +403,11 @@ shinyServer(function(input, output, session) {
         renderPlot({
             data <- rawdata()
             empty_plot()
+        })
+    
+    output$plot_maq_tud <-
+        renderPlot({
+            plot_maq(summarydata(), maqdata(), input$tud_maq_column_T, input$tud_maq_column_M)
         })
     
     

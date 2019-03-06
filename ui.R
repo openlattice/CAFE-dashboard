@@ -44,6 +44,9 @@ tagList(
     ),
     navbarMenu("QA",
         QA_base
+    ),
+    navbarMenu("TUD-MAQ",
+        TUD_MAQ
     )
   )
 )
