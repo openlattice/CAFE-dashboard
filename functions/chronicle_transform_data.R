@@ -1,5 +1,3 @@
-library(tidyverse)
-
 process_chronicle <- function(chronicledata) {
     chronicle = chronicledata %>% 
         mutate(date = round_date(ol.datetimestart, 'day')) %>% 

@@ -1,8 +1,3 @@
-library(tidyverse)
-
-source("pipelines/tud_load_data.R")
-source("pipelines/tud_transform_data.R")
-
 summarise_data <- function(activitydata) {
     
     if (dim(activitydata)[1]==0) {

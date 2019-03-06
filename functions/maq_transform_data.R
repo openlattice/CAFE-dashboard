@@ -1,6 +1,3 @@
-library(tidyverse)
-library(lubridate)
-
 ## combine everything
 process_maq <- function(rawdata) {
     if (rawdata$auth == FALSE) {
