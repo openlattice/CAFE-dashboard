@@ -131,7 +131,7 @@ TUD_associations <- list(
   ),
   list(
       src = 'survey_recruitment',
-      dst = 'people',
+      dst = 'primary_activity',
       edge = 'involvedin'
   ),
   list(

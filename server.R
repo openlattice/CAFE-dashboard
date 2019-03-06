@@ -6,6 +6,7 @@ library(shinyjs)
 
 source("pipelines/tud_load_data.R")
 source("pipelines/tud_transform_data.R")
+source("pipelines/maq_transform_data.R")
 source("pipelines/tud_summarise_data.R")
 source("servercomponents/plots.R")
 
@@ -22,6 +23,7 @@ cols <- c("#ff3c5d",
 
 
 shinyServer(function(input, output, session) {
+    
     ###########################################
     # loading data and observing column names #
     ###########################################
@@ -29,18 +31,24 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=tables]")
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
+    hide(selector = "#navbar li a[data-value=TUD-MAQ]")
     
     # load data
     rawdata <-
         eventReactive(input$login, {
             print("reading...")
-            rawdata <- get_data(input$jwt, cache = TRUE)
+            rawdata <- get_data(input$jwt, cache = TRUE, auth=FALSE)
             rawdata
         }, ignoreNULL = FALSE)
     
     activitydata <- reactive({
-        print("processing...")
+        print("processing TUD...")
         process_activities(rawdata())
+    })
+    
+    maqdata <- reactive({
+        print("processing MAQ...")
+        process_maq(rawdata())
     })
     
     summarydata <- reactive({
@@ -53,6 +61,7 @@ shinyServer(function(input, output, session) {
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
+            shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
         }
     })
     
@@ -103,14 +112,6 @@ shinyServer(function(input, output, session) {
         )
         updateSelectInput(
             session,
-            "barchart_grouper_columns",
-            choices = c(
-                activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
-                activity_coltypes()$boolean
-            )
-        )
-        updateSelectInput(
-            session,
             "activity_columns",
             choices = c(
                 activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
@@ -124,6 +125,15 @@ shinyServer(function(input, output, session) {
         updateCheckboxGroupInput(
             session,
             "cross_columns",
+            choices = c(
+                summary_coltypes()$numeric,
+                summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
+                summary_coltypes()$boolean
+            )
+        )
+        updateSelectInput(
+            session,
+            "tud_maq_column_T",
             choices = c(
                 summary_coltypes()$numeric,
                 summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
@@ -382,12 +392,22 @@ shinyServer(function(input, output, session) {
             }
         )
     
+    output$qc_base <- 
+        renderPlot({
+            plot_qc_progress(summarydata())
+        })
+    
     
     
     output$emptyplot <-
         renderPlot({
             data <- rawdata()
             empty_plot()
+        })
+    
+    output$plot_maq_tud <-
+        renderPlot({
+            plot_maq(summarydata(), maqdata(), input$tud_maq_column_T, input$tud_maq_column_M)
         })
     
     

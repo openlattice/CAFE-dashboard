@@ -13,6 +13,9 @@ process_activities <- function(rawdata) {
     adults_by_activity <- process_adult_use(rawdata)
     locations_by_activity <- process_locations(rawdata)
     sites_by_activity <- process_sites(rawdata)
+    metadata_by_activity <- process_metadata(rawdata)
+    recruitment_by_activity <- process_recruitment(rawdata)
+    
     activity <- process_activity(rawdata)
     
     activity <- activity %>%
@@ -21,8 +24,10 @@ process_activities <- function(rawdata) {
         left_join(media_exposure_by_activity, by = "primary_activity_id") %>%
         left_join(adults_by_activity, by = "primary_activity_id") %>%
         left_join(locations_by_activity, by = "primary_activity_id") %>%
-        left_join(sites_by_activity, by = "primary_activity_id")
-        
+        left_join(sites_by_activity, by = "primary_activity_id") %>%
+        left_join(metadata_by_activity, by = "primary_activity_id") %>%
+        left_join(recruitment_by_activity, by = "primary_activity_id")
+    
     # factor vars to factor
     ndist <- activity %>%
         summarise_all(funs(n_distinct(.)))
@@ -37,8 +42,6 @@ process_activities <- function(rawdata) {
         mutate_at(factcols$nms, as.factor) %>%
         mutate_at(boolcols$nms, as.logical)
 
-wiamp <- activity %>% group_by(child_id) %>% summarise(duration = sum(duration) / 60)
-        
     dur_by_session <- activity %>%
         group_by(day_id) %>%
         summarise(duration = sum(duration) / 60) %>%
@@ -213,6 +216,51 @@ process_adult_use <- function(rawdata) {
             adult_duration = ifelse(adult_duration > 0, adult_duration, NA)
         )
     return(adult_use_by_activity)
+}
+
+# summarise metadata
+process_metadata <- function(rawdata) {
+    if (dim(rawdata$tud$edges$primary_activity_survey_metadata)[1] == 0) {
+        return (tibble(primary_activity_id = as.character()))
+    }
+    metadata_by_activity <-
+        rawdata$tud$edges$primary_activity_survey_metadata %>%
+        # add media_exposure
+        left_join(
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
+            by = c(src = "openlattice.@id")
+        ) %>%
+        # add primary activities
+        left_join(rawdata$tud$nodes$survey_metadata, by = c(dst = "openlattice.@id")) %>%
+        # summarise
+        rename(primary_activity_id = src) %>%
+        group_by(primary_activity_id) %>%
+        summarise(
+            progress = ol.status
+        )
+        return(metadata_by_activity)
+}
+
+process_recruitment <- function(rawdata) {
+    if (dim(rawdata$tud$edges$survey_recruitment_primary_activity)[1] == 0) {
+        return (tibble(primary_activity_id = as.character()))
+    }
+    recruitment_by_activity <-
+        rawdata$tud$edges$survey_recruitment_primary_activity %>%
+        # add media_exposure
+        left_join(
+            rawdata$tud$nodes$primary_activity %>% select("openlattice.@id"),
+            by = c(dst = "openlattice.@id")
+        ) %>%
+        # add primary activities
+        left_join(rawdata$tud$nodes$survey_recruitment, by = c(src = "openlattice.@id")) %>%
+        # summarise
+        rename(primary_activity_id = dst) %>%
+        group_by(primary_activity_id) %>%
+        summarise(
+            recruitment = ol.id
+        )
+    return(recruitment_by_activity)
 }
 
 # clean up activity rawdata (need to add child ID to find next sleep !)
