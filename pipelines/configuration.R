@@ -18,6 +18,13 @@ get_master_jwt <- function() {
     }
 }
 
+is_authorized <- function(apis){
+    if (!is.null(apis) & "TimeUseDiary READ" %in% apis$personal$prinApi$get_current_roles()$title) {
+        return(TRUE)
+    }
+    return(FALSE)
+}
+
 get_apis <- function(jwt, local = FALSE) {
     basepath = ifelse(local == TRUE,
                       "http://localhost:8080",
