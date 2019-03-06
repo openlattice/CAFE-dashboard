@@ -41,6 +41,9 @@ tagList(
         summarised_crossplots,
         summarised_SBP,
         chronicle_tud
+    ),
+    navbarMenu("QA",
+        QA_base
     )
   )
 )
