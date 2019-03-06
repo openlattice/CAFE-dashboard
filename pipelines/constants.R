@@ -117,7 +117,7 @@ TUD_associations <- list(
     list(
         src = "primary_activity",
         dst = "survey_metadata",
-        edge = "recordedvia"
+        edge = "recorded"
     ),
   list(
       src = 'survey_respondents',
