@@ -44,7 +44,6 @@ load_data <-
         datasets <- TUD_entities %>% map(get_node_table, apis)
         names(datasets) <- TUD_entities
         
-
         print("-- TUD: Getting edges.")
         edgesdata <- TUD_associations %>% map(get_edge_table, datasets, apis)
         names(edgesdata) <-

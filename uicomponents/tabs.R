@@ -81,6 +81,15 @@ home <- tabPanel(
                    ))
 )
 
+QA_base <- tabPanel(title = "Quality Assessment",
+                                fluidRow(
+                                   box(
+                                       width = 12,
+                                       solidHeader = TRUE,
+                                       title = "Quality assessment"
+                                   )
+                               ))
+
 preprocessed_table <- tabPanel(title = "TUD preprocessed",
                                fluidRow(box(
                                  width = 12,
