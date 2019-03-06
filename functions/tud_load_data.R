@@ -1,13 +1,3 @@
-library(tidyverse)
-library(openlattice)
-library(httr)
-library(yaml)
-
-source("pipelines/constants.R")
-source("pipelines/configuration.R")
-source("pipelines/chronicle_transform_data.R")
-source("pipelines/read_tables.R")
-
 get_data <- function(jwt, cache = FALSE, auth=FALSE) {
     print("Getting authenticated !")
     
@@ -163,7 +153,8 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE){
     } else {
         rawtable <- rawtable %>% mutate(table_access = TRUE)
     }
-        proctable <- as.tibble(data$chronicle$processed)
+    
+    proctable <- as.tibble(data$chronicle$processed)
     if (auth==FALSE){
         proctable <- proctable %>% mutate(table_access = study %in% entitysets)
     } else {

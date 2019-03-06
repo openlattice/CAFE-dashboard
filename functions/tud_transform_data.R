@@ -1,6 +1,3 @@
-library(tidyverse)
-library(lubridate)
-
 ## combine everything
 process_activities <- function(rawdata) {
     if (rawdata$auth == FALSE) {
