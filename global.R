@@ -32,6 +32,8 @@ source("modules/activity_plots.R")
 source("modules/summary_plots.R")
 source("modules/chrontud.R")
 
+source("uicomponents/tabs.R")
+
 read_yaml("secrets.yaml")
 
 cols <- c("#ff3c5d",
