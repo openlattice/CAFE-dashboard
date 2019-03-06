@@ -13,7 +13,7 @@ shinyServer(function(input, output, session) {
     rawdata <-
         eventReactive(input$login, {
             print("reading...")
-            rawdata <- get_data(input$jwt, cache = TRUE, auth = TRUE)
+            rawdata <- get_data(input$jwt, cache = TRUE, auth = FALSE)
             rawdata
         }, ignoreNULL = FALSE)
     
