@@ -155,7 +155,9 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE){
     
     for (node in names(data$tud$nodes)) {
         nodetable <- as.tibble(data$tud$nodes[[node]])
-        if (auth==FALSE){
+        if (dim(nodetable)[1]==0){
+            nodetable = nodetable
+        } else if (auth==FALSE){
             nodetable <- nodetable %>% mutate(table_access = study %in% entitysets)
         } else {
             nodetable <- nodetable %>% mutate(table_access = TRUE)
@@ -170,7 +172,9 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE){
     
     for (node in names(data$maq$nodes)) {
         maqnodetable <- as.tibble(data$maq$nodes[[node]])
-        if (auth==FALSE){
+        if (dim(maqnodetable)[1]==0){
+            maqnodetable <- maqnodetable
+        } else if (auth==FALSE ){
             maqnodetable <- maqnodetable %>% mutate(table_access = study %in% entitysets)
         } else {
             maqnodetable <- maqnodetable %>% mutate(table_access = TRUE)
