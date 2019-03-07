@@ -1,3 +1,7 @@
+###################
+## UI COMPONENTS ##
+###################
+
 chronicle_tud <- function(id){
     ns <- NS(id)
     tabPanel("TUD + chronicle",
@@ -7,11 +11,7 @@ chronicle_tud <- function(id){
                                   box(
                                       width = 12,
                                       title = "Select column",
-                                      radioButtons(
-                                          inputId = ns('tud_chron_tud'),
-                                          choices = c('test'),
-                                          label = 'Column'
-                                      )
+                                      uiOutput(ns("tud_column"))
                                   )
                               ),
                               column(
@@ -31,18 +31,27 @@ chronicle_tud <- function(id){
                               )))
 }
 
+#######################
+## SERVER COMPONENTS ##
+#######################
+
 chronicle_tud_server <- function(input,
                                  output,
                                  session,
-                                 summarydata,
-                                 chronicle,
-                                 summary_coltypes
-                                 ){
+                                 rawdata){
+    ns <- session$ns
+    
+    output$tud_column = renderUI(radioButtons(
+        inputId = ns('tud_chron_tud'),
+        choices = rawdata$tud$summarised_coltypes$numeric,
+        label = 'Column'
+    ))
+    
     output$tud_chron_plot <-
         renderPlot({
             plot_tud_chron(
-                summarydata,
-                chronicle,
+                rawdata$tud$summarised,
+                rawdata$chronicle$processed,
                 "meantime",
                 input$tud_chron_tud
             )
@@ -55,8 +64,8 @@ chronicle_tud_server <- function(input,
                 ggsave(
                     file,
                     plot_tud_chron(
-                        summarydata,
-                        chronicle,
+                        rawdata$tud$summarised,
+                        rawdata$chronicle$processed,
                         "meantime",
                         input$tud_chron_chron
                     ),
@@ -66,34 +75,7 @@ chronicle_tud_server <- function(input,
             }
         )
     
-    observe({
-        updateRadioButtons(session,
-                           "tud_chron_tud",
-                           choices = summary_coltypes$numeric)
-        
-    })
-    
 }
-
-
-plot_tud_chron <-
-    function(summarydata, chronicle, var1, var2) {
-        new <-
-            merge(
-                summarydata,
-                chronicle,
-                how = "inner",
-                by.x = "nc.SubjectIdentification",
-                by.y = "pid"
-            )
-        plt <- ggplot(new, aes_string(x = var1, y = var2)) +
-            geom_point() + theme_light() +
-            stat_smooth(method = "lm", col = cols[1]) +
-            labs(x = "Chronicle: average usage per day",
-                 y = paste("Tud:", var2))
-        return(plt)
-    }
-
 
 
 
