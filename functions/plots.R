@@ -177,7 +177,10 @@ qa_plot <- function(summarydata) {
 # FUNCTIONS
 
 plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
-    togdata <- summarydata %>% inner_join(maqdata)
+    if (is.null(tudcol) | is.null(maqcol) | tudcol == "" | maqcol == ""){
+        return(NULL)
+    }
+    togdata <- summarydata %>% inner_join(maqdata, by = "nc.SubjectIdentification")
     plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
         theme_light() +
         geom_bar(stat = "summary",
