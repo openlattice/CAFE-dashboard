@@ -38,6 +38,23 @@ summarised_table <- function(id){
                              ))
 }
 
+maq_table <- function(id){
+    ns <- NS(id)
+    tabPanel("MAQ",
+             fluidRow(box(
+                 width = 12,
+                 column(12, align = "center", downloadButton(ns("download_maq"), "Download"))
+             )),
+             fluidRow(
+                 box(
+                     width = 12,
+                     solidHeader = TRUE,
+                     title = "MAQs data",
+                     dataTableOutput(outputId = ns("maq"))
+                 )
+             ))
+}
+
 chronicle_table <- function(id){
     ns <- NS(id)
     tabPanel("Chronicle",
@@ -61,27 +78,25 @@ tables <-
     function(input,
              output,
              session,
-             activitydata,
-             summarydata,
-             chronicledata) {
+             rawdata) {
         
         output$preprocessed <- renderDataTable({
-            activitydata %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
+            rawdata$tud$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
+        },
+        options = list(scrollX = TRUE))
+        
+        output$maq <- renderDataTable({
+            rawdata$maq$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
         },
         options = list(scrollX = TRUE))
         
         output$summarised <- renderDataTable({
-            summarydata %>% filter(table_access == TRUE)
-        },
-        options = list(scrollX = TRUE))
-        
-        output$chronicle <- renderDataTable({
-            chronicledata$preprocessed %>% filter(table_access == TRUE)
+            rawdata$tud$summarised %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
         },
         options = list(scrollX = TRUE))
         
         output$chronicle_raw <- renderDataTable({
-            chronicledata$raw %>% filter(table_access == TRUE)
+            rawdata$chronicle$raw %>% filter(table_access == TRUE) %>% select(-c("pid"))
         },
         options = list(scrollX = TRUE))
         
@@ -89,7 +104,18 @@ tables <-
             filename = "CAFE_TUD_preprocessed.csv",
             content = function(file) {
                 write.csv(
-                    activitydata %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
+                    rawdata$tud$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
+                    file,
+                    row.names = FALSE
+                )
+            }
+        )
+        
+        output$download_maq <- downloadHandler(
+            filename = "CAFE_MAQ.csv",
+            content = function(file) {
+                write.csv(
+                    rawdata$maq$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
                     file,
                     row.names = FALSE
                 )
@@ -100,7 +126,7 @@ tables <-
             filename = "CAFE_TUD_summarised.csv",
             content = function(file) {
                 write.csv(
-                    summarydata %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
+                    rawdata$tud$summarised %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
                     file,
                     row.names = FALSE
                 )
@@ -111,7 +137,7 @@ tables <-
             filename = "CAFE_chronicle.csv",
             content = function(file) {
                 write.csv(
-                    chronicledata$preprocessed %>% filter(table_access == TRUE) %>% select(-c("study", "pid")),
+                    rawdata$chronicle$raw %>% filter(table_access == TRUE) %>% select(-c("pid")),
                     file,
                     row.names = FALSE
                 )

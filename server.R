@@ -4,6 +4,7 @@ shinyServer(function(input, output, session) {
     # loading data and observing column names #
     ###########################################
     
+    hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=tables]")
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
@@ -13,67 +14,16 @@ shinyServer(function(input, output, session) {
     rawdata <-
         eventReactive(input$login, {
             print("reading...")
-            rawdata <- get_data(input$jwt, cache = TRUE, auth = FALSE)
-            rawdata
+            get_data(input$jwt, cache = TRUE, auth = FALSE)
         }, ignoreNULL = FALSE)
-    
-    activitydata <- reactive({
-        print("processing TUD...")
-        process_activities(rawdata())
-    })
-    
-    maqdata <- reactive({
-        print("processing MAQ...")
-        process_maq(rawdata())
-    })
-    
-    summarydata <- reactive({
-        print("summarising...")
-        summarise_data(activitydata())
-    })
     
     observe({
         if (rawdata()$auth) {
+            shinyjs::show(selector = "#navbar li a[data-value=participants]")
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
             shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
-        }
-    })
-    
-    activity_coltypes <- reactive({
-        if (rawdata()$auth) {
-            list(
-                numeric = activitydata() %>% select(which(sapply(
-                    ., is.numeric
-                ))) %>% names,
-                factorial = activitydata() %>% select(which(sapply(
-                    ., is.factor
-                ))) %>% names,
-                boolean = activitydata() %>% select(which(sapply(
-                    ., is.logical
-                ))) %>% names
-            )
-        } else {
-            list()
-        }
-    })
-    
-    summary_coltypes <- reactive({
-        if (rawdata()$auth) {
-            list(
-                numeric = summarydata() %>% select(which(sapply(
-                    ., is.numeric
-                ))) %>% names,
-                factorial = summarydata() %>% select(which(sapply(
-                    ., is.factor
-                ))) %>% names,
-                boolean = summarydata() %>% select(which(sapply(
-                    ., is.logical
-                ))) %>% names
-            )
-        } else {
-            list()
         }
     })
     
@@ -107,7 +57,7 @@ shinyServer(function(input, output, session) {
     
     output$A_hours_by_activity <-
         renderPlot({
-            plot_hours_by_activity(activitydata())
+            plot_hours_by_activity(rawdata()$tud$processed)
         })
     
     output$A_hours_by_activity_download <-
@@ -116,7 +66,7 @@ shinyServer(function(input, output, session) {
             content = function(file) {
                 ggsave(
                     file,
-                    plot_hours_by_activity(activitydata()),
+                    plot_hours_by_activity(rawdata()$tud$processed),
                     width = 8,
                     height = 5
                 )
@@ -125,36 +75,28 @@ shinyServer(function(input, output, session) {
     
     output$emptyplot <-
         renderPlot({
-            data <- rawdata()
+            justtmp <- rawdata()
             empty_plot()
         })
     
-    callModule(activity_plots,
+    callModule(activity_plots_server,
                "activity",
-               activitydata(),
-               activity_coltypes())
+               rawdata())
+    callModule(venn_server, "participants", rawdata())
     callModule(summary_plots,
                "summary",
-               summarydata(),
-               summary_coltypes())
+               rawdata())
     callModule(tables,
                "tables",
-               activitydata(),
-               summarydata(),
-               rawdata()$chronicle)
-    callModule(sbp_server, "sbp", summarydata())
-    callModule(qa_server, "qa", summarydata())
+               rawdata())
+    callModule(sbp_server, "sbp", rawdata())
+    callModule(qa_server, "qa", rawdata())
     callModule(tud_maq_base_server,
                "tud_maq",
-               summarydata(),
-               maqdata(),
-               summary_coltypes())
+               rawdata())
     callModule(
         chronicle_tud_server,
         "chrontud",
-        summarydata(),
-        rawdata()$chronicle$processed,
-        summary_coltypes()
-    )
+        rawdata())
     
 })

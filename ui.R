@@ -26,15 +26,20 @@ tagList(
         ),
         home,
         navbarMenu(
+           "participants",
+           venn_ui("participants")
+        ),
+        navbarMenu(
             "tables",
             preprocessed_table("tables"),
             summarised_table("tables"),
-            chronicle_table("tables")
+            chronicle_table("tables"),
+            maq_table("tables")
         ),
         navbarMenu(
             "plots",
-            activity_barcharts("activity"),
-            preprocessed_barcharts("activity"),
+            activity_barcharts_ui("activity"),
+            preprocessed_barcharts_ui("activity"),
             summarised_histograms("summary"),
             summarised_crossplots("summary"),
             sbp_ui("sbp"),
