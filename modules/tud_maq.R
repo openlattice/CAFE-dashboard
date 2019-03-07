@@ -11,11 +11,8 @@ tud_maq_ui <- function(id) {
                  box(
                      width = 12,
                      title = "Select TUD columns",
-                     selectInput(
-                         inputId = ns('tud_maq_column_T'),
-                         choices = c('test'),
-                         label = 'Column'
-                     )
+                     uiOutput(ns("tud_cols"))
+                     
                  ),
                  box(
                      width = 12,
@@ -50,6 +47,16 @@ tud_maq_base_server <-
              rawdata) {
         ns <- session$ns
         
+        output$tud_cols <- renderUI(selectInput(
+            inputId = ns('tud_maq_column_T'),
+            choices = c(
+                rawdata$tud$summarised_coltypes$numeric,
+                rawdata$tud$summarised_coltypes$factorial,
+                rawdata$tud$summarised_coltypes$boolean
+            ),
+            label = 'Column'
+        ))
+        
         output$plot_maq_tud <-
             renderPlot({
                 plot_maq(rawdata$tud$summarised,
@@ -58,17 +65,6 @@ tud_maq_base_server <-
                          input$tud_maq_column_M)
             })
         
-        observe({
-            updateSelectInput(
-                session,
-                "tud_maq_column_T",
-                choices = c(
-                    rawdata$tud$summarised_coltypes$numeric,
-                    rawdata$tud$summarised_coltypes$factorial[rawdata$tud$summarised_coltypes$factorial != "nc.SubjectIdentification"],
-                    rawdata$tud$summarised_coltypes$boolean
-                )
-            )
-        })
-        
+
     }
 
