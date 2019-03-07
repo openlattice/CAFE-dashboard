@@ -1,19 +1,15 @@
-## UI COMPONENTS
+###################
+## UI COMPONENTS ##
+###################
 
 summarised_histograms <- function(id) {
-    ns <- NS("id")
+    ns <- NS(id)
     tabPanel("TUD histograms",
              fluidRow(column(
                  width = 4,
-                 box(
-                     width = 12,
+                 box(width = 12,
                      title = "Select column",
-                     radioButtons(
-                         inputId = 'hist_column',
-                         choices = c('test'),
-                         label = 'Column'
-                     )
-                 )
+                     uiOutput(ns("hist_column")))
              ),
              column(
                  width = 8,
@@ -37,7 +33,7 @@ summarised_histograms <- function(id) {
 }
 
 summarised_crossplots <- function(id) {
-    ns <- NS("id")
+    ns <- NS(id)
     tabPanel("TUD crossplots",
              fluidRow(column(
                  width = 4,
@@ -45,9 +41,7 @@ summarised_crossplots <- function(id) {
                      width = 12,
                      solidHeader = TRUE,
                      title = "Select column",
-                     checkboxGroupInput("cross_columns",
-                                        "Choose columns:",
-                                        choices = c("test"))
+                     uiOutput(ns("cross_columns"))
                  )
              ),
              column(
@@ -68,18 +62,28 @@ summarised_crossplots <- function(id) {
     
 }
 
-## SERVER COMPONENTS
+#######################
+## SERVER COMPONENTS ##
+#######################
 
 summary_plots <-
     function(input,
              output,
              session,
-             summarydata,
-             summary_coltypes
-             ) {
+             rawdata) {
+        ns <- session$ns
+
+        output$hist_column <- renderUI(
+            radioButtons(
+                inputId = ns('histcol'),
+                choices = rawdata$tud$summarised_coltypes$numeric[rawdata$tud$summarised_coltypes$numeric != "nc.SubjectIdentification"],
+                label = 'Column'
+            )
+        )
+        
         output$histogram <-
             renderPlot({
-                plot_summary_histogram(summarydata, input$hist_column)
+                plot_summary_histogram(rawdata$tud$summarised, input$histcol)
             })
         
         output$histogram_download <-
@@ -88,16 +92,26 @@ summary_plots <-
                 content = function(file) {
                     ggsave(
                         file,
-                        plot_summary_histogram(summarydata, input$hist_column),
+                        plot_summary_histogram(rawdata$tud$summarised, input$histcol),
                         width = 8,
                         height = 5
                     )
                 }
             )
         
+        output$cross_columns <- renderUI(checkboxGroupInput(
+            ns("crosscol"),
+            "Choose columns:",
+            choices = c(
+                rawdata$tud$summarised_coltypes$numeric,
+                rawdata$tud$summarised_coltypes$factorial[rawdata$tud$summarised_coltypes$factorial != "nc.SubjectIdentification"],
+                rawdata$tud$summarised_coltypes$boolean
+            )
+        ))
+
         output$crossplot <-
             renderPlot({
-                plot_crossplot(summarydata(), input$cross_columns)
+                plot_crossplot(rawdata$tud$summarised, input$crosscol)
             })
         
         output$crossplot_download <-
@@ -106,23 +120,11 @@ summary_plots <-
                 content = function(file) {
                     ggsave(
                         file,
-                        plot_crossplot(summarydata, input$cross_columns),
+                        plot_crossplot(rawdata$tud$summarised, input$crosscol),
                         width = 8,
                         height = 5
                     )
                 }
             )
-        observe({
-            updateRadioButtons(session, "hist_column", choices = summary_coltypes$numeric[summary_coltypes$numeric != "nc.SubjectIdentification"])
-            updateCheckboxGroupInput(
-                session,
-                "cross_columns",
-                choices = c(
-                    summary_coltypes$numeric,
-                    summary_coltypes$factorial[summary_coltypes$factorial != "nc.SubjectIdentification"],
-                    summary_coltypes$boolean
-                )
-            )
-        })
         
     }

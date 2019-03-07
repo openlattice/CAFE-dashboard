@@ -19,6 +19,35 @@ get_data <- function(jwt, cache = FALSE, auth=FALSE) {
     } else {
         rawdata['auth'] <- TRUE
     }
+
+    rawdata$tud[['processed']] = process_activities(rawdata)
+    rawdata$tud[['summarised']] = summarise_data(rawdata$tud[['processed']])
+    rawdata$maq[['processed']] = process_maq(rawdata)
+ 
+    rawdata$tud[['processed_coltypes']] <- list(
+                numeric = rawdata$tud$processed %>% select(which(sapply(
+                    ., is.numeric
+                ))) %>% names,
+                factorial = rawdata$tud$processed %>% select(which(sapply(
+                    ., is.factor
+                ))) %>% names,
+                boolean = rawdata$tud$processed %>% select(which(sapply(
+                    ., is.logical
+                ))) %>% names
+            )
+
+    rawdata$tud[['summarised_coltypes']] <- list(
+        numeric = rawdata$tud$summarised %>% select(which(sapply(
+                    ., is.numeric
+                ))) %>% names,
+                factorial = rawdata$tud$summarised %>% select(which(sapply(
+                    ., is.factor
+                ))) %>% names,
+                boolean = rawdata$tud$summarised %>% select(which(sapply(
+                    ., is.logical
+                ))) %>% names
+            )
+
     
     return(rawdata)
     
@@ -134,15 +163,18 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE){
         newdata$tud$nodes[[node]] <- nodetable
     }
         
-    # TUD
+    # MAQ
     for (edge in names(data$maq$edges)) {
         newdata$maq$edges[[edge]] <- as.tibble(data$maq$edges[[edge]])
     }
     
     for (node in names(data$maq$nodes)) {
         maqnodetable <- as.tibble(data$maq$nodes[[node]])
-        #maqnodetable <- maqnodetable %>% mutate(table_access = study %in% entitysets)
-        maqnodetable <- maqnodetable %>% mutate(table_access = TRUE)
+        if (auth==FALSE){
+            maqnodetable <- maqnodetable %>% mutate(table_access = study %in% entitysets)
+        } else {
+            maqnodetable <- maqnodetable %>% mutate(table_access = TRUE)
+        }
         newdata$maq$nodes[[node]] <- maqnodetable
     }
     
@@ -160,7 +192,7 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE){
     } else {
         proctable <- proctable %>% mutate(table_access = TRUE)
     }
-        newdata$chronicle$raw = rawtable
+    newdata$chronicle$raw = rawtable
     newdata$chronicle$processed = proctable
 
     return(newdata)
