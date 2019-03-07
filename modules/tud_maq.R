@@ -1,3 +1,7 @@
+###################
+## UI COMPONENTS ##
+###################
+
 tud_maq_ui <- function(id) {
     ns <- NS(id)
     tabPanel("TUD - MAQ",
@@ -35,17 +39,21 @@ tud_maq_ui <- function(id) {
     
 }
 
+#######################
+## SERVER COMPONENTS ##
+#######################
+
 tud_maq_base_server <-
     function(input,
              output,
              session,
-             summarydata,
-             maqdata,
-             summary_coltypes) {
+             rawdata) {
+        ns <- session$ns
+        
         output$plot_maq_tud <-
             renderPlot({
-                plot_maq(summarydata,
-                         maqdata,
+                plot_maq(rawdata$tud$summarised,
+                         rawdata$maq$processed,
                          input$tud_maq_column_T,
                          input$tud_maq_column_M)
             })
@@ -55,26 +63,12 @@ tud_maq_base_server <-
                 session,
                 "tud_maq_column_T",
                 choices = c(
-                    summary_coltypes$numeric,
-                    summary_coltypes$factorial[summary_coltypes$factorial != "nc.SubjectIdentification"],
-                    summary_coltypes$boolean
+                    rawdata$tud$summarised_coltypes$numeric,
+                    rawdata$tud$summarised_coltypes$factorial[rawdata$tud$summarised_coltypes$factorial != "nc.SubjectIdentification"],
+                    rawdata$tud$summarised_coltypes$boolean
                 )
             )
         })
         
     }
 
-
-
-# FUNCTIONS
-
-plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
-    togdata <- summarydata %>% inner_join(maqdata)
-    plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
-        theme_light() +
-        geom_bar(stat = "summary",
-                 fun.y = "mean",
-                 fill = cols[5]) +
-        coord_flip()
-    return(plt)
-}

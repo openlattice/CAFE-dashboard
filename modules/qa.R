@@ -1,3 +1,7 @@
+###################
+## UI COMPONENTS ##
+###################
+
 qa_ui <- function(id) {
     ns <- NS(id)
     tabPanel(title = "Quality Assessment",
@@ -16,20 +20,15 @@ qa_ui <- function(id) {
 }
 
 
-qa_server <- function(input, output, session, summarydata) {
+#######################
+## SERVER COMPONENTS ##
+#######################
+
+qa_server <- function(input, output, session, rawdata) {
+    ns <- session$ns
     output$qc_base <-
         renderPlot({
-            qa_plot(summarydata)
+            qa_plot(rawdata$tud$summarised)
         })
 }
 
-# FUNCTIONS
-
-qa_plot <- function(summarydata) {
-    plt <- ggplot(summarydata, aes(x = site, y = progress)) +
-        theme_light() +
-        geom_bar(stat = "summary",
-                 fun.y = "mean",
-                 fill = cols[4])
-    return(plt)
-}

@@ -1,5 +1,6 @@
 library(shinydashboard)
 library(shinyWidgets)
+library(VennDiagram)
 library(openlattice)
 library(ggcorrplot)
 library(tidyverse)
@@ -41,6 +42,7 @@ source("modules/tables.R")
 source("modules/activity_plots.R")
 source("modules/summary_plots.R")
 source("modules/chrontud.R")
+source("modules/venn.R")
 
 source("uicomponents/tabs.R")
 
