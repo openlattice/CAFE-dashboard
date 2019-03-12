@@ -102,30 +102,29 @@ home <- tabPanel(
             #     max = 20,
             #     value = c(0, 20)
             # ),
-            # h4("Progress"),
-         #    tags$b("NOT WORKING YET"),
-         #    checkboxInput(
-         #        "subset_progress_on",
-         #        label = "Subset progress"
-         #    ),
-         #    sliderInput(
-         #        "subset_progress",
-         #        label = "",
-         #        min = 0,
-         #        max = 100,
-         #        value = c(0, 100)
-         #    ),
-         #    h4("Site"),
-         #    checkboxInput(
-         #        "subset_sites_on",
-         #        label = "Subset site"
-         #    ),
-         #    checkboxGroupInput(
-         #        "subset_sites",
-         #        label = h5("Site"),
-         #        choices = c("UM", "WIAMP", "UWCRT", "PM", "GU"),
-         #        selected  = c("UM", "WIAMP", "UWCRT", "PM", "GU")
-         #    ),
+         h4("Progress"),
+            checkboxInput(
+                "subset_progress_on",
+                label = "Subset average progress per block"
+            ),
+            sliderInput(
+                "subset_progress",
+                label = "",
+                min = 0,
+                max = 100,
+                value = c(0, 100)
+            ),
+            h4("Site"),
+            checkboxInput(
+                "subset_sites_on",
+                label = "Subset site"
+            ),
+            checkboxGroupInput(
+                "subset_sites",
+                label = h5("Site"),
+                choices = c("UM", "WIAMP", "UWCRT", "PM", "GU"),
+                selected  = c("UM", "WIAMP", "UWCRT", "PM", "GU")
+            ),
             actionButton(inputId = "subset", "SUBSET")
          )
                      ))
