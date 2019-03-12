@@ -42,6 +42,7 @@ tagList(
             preprocessed_barcharts_ui("activity"),
             summarised_histograms("summary"),
             summarised_crossplots("summary"),
+            summarised_site("summary"),
             sbp_ui("sbp"),
             chronicle_tud("chrontud")
         ),
