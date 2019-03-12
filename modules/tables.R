@@ -81,22 +81,22 @@ tables <-
              rawdata) {
         
         output$preprocessed <- renderDataTable({
-            rawdata$tud$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
+            rawdata$tud$processed %>% filter(table_access == TRUE) #%>% select(-c("nc.SubjectIdentification"))
         },
         options = list(scrollX = TRUE))
         
         output$maq <- renderDataTable({
-            rawdata$maq$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
+            rawdata$maq$processed %>% filter(table_access == TRUE) #%>% select(-c("nc.SubjectIdentification"))
         },
         options = list(scrollX = TRUE))
         
         output$summarised <- renderDataTable({
-            rawdata$tud$summarised %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
+            rawdata$tud$summarised %>% filter(table_access == TRUE)# %>% select(-c("nc.SubjectIdentification"))
         },
         options = list(scrollX = TRUE))
         
         output$chronicle_raw <- renderDataTable({
-            rawdata$chronicle$raw %>% filter(table_access == TRUE) %>% select(-c("pid"))
+            rawdata$chronicle$raw %>% filter(table_access == TRUE) #%>% select(-c("pid"))
         },
         options = list(scrollX = TRUE))
         
@@ -104,7 +104,7 @@ tables <-
             filename = "CAFE_TUD_preprocessed.csv",
             content = function(file) {
                 write.csv(
-                    rawdata$tud$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
+                    rawdata$tud$processed %>% filter(table_access == TRUE), #%>% select(-c("nc.SubjectIdentification")),
                     file,
                     row.names = FALSE
                 )
@@ -115,7 +115,7 @@ tables <-
             filename = "CAFE_MAQ.csv",
             content = function(file) {
                 write.csv(
-                    rawdata$maq$processed %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
+                    rawdata$maq$processed %>% filter(table_access == TRUE), #%>% select(-c("nc.SubjectIdentification")),
                     file,
                     row.names = FALSE
                 )
@@ -126,7 +126,7 @@ tables <-
             filename = "CAFE_TUD_summarised.csv",
             content = function(file) {
                 write.csv(
-                    rawdata$tud$summarised %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
+                    rawdata$tud$summarised %>% filter(table_access == TRUE), #%>% select(-c("nc.SubjectIdentification")),
                     file,
                     row.names = FALSE
                 )
@@ -137,7 +137,7 @@ tables <-
             filename = "CAFE_chronicle.csv",
             content = function(file) {
                 write.csv(
-                    rawdata$chronicle$raw %>% filter(table_access == TRUE) %>% select(-c("pid")),
+                    rawdata$chronicle$raw %>% filter(table_access == TRUE), #%>% select(-c("pid")),
                     file,
                     row.names = FALSE
                 )
