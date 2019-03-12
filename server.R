@@ -53,7 +53,7 @@ shinyServer(function(input, output, session) {
         rawdata$tud$processed = newdat$tud
         rawdata$tud$summarised <- newdat$summary
         rawdata$maq$processed <- rawdata$maq
-       }, ignoreNULL=FALSE)
+       })
 
     observe({
         if (rawdata$auth) {
