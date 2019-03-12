@@ -1,5 +1,4 @@
 shinyServer(function(input, output, session) {
-    
     ###########################################
     # loading data and observing column names #
     ###########################################
@@ -11,14 +10,70 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=TUD-MAQ]")
     
     # load data
-    rawdata <-
-        eventReactive(input$login, {
-            print("reading...")
-            get_data(input$jwt, cache = TRUE, auth = FALSE)
-        }, ignoreNULL = FALSE)
+    rawdata <- reactiveValues(
+        tud = list(
+                nodes = list(),
+                edges = list()
+            ),
+            chronicle = list(
+                raw = tibble(),
+                processed = tibble()
+            ),
+            auth = FALSE,
+            n_act = 0,
+            n_child = 0
+        ) 
     
+    observeEvent(input$login, {
+        newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE)
+        rawdata$tud <- newdat$tud
+        rawdata$chronicle <- newdat$chronicle
+        rawdata$maq <- newdat$maq
+        rawdata$n_child <- newdat$n_child
+        rawdata$n_act <- newdat$n_act
+        rawdata$auth = newdat$auth
+    }, ignoreNULL=FALSE)
+    
+    observeEvent(input$subset, {
+    print("subsetting...")
+        newdat <- subset_data(
+            rawdata = rawdata,
+            hourrange = c(
+                ifelse(input$subset_hours_on, input$subset_hours[1], FALSE),
+                ifelse(input$subset_hours_on, input$subset_hours[2], FALSE)
+            ))
+        rawdata$tud$processed = newdat$tud
+        rawdata$chronicle <- rawdata$chronicle
+        rawdata$maq <- rawdata$maq
+        rawdata$n_child <- rawdata$n_child
+        rawdata$n_act <- rawdata$n_act
+        rawdata$auth = rawdata$auth
+
+       }, ignoreNULL=FALSE)
+    # rawdata <-
+    #     eventReactive(c(input$login, input$subset), {
+    #         print("reading...")
+    #         
+    #     }, ignoreNULL = FALSE)
+    
+    # rawdata <- eventReactive(input$subset, {
+    #     rd <- rawdata
+    #     return(rawdata)
+    #     
+    # },ignoreNULL=FALSE
+    #     
+    # )
+    
+
+    # rawdata <- eventReactive(input$subset, {
+    #     if (rawdata$auth){
+    #         rawdata
+    # 
+    #     }
+    # }, ignoreNULL = FALSE)
+
     observe({
-        if (rawdata()$auth) {
+        if (rawdata$auth) {
             shinyjs::show(selector = "#navbar li a[data-value=participants]")
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
@@ -29,7 +84,7 @@ shinyServer(function(input, output, session) {
     
     # authenticated
     output$auth <- reactive({
-        rawdata()$auth
+        rawdata$auth
     })
     
     #############################
@@ -37,16 +92,16 @@ shinyServer(function(input, output, session) {
     #############################
     
     output$activityCounterBox <- renderInfoBox({
-        valueBox(rawdata()$n_act,
+        valueBox(rawdata$n_act,
                  "activity blocks",
                  icon = icon("heartbeat"))
     })
     output$kidsCounterBox <- renderInfoBox({
-        valueBox(rawdata()$n_child, "children", icon = icon("child"))
+        valueBox(rawdata$n_child, "children", icon = icon("child"))
     })
     
     output$datasetCounterBox <- renderInfoBox({
-        valueBox(length(rawdata()$nodes),
+        valueBox(length(rawdata$nodes),
                  "entities",
                  icon = icon("pie-chart"))
     })
@@ -57,7 +112,7 @@ shinyServer(function(input, output, session) {
     
     output$A_hours_by_activity <-
         renderPlot({
-            plot_hours_by_activity(rawdata()$tud$processed)
+            plot_hours_by_activity(rawdata$tud$processed)
         })
     
     output$A_hours_by_activity_download <-
@@ -66,37 +121,41 @@ shinyServer(function(input, output, session) {
             content = function(file) {
                 ggsave(
                     file,
-                    plot_hours_by_activity(rawdata()$tud$processed),
+                    plot_hours_by_activity(rawdata$tud$processed),
                     width = 8,
                     height = 5
                 )
             }
         )
     
+    output$A_hours_total <-
+        renderPlot({
+            plot_total_hour_distribution(rawdata$tud$processed)
+        })
+    
     output$emptyplot <-
         renderPlot({
-            justtmp <- rawdata()
+            justtmp <- rawdata
             empty_plot()
         })
     
     callModule(activity_plots_server,
                "activity",
-               rawdata())
-    callModule(venn_server, "participants", rawdata())
+               rawdata)
+    callModule(venn_server, "participants", rawdata)
     callModule(summary_plots,
                "summary",
-               rawdata())
+               rawdata)
     callModule(tables,
                "tables",
-               rawdata())
-    callModule(sbp_server, "sbp", rawdata())
-    callModule(qa_server, "qa", rawdata())
+               rawdata)
+    callModule(sbp_server, "sbp", rawdata)
+    callModule(qa_server, "qa", rawdata)
     callModule(tud_maq_base_server,
                "tud_maq",
-               rawdata())
-    callModule(
-        chronicle_tud_server,
-        "chrontud",
-        rawdata())
+               rawdata)
+    callModule(chronicle_tud_server,
+               "chrontud",
+               rawdata)
     
 })
