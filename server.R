@@ -8,6 +8,7 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
     hide(selector = "#navbar li a[data-value=TUD-MAQ]")
+    hide(id="waitforauth")
     
     # load data
     rawdata <- reactiveValues(
@@ -15,6 +16,10 @@ shinyServer(function(input, output, session) {
                 nodes = list(),
                 edges = list()
             ),
+        maq = list(
+            nodes = list(),
+            edges = list()
+        ),
             chronicle = list(
                 raw = tibble(),
                 processed = tibble()
@@ -22,7 +27,7 @@ shinyServer(function(input, output, session) {
             auth = FALSE,
             n_act = 0,
             n_child = 0
-        ) 
+        )
     
     observeEvent(input$login, {
         newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE)
@@ -45,32 +50,7 @@ shinyServer(function(input, output, session) {
         rawdata$tud$processed = newdat$tud
         rawdata$chronicle <- rawdata$chronicle
         rawdata$maq <- rawdata$maq
-        rawdata$n_child <- rawdata$n_child
-        rawdata$n_act <- rawdata$n_act
-        rawdata$auth = rawdata$auth
-
        }, ignoreNULL=FALSE)
-    # rawdata <-
-    #     eventReactive(c(input$login, input$subset), {
-    #         print("reading...")
-    #         
-    #     }, ignoreNULL = FALSE)
-    
-    # rawdata <- eventReactive(input$subset, {
-    #     rd <- rawdata
-    #     return(rawdata)
-    #     
-    # },ignoreNULL=FALSE
-    #     
-    # )
-    
-
-    # rawdata <- eventReactive(input$subset, {
-    #     if (rawdata$auth){
-    #         rawdata
-    # 
-    #     }
-    # }, ignoreNULL = FALSE)
 
     observe({
         if (rawdata$auth) {
@@ -79,14 +59,10 @@ shinyServer(function(input, output, session) {
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
             shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
+            shinyjs::show(id = "waitforauth")
         }
     })
-    
-    # authenticated
-    output$auth <- reactive({
-        rawdata$auth
-    })
-    
+        
     #############################
     # loading information boxes #
     #############################
@@ -132,6 +108,7 @@ shinyServer(function(input, output, session) {
         renderPlot({
             plot_total_hour_distribution(rawdata$tud$processed)
         })
+    
     
     output$emptyplot <-
         renderPlot({
