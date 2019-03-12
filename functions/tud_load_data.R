@@ -1,25 +1,49 @@
 subset_data <-
     function(rawdata,
-             hourrange = NULL,
-             agerange = NULL,
-             progressrange = NULL,
-             sites = NULL) {
+             hourbool,
+             hourrange,
+             sitesbool,
+             sitesrange,
+             progressbool,
+             progressrange
+             ) {
+        
         output = list(tud = rawdata$tud$preprocessed,
                       maq = rawdata$maq$preprocessed)
-        if (sum(hourrange) != FALSE) {
-            subset <- output$tud %>%
-                group_by(child_id, day_id) %>%
-                summarise(duration = sum(duration) / 60) %>%
-                filter(duration > hourrange[1] &
-                           duration < hourrange[2])
-            childreninrange <- subset %>% select("child_id")
-            daysinrange <- subset %>% select("day_id")
+        
+        # subset hours
+        if (hourbool) {
+            print("hours")
+            subset <- rawdata$tud$summarised %>% 
+                filter(total_time > hourrange[1] & total_time < hourrange[2]) %>% select("nc.SubjectIdentification", "day_id")
             output$tud <- output$tud %>%
-                filter(child_id %in% as_vector(childreninrange)) %>%
-                filter(day_id %in% as_vector(daysinrange))
-            output$maq <- output$tud %>%
-                filter(nc.SubjectIdentification %in% as_vector(childreninrange))
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification) %>%
+                filter(day_id %in% subset$day_id)
+            output$maq <- output$maq %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
         }
+        print(dim(output$tud))
+        # subset sites
+        if (sitesbool) {
+            print("sites")
+            sites = paste0(sitesrange, collapse="|")
+            output$tud <- output$tud %>% filter(str_detect(site, sites))
+            output$maq <- output$maq %>% filter(str_detect(study, sites))
+        }
+        print(dim(output$tud))
+        
+        if (progressbool) {
+            print("progress")
+            subset <- rawdata$tud$summarised %>% 
+                filter(progress > progressrange[1] & progress < progressrange[2]) %>% select("nc.SubjectIdentification", "day_id")
+            output$tud <- output$tud %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification) %>%
+                filter(day_id %in% subset$day_id)
+            output$maq <- output$maq %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+        }
+        
+        output$summary = summarise_data(output$tud)
         
         return(output)
     }
@@ -68,7 +92,6 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE) {
         factorial = rawdata$tud$summarised %>% select(which(sapply(., is.factor))) %>% names,
         boolean = rawdata$tud$summarised %>% select(which(sapply(., is.logical))) %>% names
     )
-    
     
     return(rawdata)
     
