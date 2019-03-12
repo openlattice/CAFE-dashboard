@@ -1,3 +1,20 @@
+# subset_data <- function(rawdata, hourrange = NULL, agerange = NULL, progressrange = NULL, sites = NULL) {
+#     if (!is.null(hourrange)){
+#         dur_by_session <- rawdata$tud$preprocessed %>%
+#             group_by(day_id) %>%
+#             summarise(duration = sum(duration) / 60) %>%
+#             filter(duration > hourrange[1] & duration < hourrange[2]) %>%
+#             select("day_id")
+#         rawdata[['processed']] <- rawdata$tud$preprocessed %>% filter(day_id %in% as_vector(dur_by_session))
+#     }
+# # if (!is.null(agerange)){
+# # 
+# # }
+# 
+#     return(rawdata)
+# }
+
+
 get_data <- function(jwt, cache = FALSE, auth=FALSE) {
     print("Getting authenticated !")
     
@@ -20,8 +37,10 @@ get_data <- function(jwt, cache = FALSE, auth=FALSE) {
         rawdata['auth'] <- TRUE
     }
 
+    rawdata$tud[['preprocessed']] = process_activities(rawdata)
     rawdata$tud[['processed']] = process_activities(rawdata)
     rawdata$tud[['summarised']] = summarise_data(rawdata$tud[['processed']])
+    rawdata$maq[['preprocessed']] = process_maq(rawdata)
     rawdata$maq[['processed']] = process_maq(rawdata)
  
     rawdata$tud[['processed_coltypes']] <- list(
@@ -66,35 +85,35 @@ load_data <-
     function(apis) {
         print("Getting the data !")
         
-        # TUD
-        print("-- TUD: Getting nodes.")
-        datasets <- TUD_entities %>% map(get_node_table, apis)
-        names(datasets) <- TUD_entities
-        
-        print("-- TUD: Getting edges.")
-        edgesdata <- TUD_associations %>% map(get_edge_table, datasets, apis)
-        names(edgesdata) <-
-            TUD_associations %>% map_chr(function(x) {
-                return (paste0(x['src'], "_", x['dst']))
-            })
-        
+        # # TUD
+        # print("-- TUD: Getting nodes.")
+        # datasets <- TUD_entities %>% map(get_node_table, apis)
+        # names(datasets) <- TUD_entities
+        # 
+        # print("-- TUD: Getting edges.")
+        # edgesdata <- TUD_associations %>% map(get_edge_table, datasets, apis)
+        # names(edgesdata) <-
+        #     TUD_associations %>% map_chr(function(x) {
+        #         return (paste0(x['src'], "_", x['dst']))
+        #     })
+        # 
         # MAQ
         print("-- MAQ: Getting nodes.")
         maqdatasets <- MAQ_entities %>% map(get_node_table, apis)
         names(maqdatasets) <- MAQ_entities
         
         print("-- MAQ: Getting edges.")
-        maqedgesdata <- MAQ_associations %>% map(get_edge_table, datasets, apis)
+        maqedgesdata <- MAQ_associations %>% map(get_edge_table, maqdatasets, apis)
         names(maqedgesdata) <-
             MAQ_associations %>% map_chr(function(x) {
                 return (paste0(x['src'], "_", x['dst']))
             })
 
         outdata <- list(
-            tud = list(
-                nodes = datasets,
-                edges = edgesdata
-            ),
+            # tud = list(
+            #     nodes = datasets,
+            #     edges = edgesdata
+            # ),
             chronicle = list(
                 raw = tibble(),
                 processed = tibble()

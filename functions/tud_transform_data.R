@@ -39,13 +39,6 @@ process_activities <- function(rawdata) {
         mutate_at(factcols$nms, as.factor) %>%
         mutate_at(boolcols$nms, as.logical)
 
-    dur_by_session <- activity %>%
-        group_by(day_id) %>%
-        summarise(duration = sum(duration) / 60) %>%
-        filter(duration > 18 & duration < 26) %>%
-        select("day_id")
-    activity <- activity %>% filter(day_id %in% as_vector(dur_by_session))
-    
     return(activity)
 }
 
