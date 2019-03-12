@@ -54,9 +54,9 @@ plot_hours_by_activity <- function(activitydata, grouper = NULL) {
 plot_total_hour_distribution <- function(activitydata) {
     if ('day_id' %in% names(activitydata)) {
         dur_by_child <- activitydata %>%
-            group_by(day_id) %>%
+            group_by(child_id, day_id) %>%
             summarise(duration = sum(duration) / 60)
-        
+
         plot <- ggplot(dur_by_child, aes(x = duration)) +
             geom_histogram(binwidth = 2, fill = cols[1]) +
             theme_light() +
