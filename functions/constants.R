@@ -18,15 +18,16 @@ MAQ_entities <- c(
     
     # SUBJECTS
     
-    "Subjects",
+    "Children",
     "HouseHolds",
     "ChildCare_Weekdays",
     "ChildCare_Weekends",
     "Household_Communication",
     "Respondents",
-    "Subject_Details",
+    "ChildrenDetails",
+    "ChildrenDetailsHealth",
     "Caregiver_Communication",
-    
+
     # RESPONDENTS
     
     "RespondentDetails", 
@@ -41,28 +42,38 @@ MAQ_associations <- list(
     # SUBJECTS
     
     list(
-        src = "Subjects",
+        src = "Children",
         dst = "Households",
         edge = "PartOf"
     ),
     list(
-        src = "Subjects",
+        src = "Respondents",
+        dst = "Households",
+        edge = "PartOf"
+    ),
+    list(
+        src = "Children",
         dst = "ChildCare_Weekdays",
         edge = "InvolvedIn"
     ),
     list(
-        src = "Subjects",
+        src = "Children",
         dst = "Household_Communication",
         edge = "InvolvedIn"
     ),
     list(
         src = "Respondents",
-        dst = "Subjects",
+        dst = "Children",
         edge = "RelatedTo"
     ),
     list(
-        src = "Subjects",
-        dst = "Subject_Details",
+        src = "Children",
+        dst = "ChildrenDetails",
+        edge = "Has"
+    ),
+    list(
+        src = "Children",
+        dst = "ChildrenDetailsHealth",
         edge = "Has"
     ),
     list(
@@ -81,7 +92,7 @@ MAQ_associations <- list(
     list(
         src = "Respondents",
         dst = "RespondentDetails",
-        edge = "Has"
+        edge = "Reported"
     ),
     list(
         src = "Respondents",
@@ -102,6 +113,34 @@ MAQ_associations <- list(
         src = "Respondents",
         dst = "ImmigrationStatus",
         edge = "Reported"
+    ),
+    
+    # DEVICES
+    
+    list(
+        src = "Devices",
+        dst = "Respondents",
+        edge = "UsedBy"
+    ),
+    list(
+        src = "Respondents",
+        dst = "Activities",
+        edge = "EngagedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "MediaAttitudes",
+        edge = "Reported"
+    ),
+    list(
+        src = "Activities",
+        dst = "Device_Use",
+        edge = "ConcurrentTo"
+    ),
+    list(
+        src = "Respondents",
+        dst = "Device_Use",
+        edge = "InvolvedIn"
     )
     
     
