@@ -162,6 +162,20 @@ plot_tud_chron <-
         return(plt)
     }
 
+plot_by_study <- 
+    function(summarydata, var1, var2) {
+        plt <- ggplot(summarydata, aes_string(x = var1, y = var2, color='site')) +
+            geom_point() + theme_light() +
+            stat_smooth(method = "lm") +
+            scale_fill_manual(values = cols,
+                              aesthetics = "fill",
+                              na.value = nacol) +
+            scale_colour_manual(values = cols,
+                              aesthetics = "colour",
+                              na.value = nacol) + guides(color=guide_legend(override.aes=list(fill=NA)))
+        return(plt)
+    }
+
 # FUNCTIONS
 
 qa_plot <- function(summarydata) {
