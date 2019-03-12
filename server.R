@@ -43,13 +43,16 @@ shinyServer(function(input, output, session) {
     print("subsetting...")
         newdat <- subset_data(
             rawdata = rawdata,
-            hourrange = c(
-                ifelse(input$subset_hours_on, input$subset_hours[1], FALSE),
-                ifelse(input$subset_hours_on, input$subset_hours[2], FALSE)
-            ))
+            hourbool = input$subset_hours_on,
+            hourrange = input$subset_hours,
+            sitesbool = input$subset_sites_on,
+            sitesrange = input$subset_sites,
+            progressbool = input$subset_progress_on,
+            progressrange = input$subset_progress
+            )
         rawdata$tud$processed = newdat$tud
-        rawdata$chronicle <- rawdata$chronicle
-        rawdata$maq <- rawdata$maq
+        rawdata$tud$summarised <- newdat$summary
+        rawdata$maq$processed <- rawdata$maq
        }, ignoreNULL=FALSE)
 
     observe({
