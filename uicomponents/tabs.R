@@ -50,84 +50,83 @@ home <- tabPanel(
         column(width = 4, valueBoxOutput('datasetCounterBox', width = 12)),
         column(width = 4, valueBoxOutput('kidsCounterBox', width = 12))
     ),
-    conditionalPanel(condition = "output.auth==TRUE",
-                     fluidRow(
-                         column(
-                             width = 8,
-                             box(
-                             title = "Average duration of activities per child.",
-                             width = 12,
-                             solidHeader = TRUE,
-                             status = "primary",
-                             plotOutput("A_hours_by_activity")
-                             ),
-                             box(
-                                 title = "Total duration of measurements per child.",
-                                 width = 12,
-                                 solidHeader = TRUE,
-                                 status = "primary",
-                                 plotOutput("A_hours_total")
-                             )
-                         ),
-                         column(
-                             width = 4,
-                         box(
-                             title = "Subsetting the data",
-                             width = 12,
-                             solidHeader = TRUE,
-                             status = "primary",
-                             "Note that when subsetting, missing data for the condition is removed.",
-                            "For example, age is a variable present in MAQ data.  As such, when subsetting ages, children who don't have MAQ will not be included. Similarly, when subsetting the total number of hours reported in TUD, children without TUD will not be included.",
-                             h4("Total number of hours"),
-                             checkboxInput(
-                                 "subset_hours_on",
-                                 label = "Subset total number of hours"
-                             ),
-                             sliderInput(
-                                 "subset_hours", 
-                                 label="",
-                                 min = 0,
-                                 max = 48,
-                                 value = c(18, 26)
-                            ),
-                            # h4("Age"),
-                            # tags$b("NOT WORKING YET"),
-                            # checkboxInput(
-                            #     "subset_age_on",
-                            #     label = "Subset age"
-                            # ),
-                            # sliderInput(
-                            #     "subset_age",
-                            #     label = "",
-                            #     min = 0,
-                            #     max = 20,
-                            #     value = c(0, 20)
-                            # ),
-                            # h4("Progress"),
-                         #    tags$b("NOT WORKING YET"),
-                         #    checkboxInput(
-                         #        "subset_progress_on",
-                         #        label = "Subset progress"
-                         #    ),
-                         #    sliderInput(
-                         #        "subset_progress",
-                         #        label = "",
-                         #        min = 0,
-                         #        max = 100,
-                         #        value = c(0, 100)
-                         #    ),
-                         #    h4("Site"),
-                         #    checkboxInput(
-                         #        "subset_sites_on",
-                         #        label = "Subset site"
-                         #    ),
-                         #    checkboxGroupInput(
-                         #        "subset_sites",
-                         #        label = h5("Site"),
-                         #        choices = c("UM", "WIAMP", "UWCRT", "PM", "GU"),
-                         #        selected  = c("UM", "WIAMP", "UWCRT", "PM", "GU")
-                         #    ),
-                            actionButton(inputId = "subset", "SUBSET")
-                         ))
+     fluidRow(id="waitforauth",
+         column(
+             width = 8,
+             box(
+             title = "Average duration of activities per child.",
+             width = 12,
+             solidHeader = TRUE,
+             status = "primary",
+             plotOutput("A_hours_by_activity")
+             ),
+             box(
+                 title = "Total duration of measurements per child.",
+                 width = 12,
+                 solidHeader = TRUE,
+                 status = "primary",
+                 plotOutput("A_hours_total")
+             )
+         ),
+         column(
+             width = 4,
+         box(
+             title = "Subsetting the data",
+             width = 12,
+             solidHeader = TRUE,
+             status = "primary",
+             "Note that when subsetting, missing data for the condition is removed.",
+            "For example, age is a variable present in MAQ data.  As such, when subsetting ages, children who don't have MAQ will not be included. Similarly, when subsetting the total number of hours reported in TUD, children without TUD will not be included.",
+             h4("Total number of hours"),
+             checkboxInput(
+                 "subset_hours_on",
+                 label = "Subset total number of hours"
+             ),
+             sliderInput(
+                 "subset_hours", 
+                 label="",
+                 min = 0,
+                 max = 48,
+                 value = c(18, 26)
+            ),
+            # h4("Age"),
+            # tags$b("NOT WORKING YET"),
+            # checkboxInput(
+            #     "subset_age_on",
+            #     label = "Subset age"
+            # ),
+            # sliderInput(
+            #     "subset_age",
+            #     label = "",
+            #     min = 0,
+            #     max = 20,
+            #     value = c(0, 20)
+            # ),
+            # h4("Progress"),
+         #    tags$b("NOT WORKING YET"),
+         #    checkboxInput(
+         #        "subset_progress_on",
+         #        label = "Subset progress"
+         #    ),
+         #    sliderInput(
+         #        "subset_progress",
+         #        label = "",
+         #        min = 0,
+         #        max = 100,
+         #        value = c(0, 100)
+         #    ),
+         #    h4("Site"),
+         #    checkboxInput(
+         #        "subset_sites_on",
+         #        label = "Subset site"
+         #    ),
+         #    checkboxGroupInput(
+         #        "subset_sites",
+         #        label = h5("Site"),
+         #        choices = c("UM", "WIAMP", "UWCRT", "PM", "GU"),
+         #        selected  = c("UM", "WIAMP", "UWCRT", "PM", "GU")
+         #    ),
+            actionButton(inputId = "subset", "SUBSET")
+         )
                      ))
 )
