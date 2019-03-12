@@ -37,6 +37,8 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE) {
         apis <- NULL
     }
     
+    print("Getting data !")
+    
     if (cache) {
         rawdata <- read_data(apis, auth = auth)
     } else {
