@@ -19,7 +19,7 @@ tud_maq_ui <- function(id) {
                      title = "Select MAQ columns",
                      selectInput(
                          inputId = ns("tud_maq_column_M"),
-                         choices = c('study', 'employment', 'education'),
+                         choices = c('study_id', 'employment', 'education', 'age_months', 'ethnicity', 'race'),
                          label = 'Column'
                      )
                  )
