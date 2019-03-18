@@ -122,8 +122,8 @@ home <- tabPanel(
             checkboxGroupInput(
                 "subset_sites",
                 label = h5("Site"),
-                choices = c("UM", "WIAMP", "UWCRT", "PM", "GU"),
-                selected  = c("UM", "WIAMP", "UWCRT", "PM", "GU")
+                choices = c("UM", "WIAMP", "UWCRT", "PM", "GU", "BYU"),
+                selected  = c("UM", "WIAMP", "UWCRT", "PM", "GU", "BYU")
             ),
             actionButton(inputId = "subset", "SUBSET")
          )
