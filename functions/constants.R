@@ -19,14 +19,8 @@ MAQ_entities <- c(
     # SUBJECTS
     
     "Children",
-    "HouseHolds",
-    "ChildCare_Weekdays",
-    "ChildCare_Weekends",
-    "Household_Communication",
     "Respondents",
     "ChildrenDetails",
-    "ChildrenDetailsHealth",
-    "Caregiver_Communication",
 
     # RESPONDENTS
     
@@ -42,26 +36,6 @@ MAQ_associations <- list(
     # SUBJECTS
     
     list(
-        src = "Children",
-        dst = "Households",
-        edge = "PartOf"
-    ),
-    list(
-        src = "Respondents",
-        dst = "Households",
-        edge = "PartOf"
-    ),
-    list(
-        src = "Children",
-        dst = "ChildCare_Weekdays",
-        edge = "InvolvedIn"
-    ),
-    list(
-        src = "Children",
-        dst = "Household_Communication",
-        edge = "InvolvedIn"
-    ),
-    list(
         src = "Respondents",
         dst = "Children",
         edge = "RelatedTo"
@@ -71,22 +45,7 @@ MAQ_associations <- list(
         dst = "ChildrenDetails",
         edge = "Has"
     ),
-    list(
-        src = "Children",
-        dst = "ChildrenDetailsHealth",
-        edge = "Has"
-    ),
-    list(
-        src = "Respondents",
-        dst = "ChildCare_Weekends",
-        edge = "InvolvedIn"
-    ),
-    list(
-        src = "Subjects",
-        dst = "Caregiver_Communication",
-        edge = "InvolvedIn"
-    ),
-    
+
     # RESPONDENTS
     
     list(
@@ -113,36 +72,7 @@ MAQ_associations <- list(
         src = "Respondents",
         dst = "ImmigrationStatus",
         edge = "Reported"
-    ),
-    
-    # DEVICES
-    
-    list(
-        src = "Devices",
-        dst = "Respondents",
-        edge = "UsedBy"
-    ),
-    list(
-        src = "Respondents",
-        dst = "Activities",
-        edge = "EngagedIn"
-    ),
-    list(
-        src = "Respondents",
-        dst = "MediaAttitudes",
-        edge = "Reported"
-    ),
-    list(
-        src = "Activities",
-        dst = "Device_Use",
-        edge = "ConcurrentTo"
-    ),
-    list(
-        src = "Respondents",
-        dst = "Device_Use",
-        edge = "InvolvedIn"
     )
-    
     
 )
 
