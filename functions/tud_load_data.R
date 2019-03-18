@@ -49,11 +49,11 @@ subset_data <-
     }
 
 
-get_data <- function(jwt, cache = FALSE, auth = FALSE) {
+get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     print("Getting authenticated !")
     
     if (auth == FALSE) {
-        apis <- get_apis(jwt)
+        apis <- get_apis(jwt, local)
         if (is.null(apis)) {
             return (get_empty_rawdata())
         }
@@ -76,7 +76,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE) {
     }
     
     rawdata$tud[['preprocessed']] = process_activities(rawdata)
-    rawdata$tud[['processed']] = process_activities(rawdata)
+    rawdata$tud[['processed']] = rawdata$tud[['preprocessed']]
     rawdata$tud[['summarised']] = summarise_data(rawdata$tud[['processed']])
     rawdata$maq[['preprocessed']] = process_maq(rawdata)
     rawdata$maq[['processed']] = process_maq(rawdata)
@@ -100,7 +100,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE) {
 
 read_data <- function(apis, auth = FALSE) {
     print("Getting the data !")
-    rawdata <- read_yaml("data/rawdata.yaml")
+    rawdata <- read_yaml("data/rawdata_local.yaml")
     rawdata <- add_authentication_to_raw(rawdata, apis, auth = auth)
     print("Got the data !")
     return(rawdata)
@@ -110,18 +110,18 @@ load_data <-
     function(apis) {
         print("Getting the data !")
         
-        # # TUD
-        # print("-- TUD: Getting nodes.")
-        # datasets <- TUD_entities %>% map(get_node_table, apis)
-        # names(datasets) <- TUD_entities
-        #
-        # print("-- TUD: Getting edges.")
-        # edgesdata <- TUD_associations %>% map(get_edge_table, datasets, apis)
-        # names(edgesdata) <-
-        #     TUD_associations %>% map_chr(function(x) {
-        #         return (paste0(x['src'], "_", x['dst']))
-        #     })
-        #
+        # TUD
+        print("-- TUD: Getting nodes.")
+        datasets <- TUD_entities %>% map(get_node_table, apis)
+        names(datasets) <- TUD_entities
+
+        print("-- TUD: Getting edges.")
+        edgesdata <- TUD_associations %>% map(get_edge_table, datasets, apis)
+        names(edgesdata) <-
+            TUD_associations %>% map_chr(function(x) {
+                return (paste0(x['src'], "_", x['dst']))
+            })
+
         # MAQ
         print("-- MAQ: Getting nodes.")
         maqdatasets <- MAQ_entities %>% map(get_node_table, apis)
@@ -136,10 +136,10 @@ load_data <-
             })
         
         outdata <- list(
-            # tud = list(
-            #     nodes = datasets,
-            #     edges = edgesdata
-            # ),
+            tud = list(
+                nodes = datasets,
+                edges = edgesdata
+            ),
             chronicle = list(raw = tibble(),
                              processed = tibble()),
             maq = list(nodes = maqdatasets,
@@ -148,6 +148,8 @@ load_data <-
             n_child = dim(datasets$people)[1],
             auth = TRUE
         )
+        
+        outdata <- add_authentication_to_raw(outdata, apis, auth = TRUE)
         
         print("Got the data !")
         return (outdata)
