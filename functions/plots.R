@@ -205,6 +205,9 @@ plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
 }
 
 venn_plot <- function(rawdata){
+    if (!rawdata$auth) {
+        return(NULL)
+    }
     chronpi = unique(rawdata$chronicle$raw$pid)
     tudpi = unique(rawdata$tud$processed$nc.SubjectIdentification)
     maqpi = unique(rawdata$maq$processed$nc.SubjectIdentification)
