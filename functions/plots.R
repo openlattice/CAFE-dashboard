@@ -206,16 +206,16 @@ plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
 
 venn_plot <- function(rawdata){
     chronpi = unique(rawdata$chronicle$raw$pid)
-    tudpi = unique(rawdata$tud$nodes$people$nc.SubjectIdentification)
-    maqpi = unique(rawdata$maq$nodes$Respondents$nc.SubjectIdentification)
+    tudpi = unique(rawdata$tud$processed$nc.SubjectIdentification)
+    maqpi = unique(rawdata$maq$processed$nc.SubjectIdentification)
     
-    nC = length(setdiff(chronpi, intersect(tudpi, maqpi)))
-    nT = length(setdiff(tudpi, intersect(chronpi, maqpi)))
-    nM = length(setdiff(maqpi, intersect(chronpi, tudpi)))
+    nC = length(chronpi)
+    nT = length(tudpi)
+    nM = length(maqpi)
     
-    nCT = length(setdiff(intersect(chronpi, tudpi), maqpi))
-    nCM = length(setdiff(intersect(chronpi, maqpi), tudpi))
-    nTM = length(setdiff(intersect(maqpi, tudpi), chronpi))
+    nCT = length(intersect(chronpi, tudpi))
+    nCM = length(intersect(chronpi, maqpi))
+    nTM = length(intersect(maqpi, tudpi))
     
     nCTM = length(intersect(intersect(chronpi, tudpi), maqpi))
     
@@ -242,7 +242,7 @@ venn_plot <- function(rawdata){
         scaled=TRUE,
         euler.D = TRUE,
         cat.dist = 0.03,
-        cat.pos = 5,
+        cat.pos = c(-10,5,5),
         label.col = "white",
         alpha = 0.8
     )
