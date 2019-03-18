@@ -4,7 +4,7 @@ get_node_table <- function(cafename, apis) {
     # get master data
     
     entsetnames <-
-        master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,10}", cafename))) %>% pull(name)
+        master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,10}", cafename, "$"))) %>% pull(name)
     
     entsets <- tibble()
     
@@ -69,7 +69,7 @@ get_edge_table <- function(cafeedge, datasets, apis) {
     entsetids <- list()
     for (part in c("src", 'edge', 'dst')) {
         entsetnames <-
-            master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,10}", cafeedge[part]))) %>% pull(name)
+            master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,10}", cafeedge[part], "$"))) %>% pull(name)
         entsetids[[part]] <-
             entsetnames %>% map_chr(apis$master$edmApi$get_entity_set_id)
     }
