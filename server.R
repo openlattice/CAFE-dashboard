@@ -30,7 +30,11 @@ shinyServer(function(input, output, session) {
         )
     
     observeEvent(input$login, {
-        newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE)
+        shinyjs::addCssClass(
+            id = "emptyplot",
+            class = "recalculating"
+        )
+        newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE, local=FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
         rawdata$maq <- newdat$maq
