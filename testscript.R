@@ -1,6 +1,11 @@
 setwd("/Users/jokedurnez/Documents/accounts/CAFE/CAFE_code/dashboard/")
 source("global.R")
 
-jwt <- "*"
+jwt = "*"
+rawdata <- get_data(jwt, cache=TRUE, auth=TRUE, local=TRUE)
 
-rawdata <- get_data(jwt, cache=TRUE, auth=TRUE)
+write_yaml(rawdata, "data/rawdata_20190320.yaml")
+
+# chr <- read_yaml("data/rawdata2.yaml")
+# rawdata$chronicle$raw = chr$chronicle$raw %>% as_tibble()
+# rawdata$chronicle$processed = chr$chronicle$processed %>% as_tibble()
