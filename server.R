@@ -98,6 +98,11 @@ shinyServer(function(input, output, session) {
             plot_hours_by_activity(rawdata$tud$processed)
         })
     
+    output$A_pie_hours_by_activity <-
+        renderPlot({
+            pie_hours_by_activity(rawdata$tud$processed)
+        }, height=400)
+    
     output$A_hours_by_activity_download <-
         downloadHandler(
             filename = "hours_by_activity.png",
@@ -111,11 +116,53 @@ shinyServer(function(input, output, session) {
             }
         )
     
+    output$A_pie_hours_by_activity_download <-
+        downloadHandler(
+            filename = "pie_hours_by_activity.png",
+            content = function(file) {
+                ggsave(
+                    file,
+                    pie_hours_by_activity(rawdata$tud$processed),
+                    width = 8,
+                    height = 5
+                )
+            }
+        )
     output$A_hours_total <-
         renderPlot({
             plot_total_hour_distribution(rawdata$tud$processed)
         })
     
+    output$A_hours_total_download <-
+        downloadHandler(
+            filename = "hours_distribution.png",
+            content = function(file) {
+                ggsave(
+                    file,
+                    plot_total_hour_distribution(rawdata$tud$processed),
+                    width = 8,
+                    height = 5
+                )
+            }
+        )
+    
+    output$A_ages_total <-
+        renderPlot({
+            plot_total_age_distribution(rawdata$maq$processed)
+        })
+    
+    output$A_ages_total_download <-
+        downloadHandler(
+            filename = "ages_distribution.png",
+            content = function(file) {
+                ggsave(
+                    file,
+                    plot_total_age_distribution(rawdata$maq$processed),
+                    width = 8,
+                    height = 5
+                )
+            }
+        )
     
     output$emptyplot <-
         renderPlot({
