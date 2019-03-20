@@ -15,12 +15,19 @@ library(yaml)
 
 httr::set_config(httr::config(http_version = 0))
 
-cols <- c("#ff3c5d",
-          "#6124e2",
-          "#ffe671",
+cols <- c("#6124e2",
+          "#44beff",
+          "#bc0000",
           "#ff9a58",
-          "#dd9e00",
-          "#00be84")
+          "#00be84",
+          "#a939ff",
+          "#ffde00",
+          "#00bace",
+          "#f25497",
+          "#2f69ff",
+          "#00583d",
+          "#870000",
+          "#0021ba")
 
 nacol <- "#dcdce7"
 
