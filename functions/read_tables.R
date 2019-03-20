@@ -40,26 +40,26 @@ get_node_table <- function(cafename, apis) {
 }
 
 
-transform_edges <- function(table) {
-    # with the entity key ids to link data tables
-    
-    table <- table[['neighborDetails']]
-    
-    if (length(table$"openlattice.@id") == 1) {
-        table <-
-            table %>% lapply(function(x) {
-                x <- gsub("NULL", NA, as.character(x))
-            }) %>% as_tibble()
-    } else {
-        table <-
-            table %>% sapply(function(x) {
-                x <- gsub("NULL", NA, as.character(x))
-            }) %>% as_tibble()
-    }
-    
-    newtable <- table %>% select('openlattice.@id')
-    return (newtable)
-}
+# transform_edges <- function(table) {
+#     # with the entity key ids to link data tables
+#     
+#     table <- table[['neighborDetails']]
+#     
+#     if (length(table$"openlattice.@id") == 1) {
+#         table <-
+#             table %>% lapply(function(x) {
+#                 x <- gsub("NULL", NA, as.character(x))
+#             }) %>% as_tibble()
+#     } else {
+#         table <-
+#             table %>% sapply(function(x) {
+#                 x <- gsub("NULL", NA, as.character(x))
+#             }) %>% as_tibble()
+#     }
+#     
+#     newtable <- table %>% select('openlattice.@id')
+#     return (newtable)
+# }
 
 get_edge_table <- function(cafeedge, datasets, apis) {
     master_all_entsets <- apis$master$edmApi$get_all_entity_sets()
@@ -72,6 +72,10 @@ get_edge_table <- function(cafeedge, datasets, apis) {
             master_all_entsets %>% filter(str_detect(name, paste0("CAFE_.{0,10}", cafeedge[part], "$"))) %>% pull(name)
         entsetids[[part]] <-
             entsetnames %>% map_chr(apis$master$edmApi$get_entity_set_id)
+    }
+    
+    if (length(entsetids$src)==0 || length(entsetids$edge)==0 || length(entsetids$dst)==0) {
+        return (tibble())
     }
     
     # get entity keys for source and filter
@@ -96,35 +100,70 @@ get_edge_table <- function(cafeedge, datasets, apis) {
     
     for (src_id in entsetids[['src']]) {
         edges_cafeedge <-
-            apis$master$searchApi$execute_filtered_entity_neighbor_search(src_id, filter)
+            apis$master$searchApi$execute_filtered_entity_neighbor_id_search(src_id, filter)
         if (!is.null(edges_cafeedge$response$status_code)) {
             print(paste0("Error for search src_id ", src_id))
             next
         }
         
-        # process edges response and append
-        
-        edges_trans <-
-            edges_cafeedge %>% map(transform_edges) %>% map2_dfr(names(edges_cafeedge), ~ mutate(.x, name =
-                                                                                                     .y))
-        if (dim(edges_trans)[1] == 0) {
+        if (length(edges_cafeedge) == 0){
             entset = apis$master$edmApi$get_entity_set(src_id)
             print(
-                paste0(
-                    "No edges for dataset ",
-                    entset$name,
-                    " in ",
-                    cafeedge['src'],
-                    " --> ",
-                    cafeedge['edge'],
-                    " --> ",
-                    cafeedge['dst']
-                )
+                        paste0(
+                            "No edges for dataset ",
+                            entset$name,
+                            " in ",
+                            cafeedge['src'],
+                            " --> ",
+                            cafeedge['edge'],
+                            " --> ",
+                            cafeedge['dst']
+                        )
             )
             next
         }
+
+        edges_trans = edges_cafeedge %>% 
+            enframe('srcId', 'tbl') %>%
+            unnest(tbl, .preserve = srcId) %>% 
+            unnest(tbl, .preserve = srcId) %>% 
+            unnest() %>%
+            select(-c("src")) %>%
+            rename(src = srcId, dst = neighborId) %>%
+            select(src, dst)
         
-        names(edges_trans) <- c("dst", "src")
+        # bind_rows(edges_cafeedge)  %>% rename() %>% mutate(srcId = unnest())
+        # 
+        # edges_cafeedge %>% 
+        #     enframe('src_id', 'tbl') %>%
+        #     unnest(tbl, .preserve = src_id) %>% 
+        #     unnest(tbl, .preserve = src_id)
+        # 
+        # # edges_trans <-
+        # #     edges_cafeedge %>% map(transform_edges) %>% map2_dfr(names(edges_cafeedge), ~ mutate(.x, name =
+        # #                                                                                              .y))
+        # edges_trans <- edges_cafeedge %>% 
+        #     map2_dfr(names(edges_cafeedge), ~ mutate(.x, src = .y)) %>%
+        #     select(src, dstEntityKeyId) %>%
+        #     rename(dst = dstEntityKeyId)
+        
+        # if (dim(edges_trans)[1] == 0) {
+        #     entset = apis$master$edmApi$get_entity_set(src_id)
+        #     print(
+        #         paste0(
+        #             "No edges for dataset ",
+        #             entset$name,
+        #             " in ",
+        #             cafeedge['src'],
+        #             " --> ",
+        #             cafeedge['edge'],
+        #             " --> ",
+        #             cafeedge['dst']
+        #         )
+        #     )
+        #     next
+        # }
+        
         edges_table <- bind_rows(edges_table, edges_trans)
         
     }
