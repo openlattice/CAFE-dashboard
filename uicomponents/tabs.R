@@ -58,14 +58,37 @@ home <- tabPanel(
              width = 12,
              solidHeader = TRUE,
              status = "primary",
-             plotOutput("A_hours_by_activity")
+             tabsetPanel(
+                 tabPanel(
+                     "Bar chart", 
+                     plotOutput("A_hours_by_activity"),
+                     downloadButton("A_hours_by_activity_download")
+                     ),
+                    tabPanel(
+                        "Pie chart", 
+                        plotOutput("A_pie_hours_by_activity"),
+                        downloadButton("A_pie_hours_by_activity_download")
+                        )
+                 )
              ),
              box(
-                 title = "Total duration of measurements per child.",
+                 title = "Distributions per child",
                  width = 12,
                  solidHeader = TRUE,
                  status = "primary",
-                 plotOutput("A_hours_total")
+                 tabsetPanel(
+                     tabPanel(
+                         "Hours per day", 
+                         plotOutput("A_hours_total"),
+                         downloadButton("A_hours_total_download")
+                     ),
+                     tabPanel(
+                         "Child ages", 
+                         plotOutput("A_ages_total"),
+                         downloadButton("A_ages_total_download")
+                     )
+                 )
+                 
              )
          ),
          column(
