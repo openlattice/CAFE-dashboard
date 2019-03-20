@@ -5,6 +5,27 @@ empty_plot <- function() {
          ann = FALSE)
 }
 
+pie_hours_by_activity <- function(activitydata) {
+    act_by_child <- activitydata %>%
+        group_by(day_id, ol.activity) %>%
+        summarise(hours = sum(duration) / 60) %>%
+        ungroup() %>%
+        complete_(cols = c("day_id", "ol.activity")) %>% replace_na(list(hours =
+                                                                             0)) %>%
+        group_by_('ol.activity') %>%
+        summarise(hours = mean(hours))
+    ggplot(act_by_child, aes(x='', y=hours, fill=ol.activity)) +
+        geom_bar(stat="identity", width=1) +
+        coord_polar("y", start=0) + 
+        # geom_text(aes(label = paste0(round(hours), "%")), position = position_stack(vjust = 0.5))+
+        scale_fill_manual(values=cols) +
+        labs(x = NULL, y = NULL, fill = NULL, title = "Activities distribution per day")+
+        theme_classic() + theme(axis.line = element_blank(),
+                                  axis.text = element_blank(),
+                                  axis.ticks = element_blank(),
+                                  plot.title = element_text(hjust = 0.5, color = "#666666"))
+}
+
 plot_hours_by_activity <- function(activitydata, grouper = NULL) {
     if ('day_id' %in% names(activitydata)) {
         if (is.null(grouper)) {
@@ -65,6 +86,24 @@ plot_total_hour_distribution <- function(activitydata) {
         plot
     }
 }
+
+plot_total_age_distribution <- function(maqdata) {
+    if ('age_months' %in% names(maqdata)) {
+        plot <- ggplot(maqdata, aes(x = age_months, fill=study_id, colour=study_id)) +
+            geom_density(alpha=0.2, bw=7) +
+            theme_light() +
+            labs(x = "Age in months", y = "Frequency") +
+            scale_fill_manual(values=cols) +
+            scale_color_manual(values=cols)
+            
+        
+        plot
+    }
+}
+
+
+
+
 
 plot_summary_histogram <- function(summarydata, column) {
     if (column %in% names(summarydata)) {

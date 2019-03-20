@@ -100,7 +100,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
 
 read_data <- function(apis, auth = FALSE) {
     print("Getting the data !")
-    rawdata <- read_yaml("data/rawdata_local.yaml")
+    rawdata <- read_yaml("data/rawdata_20190320.yaml")
     rawdata <- add_authentication_to_raw(rawdata, apis, auth = auth)
     print("Got the data !")
     return(rawdata)
@@ -109,13 +109,14 @@ read_data <- function(apis, auth = FALSE) {
 load_data <-
     function(apis) {
         print("Getting the data !")
-        
+
         # TUD
         print("-- TUD: Getting nodes.")
         datasets <- TUD_entities %>% map(get_node_table, apis)
         names(datasets) <- TUD_entities
 
         print("-- TUD: Getting edges.")
+
         edgesdata <- TUD_associations %>% map(get_edge_table, datasets, apis)
         names(edgesdata) <-
             TUD_associations %>% map_chr(function(x) {
