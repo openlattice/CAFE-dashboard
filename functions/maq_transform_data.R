@@ -107,8 +107,7 @@ process_maq <- function(rawdata) {
         )) / (365 / 12))
     ) %>%
         mutate(
-            table_access = table_access.x.x &
-                   table_access.x & table_access.y & table_access.y.y,
+            table_access = table_access.x,
             nc.SubjectIdentification = child_id,
             study = study_id
             ) %>% 
