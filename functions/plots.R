@@ -117,6 +117,21 @@ plot_summary_histogram <- function(summarydata, column) {
     }
 }
 
+
+plot_subjects_by_site <- function(rawdata) {
+    act_by_child <- rawdata$tud$processed %>% 
+        group_by(nc.SubjectIdentification, site) %>% count() %>% mutate(source="TUD")
+    maq_by_child <- rawdata$maq$processed %>% mutate(study = replace(study, study == "BYU", "PM")) %>%
+        group_by(nc.SubjectIdentification, study) %>% count() %>% mutate(source="MAQ", site=study)
+    all_by_child = rbind(act_by_child, maq_by_child) %>% 
+        group_by(nc.SubjectIdentification, site) %>%  
+        summarise(source = paste0(source, collapse=" + "))
+    ggplot(all_by_child, aes(site, fill=source)) + geom_bar() +
+        theme_light() +
+        scale_fill_manual(values = cols[c(5,4,1)],
+                      aesthetics = "fill",
+                      na.value = nacol)
+}
 # plot_chronicle_histogram <- function(chronicle) {
 #     if (column %in% names(summarydata)) {
 #         ggplot(summarydata,
