@@ -83,6 +83,10 @@ home <- tabPanel(
                          downloadButton("A_hours_total_download")
                      ),
                      tabPanel(
+                         "Participants by site", 
+                         plotOutput("A_subjects_by_site")
+                     ),
+                     tabPanel(
                          "Child ages", 
                          plotOutput("A_ages_total"),
                          downloadButton("A_ages_total_download")
