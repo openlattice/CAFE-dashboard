@@ -128,6 +128,12 @@ shinyServer(function(input, output, session) {
                 )
             }
         )
+    
+    output$A_subjects_by_site <-
+        renderPlot({
+            plot_subjects_by_site(rawdata)
+        })
+    
     output$A_hours_total <-
         renderPlot({
             plot_total_hour_distribution(rawdata$tud$processed)
