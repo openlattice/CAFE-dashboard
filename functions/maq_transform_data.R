@@ -21,7 +21,29 @@ process_maq <- function(rawdata) {
         )) %>%
         group_by(child_id) %>% slice(1) %>% ungroup()
     
-    
+    deviceuse = rawdata$maq$edges$Children_Device_Use %>%
+        left_join(rawdata$maq$nodes$Children, by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$maq$nodes$Device_Use, by = c(dst = "openlattice.@id")) %>% 
+        rowwise() %>%
+        mutate(
+            mn = ol.duration,
+            mn = str_replace(mn, "30 minutes to 1 hour", "0.75"),
+            mn = str_replace(mn, "1-2 hours", "1.5"),
+            mn = str_replace(mn, "2-3 hours", "2.5"),
+            mn = str_replace(mn, "3-4 hours", "3.5"),
+            mn = str_replace(mn, "4-5 hours", "4.5"),
+            mn = str_replace(mn, "More than 5 hours", "5"),
+            mn = as.numeric(mn)
+            ) %>%
+        group_by(nc.SubjectIdentification) %>% summarise(
+            Q1 = sum(mn[
+                str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad") &
+                    str_detect(ol.description, "weekday") &
+                    str_detect(oldescription, "Time spent")
+                ], na.rm=TRUE)
+        )
+
+        
     childrendetails = rawdata$maq$edges$Children_ChildrenDetails %>%
         full_join(rawdata$maq$nodes$Children, by = c(src = "openlattice.@id")) %>%
         rename(child_id = nc.SubjectIdentification) %>%
