@@ -18,7 +18,7 @@ tagList(
             tags$style(HTML(
                 "#page-nav > li:first-child { display: none; }"
             )),
-            tags$link(rel = "stylesheet", type = "text/css", href = "http://fonts.googleapis.com/css?family=Chivo"),
+            tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Chivo"),
             tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css"),
             tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css"),
             tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
