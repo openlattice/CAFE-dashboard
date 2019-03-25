@@ -22,7 +22,8 @@ tagList(
             tags$link(rel = "stylesheet", type = "text/css", href = "AdminLTE.css"),
             tags$link(rel = "stylesheet", type = "text/css", href = "shinydashboard.css"),
             tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
-            tags$link(rel = "icon", type = "image/png", href = "favicon.png")
+            tags$link(rel = "icon", type = "image/png", href = "favicon.png"),
+            tags$script(src = "https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js")
         ),
         home,
         navbarMenu(
