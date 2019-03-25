@@ -1,4 +1,5 @@
 shinyServer(function(input, output, session) {
+    
     ###########################################
     # loading data and observing column names #
     ###########################################
@@ -37,15 +38,15 @@ shinyServer(function(input, output, session) {
             n_act = 0,
             n_child = 0
         )
-    
+
     # authentication via cookie
     observeEvent(input$cookies, {
+
         jwt = str_replace(input$cookies$authorization,"Bearer ", "")
         shinyjs::addCssClass(
             id = "emptyplot",
             class = "recalculating"
         )
-        print(input$cookies)
         newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
@@ -59,21 +60,6 @@ shinyServer(function(input, output, session) {
         )
     }, ignoreNULL=FALSE)
     
-    # authentication via jwt
-    observeEvent(input$jwt, {
-        newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE, local=FALSE)
-        rawdata$tud <- newdat$tud
-        rawdata$chronicle <- newdat$chronicle
-        rawdata$maq <- newdat$maq
-        rawdata$n_child <- newdat$n_child
-        rawdata$n_act <- newdat$n_act
-        rawdata$auth = newdat$auth
-        shinyjs::removeCssClass(
-            id = "emptyplot",
-            class = "recalculating"
-        )
-    }, ignoreNULL=FALSE)
-
     observeEvent(input$subset, {
         print("subsetting...")
         newdat <- subset_data(
