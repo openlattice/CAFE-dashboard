@@ -70,7 +70,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     }
     
     if (auth == FALSE) {
-        rawdata['auth'] <- is_authorized(apis)
+        rawdata['auth'] <- is_authorized(apis, local)
     } else {
         rawdata['auth'] <- TRUE
     }
@@ -100,7 +100,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
 
 read_data <- function(apis, auth = FALSE) {
     print("Getting the data !")
-    rawdata <- read_yaml("data/rawdata_20190321.yaml")
+    rawdata <- read_yaml("data/rawdata_20190324.yaml")
     rawdata <- add_authentication_to_raw(rawdata, apis, auth = auth)
     print("Got the data !")
     return(rawdata)
