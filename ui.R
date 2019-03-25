@@ -43,12 +43,15 @@ tagList(
             summarised_histograms("summary"),
             summarised_crossplots("summary"),
             summarised_site("summary"),
-            sbp_ui("sbp"),
             chronicle_tud("chrontud")
         ),
         navbarMenu("QA",
                    qa_ui("qa")),
         navbarMenu("TUD-MAQ",
-                   tud_maq_ui("tud_maq"))
+                   tud_maq_ui("tud_maq")
+                   ),
+        navbarMenu("Screen best practices",
+                   sbp_ui("sbp")
+        )
     )
 )
