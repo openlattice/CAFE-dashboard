@@ -21,29 +21,57 @@ process_maq <- function(rawdata) {
         )) %>%
         group_by(child_id) %>% slice(1) %>% ungroup()
     
-    # deviceuse = rawdata$maq$edges$Children_Device_Use %>%
-    #     left_join(rawdata$maq$nodes$Children, by = c(src = "openlattice.@id")) %>%
-    #     left_join(rawdata$maq$nodes$Device_Use, by = c(dst = "openlattice.@id")) %>% 
-    #     rowwise() %>%
-    #     mutate(
-    #         mn = ol.duration,
-    #         mn = str_replace(mn, "30 minutes to 1 hour", "0.75"),
-    #         mn = str_replace(mn, "1-2 hours", "1.5"),
-    #         mn = str_replace(mn, "2-3 hours", "2.5"),
-    #         mn = str_replace(mn, "3-4 hours", "3.5"),
-    #         mn = str_replace(mn, "4-5 hours", "4.5"),
-    #         mn = str_replace(mn, "More than 5 hours", "5"),
-    #         mn = as.numeric(mn)
-    #         ) %>%
-    #     group_by(nc.SubjectIdentification) %>% summarise(
-    #         Q1 = sum(mn[
-    #             str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad") &
-    #                 str_detect(ol.description, "weekday") &
-    #                 str_detect(oldescription, "Time spent")
-    #             ], na.rm=TRUE)
-    #     )
+    deviceuse = rawdata$maq$edges$Children_Device_Use %>%
+        left_join(rawdata$maq$nodes$Children, by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$maq$nodes$Device_Use, by = c(dst = "openlattice.@id")) %>%
+        rename(child_id = nc.SubjectIdentification) %>%
+        # rowwise() %>%
+        mutate(
+            mn = ol.duration,
+            mn = str_replace(mn, "30 minutes to 1 hour", "0.75"),
+            mn = str_replace(mn, "1-2 hours", "1.5"),
+            mn = str_replace(mn, "2-3 hours", "2.5"),
+            mn = str_replace(mn, "3-4 hours", "3.5"),
+            mn = str_replace(mn, "4-5 hours", "4.5"),
+            mn = str_replace(mn, "More than 5 hours", "5"),
+            mn = as.numeric(mn)
+            ) %>%
+        group_by(child_id) %>% summarise(
+            # sf_Q1_yesterday = sum(mn[
+            #     str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad|virtual assistant") &
+            #         str_detect(ol.description, "yesterday") &
+            #         str_detect(ol.description, "Time spent")
+            #     ], na.rm=TRUE),
+            sf_Q1_mediahours_weekday = sum(mn[
+                str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad|virtual assistant") &
+                    str_detect(ol.description, "weekday") &
+                    str_detect(ol.description, "Time spent")
+                ], na.rm=TRUE),
+            sf_Q1_mediahours_weekend = sum(mn[
+                str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad|virtual assistant") &
+                    str_detect(ol.description, "weekend") &
+                    str_detect(ol.description, "Time spent")
+                ], na.rm=TRUE),
+            # sf_Q3_yesterday = sum(mn[
+            #     str_detect(ol.description, "paper books|electronic books") &
+            #         str_detect(ol.description, "yesterday") &
+            #         str_detect(ol.description, "Time spent")
+            #     ], na.rm=TRUE),
+            sf_Q3_mediahours_weekday = sum(mn[
+                str_detect(ol.description, "paper books|electronic books") &
+                    str_detect(ol.description, "weekday") &
+                    str_detect(ol.description, "Time spent")
+                ], na.rm=TRUE),
+            sf_Q3_mediahours_weekend = sum(mn[
+                str_detect(ol.description, "paper books|electronic books") &
+                    str_detect(ol.description, "weekend") &
+                    str_detect(ol.description, "Time spent")
+                ], na.rm=TRUE),
+            sf_Q2_no_media_bedtime = sum(str_detect(ol.description, "hour before bedtime") &
+                              str_detect(general.frequency, "2-3 times|Every night|once a week|4-6 times"),na.rm=TRUE)==0
+            
+        )
 
-        
     childrendetails = rawdata$maq$edges$Children_ChildrenDetails %>%
         full_join(rawdata$maq$nodes$Children, by = c(src = "openlattice.@id")) %>%
         rename(child_id = nc.SubjectIdentification) %>%
@@ -113,7 +141,8 @@ process_maq <- function(rawdata) {
     maq = children %>%
         left_join(childrendetails, by = "child_id") %>%
         left_join(employment, by = 'respondent_id') %>%
-        left_join(education, by = "respondent_id")
+        left_join(education, by = "respondent_id") %>%
+        left_join(deviceuse, by = "child_id")
     
     maq <- maq %>% mutate(
         birthmonth = ifelse(is.na(ol.birthmonth), ol.birthmonth, ol.birthmonth),
@@ -144,7 +173,12 @@ process_maq <- function(rawdata) {
                        "study",
                        "study_id",
                        "nc.SubjectIdentification",
-                       "table_access"
+                       "table_access",
+                       sf_Q1_mediahours_weekday,
+                       sf_Q1_mediahours_weekend,
+                       sf_Q2_no_media_bedtime,
+                       sf_Q3_mediahours_weekday,
+                       sf_Q3_mediahours_weekend
                    )
     
     return(maq)
