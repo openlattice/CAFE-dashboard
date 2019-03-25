@@ -12,7 +12,8 @@ get_master_jwt <- function() {
     }
 }
 
-is_authorized <- function(apis){
+is_authorized <- function(apis, local=FALSE){
+    if (local) {return(TRUE)}
     if (!is.null(apis) & "TimeUseDiary READ" %in% apis$personal$prinApi$get_current_roles()$title) {
         return(TRUE)
     }
@@ -36,18 +37,16 @@ get_apis <- function(jwt, local = FALSE) {
     searchApi <- SearchApi$new(apiClient = client)
     prinApi <- PrincipalApi$new(apiClient = client)
     authorizationsApi <- AuthorizationsApi$new(apiClient = client)
-
-    if ("TimeUseDiary READ" %in% prinApi$get_current_roles()$title) {
-        master = get_master_jwt()
-        if (local == TRUE){
-            print("You're not authorized to see all figures !")
-            master_jwt <- jwt
-        } else {
-            master_jwt <- master
-        }
+    
+    if (local == TRUE) {
+        master_jwt <- jwt
     } else {
+        if ("TimeUseDiary READ" %in% prinApi$get_current_roles()$title) {
+        master_jwt = get_master_jwt()
+        } else {
         print("You're not authorized to see this data !")
         return (NULL)
+        }
     }
 
     # setting up for master
