@@ -5,8 +5,9 @@ shinyServer(function(input, output, session) {
     
     runjs('
         var get_cookies = function() {
-            Shiny.onInputChange("cookies", my_cookie);
-            console.log(my_cookie);
+            var ze_cookies = Cookies.get();
+            Shiny.onInputChange("cookies", ze_cookies);
+            console.log(ze_cookies);
         }
         get_cookies()
     ')
@@ -44,7 +45,6 @@ shinyServer(function(input, output, session) {
             id = "emptyplot",
             class = "recalculating"
         )
-        print(input$cookies)
         newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
