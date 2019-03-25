@@ -16,7 +16,7 @@ pie_hours_by_activity <- function(activitydata) {
         summarise(hours = mean(hours))
     ggplot(act_by_child, aes(x='', y=hours, fill=ol.activity)) +
         geom_bar(stat="identity", width=1) +
-        coord_polar("y", start=0) + 
+        coord_polar("y", start=0) +
         # geom_text(aes(label = paste0(round(hours), "%")), position = position_stack(vjust = 0.5))+
         scale_fill_manual(values=cols) +
         labs(x = NULL, y = NULL, fill = NULL, title = "Activities distribution per day")+
@@ -154,8 +154,9 @@ plot_crossplot <- function(summarydata, crosscols) {
     }
 }
 
-plot_sbp <- function(summarydata) {
+plot_sbp <- function(rawdata) {
     cols <- c(
+        'nc.SubjectIdentification',
         'SBP_TV_lessthan_1h',
         'SBP_avoid_screen_before_bedtime',
         'SBP_balance_media_with_reading',
@@ -165,10 +166,22 @@ plot_sbp <- function(summarydata) {
         'SBP_coview',
         'SBP_content'
     )
-    corr <- round(cor(summarydata[cols]), 1)
+    cols_maq <- c(
+        'child_id',
+        'sf_Q1_mediahours_weekday',
+        'sf_Q1_mediahours_weekend',
+        'sf_Q2_no_media_bedtime',
+        'sf_Q3_mediahours_weekday',
+        'sf_Q3_mediahours_weekend'
+    )
+    
+    combined = rawdata$tud$summarised[cols] %>% 
+        full_join(rawdata$maq$processed[cols_maq], by = c('nc.SubjectIdentification' = 'child_id')) %>%
+        select(-c(nc.SubjectIdentification))
+    corr <- round(cor(combined, use="complete.obs"), 1)
     ggcorrplot(corr,
                ggtheme = theme_light(),
-               colors = c("#e9a3c9", "#f7f7f7", "#a1d76a"))
+               colors = c('#2c7bb6',  '#ffffbf', '#d7191c'))
 }
 
 plot_barchart_activities <-

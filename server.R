@@ -41,6 +41,10 @@ shinyServer(function(input, output, session) {
         rawdata$n_child <- newdat$n_child
         rawdata$n_act <- newdat$n_act
         rawdata$auth = newdat$auth
+        shinyjs::removeCssClass(
+            id = "emptyplot",
+            class = "recalculating"
+        )
     }, ignoreNULL=FALSE)
     
     observeEvent(input$subset, {

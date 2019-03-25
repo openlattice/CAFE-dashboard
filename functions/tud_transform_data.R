@@ -226,7 +226,7 @@ process_metadata <- function(rawdata) {
         rename(primary_activity_id = src) %>%
         group_by(primary_activity_id) %>%
         summarise(
-            progress = ol.status
+            progress = mean(as.numeric(ol.status), na.rm=TRUE)
         )
         return(metadata_by_activity)
 }
