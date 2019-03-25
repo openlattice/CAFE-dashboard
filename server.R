@@ -3,6 +3,14 @@ shinyServer(function(input, output, session) {
     # loading data and observing column names #
     ###########################################
     
+    runjs('
+        var get_cookies = function() {
+            Shiny.onInputChange("cookies", my_cookie);
+            console.log(my_cookie);
+        }
+        get_cookies()
+    ')
+
     hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=tables]")
     hide(selector = "#navbar li a[data-value=plots]")
@@ -29,12 +37,15 @@ shinyServer(function(input, output, session) {
             n_child = 0
         )
     
-    observeEvent(input$login, {
+    # authentication via cookie
+    observeEvent(input$cookies, {
+        jwt = str_replace(input$cookies$authorization,"Bearer%20", "")
         shinyjs::addCssClass(
             id = "emptyplot",
             class = "recalculating"
         )
-        newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE, local=FALSE)
+        print(input$cookies)
+        newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
         rawdata$maq <- newdat$maq
@@ -47,8 +58,23 @@ shinyServer(function(input, output, session) {
         )
     }, ignoreNULL=FALSE)
     
+    # authentication via jwt
+    observeEvent(input$jwt, {
+        newdat <- get_data(input$jwt, cache = TRUE, auth = FALSE, local=FALSE)
+        rawdata$tud <- newdat$tud
+        rawdata$chronicle <- newdat$chronicle
+        rawdata$maq <- newdat$maq
+        rawdata$n_child <- newdat$n_child
+        rawdata$n_act <- newdat$n_act
+        rawdata$auth = newdat$auth
+        shinyjs::removeCssClass(
+            id = "emptyplot",
+            class = "recalculating"
+        )
+    }, ignoreNULL=FALSE)
+
     observeEvent(input$subset, {
-    print("subsetting...")
+        print("subsetting...")
         newdat <- subset_data(
             rawdata = rawdata,
             hourbool = input$subset_hours_on,
