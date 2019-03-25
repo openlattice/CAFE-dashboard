@@ -40,11 +40,12 @@ shinyServer(function(input, output, session) {
     
     # authentication via cookie
     observeEvent(input$cookies, {
-        jwt = str_replace(input$cookies$authorization,"Bearer%20", "")
+        jwt = str_replace(input$cookies$authorization,"Bearer ", "")
         shinyjs::addCssClass(
             id = "emptyplot",
             class = "recalculating"
         )
+        print(intput$cookies)
         newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
