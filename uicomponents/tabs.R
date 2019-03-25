@@ -14,24 +14,8 @@ home <- tabPanel(
             solidHeader =  TRUE,
             status = "primary",
             'This application shows results from the \"Children and Screens\" study.  \
-            To load the data, enter your jwt-token in the input above. \
-            You can find your jwt-token',
-            tags$a(href = "https://openlattice.com/gallery/", "here"),
-            'in your account settings after logging in.',
-            br(),
-            br(),
-            br(),
-            column(
-                textInput(inputId = "jwt",
-                          label = "Enter your jwt-token."),
-                width = 8
-            ),
-            column(
-                actionButton(inputId = "login",
-                             icon("sign-in")),
-                width = 4,
-                style = "padding-top: 25px"
-            )
+            To load the data, please visit https://openlattice.com/login to activate. \
+            your account.'
         )),
         column(width = 4,box(
             width = 12,
