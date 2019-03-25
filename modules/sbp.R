@@ -4,7 +4,7 @@
 
 sbp_ui <- function(id) {
     ns <- NS(id)
-    tabPanel("TUD best practices",
+    tabPanel("Screen best practices",
              fluidRow(column(width = 4),
                       column(
                           width = 8,
@@ -38,7 +38,7 @@ sbp_server <-
              rawdata) {
         ns <- session$ns
         output$sbp_plot <- renderPlot({
-            plot_sbp(rawdata$tud$summarised)
+            plot_sbp(rawdata)
         })
         
         output$sbp_plot_download <-
@@ -47,7 +47,7 @@ sbp_server <-
                 content = function(file) {
                     ggsave(
                         file,
-                        plot_sbp(rawdata$tud$summarised),
+                        plot_sbp(rawdata),
                         width = 8,
                         height = 5
                     )
