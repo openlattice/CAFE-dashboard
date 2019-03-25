@@ -45,7 +45,7 @@ shinyServer(function(input, output, session) {
             id = "emptyplot",
             class = "recalculating"
         )
-        print(intput$cookies)
+        print(input$cookies)
         newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
