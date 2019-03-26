@@ -37,11 +37,6 @@ process_maq <- function(rawdata) {
             mn = as.numeric(mn)
             ) %>%
         group_by(child_id) %>% summarise(
-            # sf_Q1_yesterday = sum(mn[
-            #     str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad|virtual assistant") &
-            #         str_detect(ol.description, "yesterday") &
-            #         str_detect(ol.description, "Time spent")
-            #     ], na.rm=TRUE),
             sf_Q1_mediahours_weekday = sum(mn[
                 str_detect(ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad|virtual assistant") &
                     str_detect(ol.description, "weekday") &
@@ -52,23 +47,18 @@ process_maq <- function(rawdata) {
                     str_detect(ol.description, "weekend") &
                     str_detect(ol.description, "Time spent")
                 ], na.rm=TRUE),
-            # sf_Q3_yesterday = sum(mn[
-            #     str_detect(ol.description, "paper books|electronic books") &
-            #         str_detect(ol.description, "yesterday") &
-            #         str_detect(ol.description, "Time spent")
-            #     ], na.rm=TRUE),
-            sf_Q3_mediahours_weekday = sum(mn[
+            sf_Q3_noscreenmediahours_weekday = sum(mn[
                 str_detect(ol.description, "paper books|electronic books") &
                     str_detect(ol.description, "weekday") &
                     str_detect(ol.description, "Time spent")
                 ], na.rm=TRUE),
-            sf_Q3_mediahours_weekend = sum(mn[
+            sf_Q3_noscreenmediahours_weekend = sum(mn[
                 str_detect(ol.description, "paper books|electronic books") &
                     str_detect(ol.description, "weekend") &
                     str_detect(ol.description, "Time spent")
                 ], na.rm=TRUE),
             sf_Q2_no_media_bedtime = sum(str_detect(ol.description, "hour before bedtime") &
-                              str_detect(general.frequency, "2-3 times|Every night|once a week|4-6 times"),na.rm=TRUE)==0
+                              str_detect(general.frequency, "Never|Less than once a week"),na.rm=TRUE)>0
             
         )
 
@@ -177,9 +167,23 @@ process_maq <- function(rawdata) {
                        sf_Q1_mediahours_weekday,
                        sf_Q1_mediahours_weekend,
                        sf_Q2_no_media_bedtime,
-                       sf_Q3_mediahours_weekday,
-                       sf_Q3_mediahours_weekend
+                       sf_Q3_noscreenmediahours_weekday,
+                       sf_Q3_noscreenmediahours_weekend
                    )
     
+    # factor vars to factor
+    ndist <- maq %>%
+        summarise_all(funs(n_distinct(.)))
+    colndistinct <- as_tibble(cbind(nms = names(ndist), t(ndist)))
+    names(colndistinct) <- c("nms", "cnt")
+    colndistinct <- colndistinct %>% mutate(nums = as.numeric(cnt))
+    factcols <-
+        colndistinct %>% filter(nums >= 4) %>% filter(nums <= 10)
+    boolcols <- colndistinct %>% filter(nums <= 3)
+    
+    maq <- maq %>%
+        mutate_at(factcols$nms, as.factor) %>%
+        mutate_at(boolcols$nms, as.logical)
+
     return(maq)
 }

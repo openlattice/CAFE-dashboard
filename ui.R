@@ -51,7 +51,7 @@ tagList(
         navbarMenu("TUD-MAQ",
                    tud_maq_ui("tud_maq")
                    ),
-        navbarMenu("Screen best practices",
+        navbarMenu("ScreenBestPractices",
                    sbp_ui("sbp")
         )
     )
