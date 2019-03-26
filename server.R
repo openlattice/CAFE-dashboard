@@ -18,6 +18,7 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
     hide(selector = "#navbar li a[data-value=TUD-MAQ]")
+    hide(selector = "#navbar li a[data-value=ScreenBestPractices]")
     hide(id="waitforauth")
     
     # load data
@@ -41,23 +42,24 @@ shinyServer(function(input, output, session) {
 
     # authentication via cookie
     observeEvent(input$cookies, {
-
-        jwt = str_replace(input$cookies$authorization,"Bearer ", "")
-        shinyjs::addCssClass(
-            id = "emptyplot",
-            class = "recalculating"
-        )
-        newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
-        rawdata$tud <- newdat$tud
-        rawdata$chronicle <- newdat$chronicle
-        rawdata$maq <- newdat$maq
-        rawdata$n_child <- newdat$n_child
-        rawdata$n_act <- newdat$n_act
-        rawdata$auth = newdat$auth
-        shinyjs::removeCssClass(
-            id = "emptyplot",
-            class = "recalculating"
-        )
+        if (!rawdata$auth){
+            jwt = str_replace(input$cookies$authorization,"Bearer ", "")
+            shinyjs::addCssClass(
+                id = "emptyplot",
+                class = "recalculating"
+            )
+            newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
+            rawdata$tud <- newdat$tud
+            rawdata$chronicle <- newdat$chronicle
+            rawdata$maq <- newdat$maq
+            rawdata$n_child <- newdat$n_child
+            rawdata$n_act <- newdat$n_act
+            rawdata$auth = newdat$auth
+            shinyjs::removeCssClass(
+                id = "emptyplot",
+                class = "recalculating"
+            )
+        }
     }, ignoreNULL=FALSE)
     
     observeEvent(input$subset, {
@@ -83,6 +85,7 @@ shinyServer(function(input, output, session) {
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
             shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
+            shinyjs::show(selector = "#navbar li a[data-value=ScreenBestPractices]")
             shinyjs::show(id = "waitforauth")
         }
     })
