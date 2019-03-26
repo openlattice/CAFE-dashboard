@@ -93,6 +93,11 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
         boolean = rawdata$tud$summarised %>% select(which(sapply(., is.logical))) %>% names
     )
     
+    rawdata$maq[['coltypes']] <- list(
+        numeric = rawdata$maq$processed %>% select(which(sapply(., is.numeric))) %>% names,
+        factorial = rawdata$maq$processed %>% select(which(sapply(., is.factor))) %>% names,
+        boolean = rawdata$maq$processed %>% select(which(sapply(., is.logical))) %>% names
+    )
     return(rawdata)
     
 }
