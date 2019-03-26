@@ -13,9 +13,9 @@ home <- tabPanel(
             width = 12,
             solidHeader =  TRUE,
             status = "primary",
-            'This application shows results from the \"Children and Screens\" study.  \
-            To load the data, please visit https://openlattice.com/login to activate. \
-            your account.'
+            HTML('This application shows results from the \"Children and Screens\" study.  \
+            To load the data, please visit <a href="https://openlattice.com/login">OpenLattice Login</a> to activate \
+            your account.  When you come back, you should be able to load the data.')
         )),
         column(width = 4,box(
             width = 12,

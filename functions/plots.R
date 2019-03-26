@@ -14,16 +14,23 @@ pie_hours_by_activity <- function(activitydata) {
                                                                              0)) %>%
         group_by_('ol.activity') %>%
         summarise(hours = mean(hours))
-    ggplot(act_by_child, aes(x='', y=hours, fill=ol.activity)) +
-        geom_bar(stat="identity", width=1) +
-        coord_polar("y", start=0) +
+    ggplot(act_by_child, aes(x = '', y = hours, fill = ol.activity)) +
+        geom_bar(stat = "identity", width = 1) +
+        coord_polar("y", start = 0) +
         # geom_text(aes(label = paste0(round(hours), "%")), position = position_stack(vjust = 0.5))+
-        scale_fill_manual(values=cols) +
-        labs(x = NULL, y = NULL, fill = NULL, title = "Activities distribution per day")+
-        theme_classic() + theme(axis.line = element_blank(),
-                                  axis.text = element_blank(),
-                                  axis.ticks = element_blank(),
-                                  plot.title = element_text(hjust = 0.5, color = "#666666"))
+        scale_fill_manual(values = cols) +
+        labs(
+            x = NULL,
+            y = NULL,
+            fill = NULL,
+            title = "Activities distribution per day"
+        ) +
+        theme_classic() + theme(
+            axis.line = element_blank(),
+            axis.text = element_blank(),
+            axis.ticks = element_blank(),
+            plot.title = element_text(hjust = 0.5, color = "#666666")
+        )
 }
 
 plot_hours_by_activity <- function(activitydata, grouper = NULL) {
@@ -77,7 +84,7 @@ plot_total_hour_distribution <- function(activitydata) {
         dur_by_child <- activitydata %>%
             group_by(child_id, day_id) %>%
             summarise(duration = sum(duration) / 60)
-
+        
         plot <- ggplot(dur_by_child, aes(x = duration)) +
             geom_histogram(binwidth = 2, fill = cols[1]) +
             theme_light() +
@@ -89,13 +96,19 @@ plot_total_hour_distribution <- function(activitydata) {
 
 plot_total_age_distribution <- function(maqdata) {
     if ('age_months' %in% names(maqdata)) {
-        plot <- ggplot(maqdata, aes(x = age_months, fill=study_id, colour=study_id)) +
-            geom_density(alpha=0.2, bw=7) +
+        plot <-
+            ggplot(maqdata,
+                   aes(
+                       x = age_months,
+                       fill = study_id,
+                       colour = study_id
+                   )) +
+            geom_density(alpha = 0.2, bw = 7) +
             theme_light() +
             labs(x = "Age in months", y = "Frequency") +
-            scale_fill_manual(values=cols) +
-            scale_color_manual(values=cols)
-            
+            scale_fill_manual(values = cols) +
+            scale_color_manual(values = cols)
+        
         
         plot
     }
@@ -119,18 +132,21 @@ plot_summary_histogram <- function(summarydata, column) {
 
 
 plot_subjects_by_site <- function(rawdata) {
-    act_by_child <- rawdata$tud$processed %>% 
-        group_by(nc.SubjectIdentification, site) %>% count() %>% mutate(source="TUD")
-    maq_by_child <- rawdata$maq$processed %>% mutate(study = replace(study, study == "BYU", "PM")) %>%
-        group_by(nc.SubjectIdentification, study) %>% count() %>% mutate(source="MAQ", site=study)
-    all_by_child = rbind(act_by_child, maq_by_child) %>% 
-        group_by(nc.SubjectIdentification, site) %>%  
-        summarise(source = paste0(source, collapse=" + "))
-    ggplot(all_by_child, aes(site, fill=source)) + geom_bar() +
+    act_by_child <- rawdata$tud$processed %>%
+        group_by(nc.SubjectIdentification, site) %>% count() %>% mutate(source =
+                                                                            "TUD")
+    maq_by_child <-
+        rawdata$maq$processed %>% mutate(study = replace(study, study == "BYU", "PM")) %>%
+        group_by(nc.SubjectIdentification, study) %>% count() %>% mutate(source =
+                                                                             "MAQ", site = study)
+    all_by_child = rbind(act_by_child, maq_by_child) %>%
+        group_by(nc.SubjectIdentification, site) %>%
+        summarise(source = paste0(source, collapse = " + "))
+    ggplot(all_by_child, aes(site, fill = source)) + geom_bar() +
         theme_light() +
-        scale_fill_manual(values = cols[c(5,4,1)],
-                      aesthetics = "fill",
-                      na.value = nacol)
+        scale_fill_manual(values = cols[c(5, 4, 1)],
+                          aesthetics = "fill",
+                          na.value = nacol)
 }
 # plot_chronicle_histogram <- function(chronicle) {
 #     if (column %in% names(summarydata)) {
@@ -171,14 +187,15 @@ plot_sbp <- function(rawdata) {
         'sf_Q1_mediahours_weekday',
         'sf_Q1_mediahours_weekend',
         'sf_Q2_no_media_bedtime',
-        'sf_Q3_mediahours_weekday',
-        'sf_Q3_mediahours_weekend'
+        'sf_Q3_noscreenmediahours_weekday',
+        'sf_Q3_noscreenmediahours_weekend'
     )
     
-    combined = rawdata$tud$summarised[cols] %>% 
-        full_join(rawdata$maq$processed[cols_maq], by = c('nc.SubjectIdentification' = 'child_id')) %>%
+    combined = rawdata$tud$summarised[cols] %>%
+        full_join(rawdata$maq$processed[cols_maq],
+                  by = c('nc.SubjectIdentification' = 'child_id')) %>%
         select(-c(nc.SubjectIdentification))
-    corr <- round(cor(combined, use="complete.obs"), 1)
+    corr <- round(cor(combined, use = "complete.obs"), 1)
     ggcorrplot(corr,
                ggtheme = theme_light(),
                colors = c('#2c7bb6',  '#ffffbf', '#d7191c'))
@@ -186,7 +203,7 @@ plot_sbp <- function(rawdata) {
 
 plot_barchart_activities <-
     function(activitydata, grouper1, grouper2) {
-        if (is.null(grouper1) | is.null(grouper2)){
+        if (is.null(grouper1) | is.null(grouper2)) {
             return(NULL)
         }
         if (grouper1 %in% names(activitydata) &
@@ -229,17 +246,19 @@ plot_tud_chron <-
         return(plt)
     }
 
-plot_by_study <- 
+plot_by_study <-
     function(summarydata, var1, var2) {
-        plt <- ggplot(summarydata, aes_string(x = var1, y = var2, color='site')) +
+        plt <-
+            ggplot(summarydata, aes_string(x = var1, y = var2, color = 'site')) +
             geom_point() + theme_light() +
             stat_smooth(method = "lm") +
             scale_fill_manual(values = cols,
                               aesthetics = "fill",
                               na.value = nacol) +
             scale_colour_manual(values = cols,
-                              aesthetics = "colour",
-                              na.value = nacol) + guides(color=guide_legend(override.aes=list(fill=NA)))
+                                aesthetics = "colour",
+                                na.value = nacol) + guides(color = guide_legend(override.aes =
+                                                                                    list(fill = NA)))
         return(plt)
     }
 
@@ -257,21 +276,52 @@ qa_plot <- function(summarydata) {
 
 # FUNCTIONS
 
-plot_maq <- function(summarydata, maqdata, tudcol, maqcol) {
-    if (is.null(tudcol) | is.null(maqcol) | tudcol == "" | maqcol == ""){
+# #cat
+# tudcol = "SBP_avoid_media_meals"
+# maqcol = "education"
+# 
+# # cont
+# maqcol = "age_months"
+# tudcol = "progress"
+
+plot_maq <- function(rawdata, tudcol, maqcol) {
+    summarydata <- rawdata$tud$summarised
+    maqdata <- rawdata$maq$processed
+    if (is.null(tudcol) |
+        is.null(maqcol) | tudcol == "" | maqcol == "") {
         return(NULL)
     }
-    togdata <- summarydata %>% inner_join(maqdata, by = "nc.SubjectIdentification")
-    plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
-        theme_light() +
-        geom_bar(stat = "summary",
-                 fun.y = "mean",
-                 fill = cols[5]) +
-        coord_flip()
+    togdata <-
+        summarydata %>% inner_join(maqdata, by = "nc.SubjectIdentification")
+    
+    tudnum = (typeof(summarydata[[tudcol]]) == "double" | typeof(summarydata[[tudcol]]) == "integer")
+    maqnum = (typeof(maqdata[[maqcol]]) == "double" | typeof(maqdata[[maqcol]]) == "integer")
+    if (tudnum & maqnum) {
+        plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
+            geom_point(color=cols[9]) + geom_smooth(method = lm, color=cols[1])
+    } else if (tudnum & !maqnum) {
+        plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol, fill = maqcol)) +
+            geom_violin(bw = "nrd", scale='count') + coord_flip() +
+            stat_summary(fun.y=median, geom="point", size=2, color="black")
+    } else if (!tudnum & maqnum) {
+        plt <- ggplot(togdata, aes_string(x = tudcol, y = maqcol, fill = tudcol)) +
+            geom_violin(bw = "nrd", scale='count') + coord_flip() +
+            stat_summary(fun.y=median, geom="point", size=2, color="black")
+    } else {
+        plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
+            geom_bar(stat = "summary",
+                              fun.y = "mean",
+                              fill = cols[5])
+    }
+    plt <- plt + 
+        scale_fill_manual(values = cols,
+                          aesthetics = "fill",
+                          na.value = nacol) +
+        theme_minimal() + theme(legend.position = "none")
     return(plt)
 }
 
-venn_plot <- function(rawdata){
+venn_plot <- function(rawdata) {
     if (!rawdata$auth) {
         return(NULL)
     }
@@ -309,17 +359,12 @@ venn_plot <- function(rawdata){
         cat.fontfamily = "sans",
         cat.fontface = "bold",
         cat.col = c(cols[1], cols[2], cols[4]),
-        scaled=TRUE,
+        scaled = TRUE,
         euler.D = TRUE,
         cat.dist = 0.03,
-        cat.pos = c(-10,5,5),
+        cat.pos = c(-10, 5, 5),
         label.col = "white",
         alpha = 0.8
     )
     
 }
-
-
-
-
-
