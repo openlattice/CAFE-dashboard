@@ -17,11 +17,7 @@ tud_maq_ui <- function(id) {
                  box(
                      width = 12,
                      title = "Select MAQ columns",
-                     selectInput(
-                         inputId = ns("tud_maq_column_M"),
-                         choices = c('study_id', 'employment', 'education', 'age_months', 'ethnicity', 'race'),
-                         label = 'Column'
-                     )
+                     uiOutput(ns("maq_cols"))
                  )
                  
              ),
@@ -57,10 +53,19 @@ tud_maq_base_server <-
             label = 'Column'
         ))
         
+        output$maq_cols <- renderUI(selectInput(
+            inputId = ns('tud_maq_column_M'),
+            choices = c(
+                rawdata$maq$coltypes$numeric,
+                rawdata$maq$coltypes$factorial,
+                rawdata$maq$coltypes$boolean
+            ),
+            label = 'Column'
+        ))
+
         output$plot_maq_tud <-
             renderPlot({
-                plot_maq(rawdata$tud$summarised,
-                         rawdata$maq$processed,
+                plot_maq(rawdata,
                          input$tud_maq_column_T,
                          input$tud_maq_column_M)
             })
