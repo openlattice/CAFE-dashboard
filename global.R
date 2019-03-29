@@ -42,7 +42,7 @@ source("functions/configuration.R")
 source("functions/chronicle_transform_data.R")
 source("functions/read_tables.R")
 
-
+source("modules/authentication.R")
 source("modules/qa.R")
 source("modules/tud_maq.R")
 source("modules/sbp.R")
