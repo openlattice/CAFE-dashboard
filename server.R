@@ -36,7 +36,7 @@ shinyServer(function(input, output, session) {
 
     # authentication via cookie
     reactive({
-            newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
+            newdat <- get_data(jwt(), cache = TRUE, auth = FALSE, local=FALSE)
             rawdata$tud <- newdat$tud
             rawdata$chronicle <- newdat$chronicle
             rawdata$maq <- newdat$maq
