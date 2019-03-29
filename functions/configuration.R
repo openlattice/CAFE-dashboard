@@ -15,8 +15,10 @@ get_master_jwt <- function() {
 is_authorized <- function(apis, local=FALSE){
     if (local) {return(TRUE)}
     if (!is.null(apis) & "TimeUseDiary READ" %in% apis$personal$prinApi$get_current_roles()$title) {
+        runjs(paste0("console.log('Part of role.');"))
         return(TRUE)
     }
+    runjs(paste0("console.log('Not part of role.');"))
     return(FALSE)
 }
 

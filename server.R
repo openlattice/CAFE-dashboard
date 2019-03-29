@@ -4,14 +4,8 @@ shinyServer(function(input, output, session) {
     # loading data and observing column names #
     ###########################################
     
-    runjs('
-        var get_cookies = function() {
-            var ze_cookies = Cookies.get();
-            Shiny.onInputChange("cookies", ze_cookies);
-            console.log(ze_cookies);
-        }
-        get_cookies()
-    ')
+    jwt <- reactiveVal('NA')
+    jwt <- callModule(authentication_server, "authentication", jwt)
 
     hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=tables]")
@@ -41,14 +35,8 @@ shinyServer(function(input, output, session) {
         )
 
     # authentication via cookie
-    observeEvent(input$cookies, {
-        if (!rawdata$auth){
-            jwt = str_replace(input$cookies$authorization,"Bearer ", "")
-            shinyjs::addCssClass(
-                id = "emptyplot",
-                class = "recalculating"
-            )
-            newdat <- get_data(jwt, cache = TRUE, auth = FALSE, local=FALSE)
+    reactive({
+            newdat <- get_data(jwt(), cache = TRUE, auth = FALSE, local=FALSE)
             rawdata$tud <- newdat$tud
             rawdata$chronicle <- newdat$chronicle
             rawdata$maq <- newdat$maq
@@ -59,8 +47,7 @@ shinyServer(function(input, output, session) {
                 id = "emptyplot",
                 class = "recalculating"
             )
-        }
-    }, ignoreNULL=FALSE)
+    })
     
     observeEvent(input$subset, {
         print("subsetting...")
