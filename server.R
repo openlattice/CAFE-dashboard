@@ -4,7 +4,8 @@ shinyServer(function(input, output, session) {
     # loading data and observing column names #
     ###########################################
     
-    jwt <- reactiveVal('NA')
+    token="NA"
+    jwt <- reactiveVal(token)
     jwt <- callModule(authentication_server, "authentication", jwt)
 
     hide(selector = "#navbar li a[data-value=participants]")
@@ -35,8 +36,12 @@ shinyServer(function(input, output, session) {
         )
 
     # authentication via cookie
-    reactive({
-            newdat <- get_data(jwt(), cache = TRUE, auth = FALSE, local=FALSE)
+    observe({
+        shinyjs::addCssClass(
+            id = "emptyplot",
+            class = "recalculating"
+        )
+        newdat <- get_data(jwt(), cache = TRUE, auth = FALSE, local=TRUE)
             rawdata$tud <- newdat$tud
             rawdata$chronicle <- newdat$chronicle
             rawdata$maq <- newdat$maq
@@ -187,6 +192,7 @@ shinyServer(function(input, output, session) {
                "activity",
                rawdata)
     callModule(venn_server, "participants", rawdata)
+    callModule(demographics_server, "participants", rawdata)
     callModule(summary_plots,
                "summary",
                rawdata)
