@@ -21,6 +21,7 @@ demographics_ui <- function(id) {
                  width = 8,
                  box(
                      width = 12,
+                     height = 700,
                      solidHeader = TRUE,
                      title = "Demographics",
                      addSpinner(plotOutput(ns("demographicsplot")), spin = "bounce", color = cols[1])
@@ -93,7 +94,7 @@ demographics_server <-
             renderPlot({
                 data <- get_demographics_data(rawdata, input$demcol3, input$remove_missing_maq)
                 demographics_plot(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
-            }, height = 500
+            }, height = 700
             )
         
         # output$demographicsplot_download <-
@@ -141,23 +142,18 @@ demographics_server <-
 create_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
     if (is.null(data)){return(NA)}
     if (col2 == ""){
-        stats <- data %>% select(col1, col3) %>% 
-            group_by_(col1) %>% 
-            summarise(
-                mean = mean(!!sym(col3), na.rm=TRUE),
-                sd = sd(!!sym(col3), na.rm=TRUE),
-                count = n(),
-                na = sum(is.na(!!sym(col3)), na.rm=TRUE)
-            )
+        base <- data %>% select(col1, col3) %>% 
+            group_by_(col1)
     } else {
-    stats <- data %>% select(col1, col2, col3) %>% 
-        group_by_(col1, col2) %>% 
+    base <- data %>% select(col1, col2, col3) %>% 
+        group_by_(col1, col2)
+    }
+    stats <- base  %>% 
         summarise(
             mean = mean(!!sym(col3), na.rm=TRUE),
             sd = sd(!!sym(col3), na.rm=TRUE),
             count = n(),
             na = sum(is.na(!!sym(col3)), na.rm=TRUE)
         )
-    }
     return(stats)
 }
