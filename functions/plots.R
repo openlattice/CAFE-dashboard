@@ -368,3 +368,51 @@ venn_plot <- function(rawdata) {
     )
     
 }
+
+# col1 <- "ethnicity"
+# col2 <- "education"
+# col3 <- "play_inside_hours"
+# remove_missing_maq <- TRUE
+# 
+# demographics_plot(rawdata, col1, col2, col3, remove_missing_maq)
+
+
+demographics_plot <- function(data, col1, col2, col3, remove_missing_maq=FALSE) {
+    
+    if (is.null(data)){return(NULL)}
+    if (col2=="") {
+        plot = ggplot(data,
+                      aes_string(x = col1,
+                                 y = col3
+                      ))
+    } else {
+        plot = ggplot(data,
+       aes_string(x = col1,
+                  fill = col2,
+                  y = col3
+       ))
+    }
+        plot + geom_bar(
+            stat="summary", fun.y = "mean",
+            position=position_dodge()
+            
+        ) + theme_light() +
+        scale_fill_manual(values = cols,
+                          aesthetics = "fill",
+                          na.value = nacol) +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
