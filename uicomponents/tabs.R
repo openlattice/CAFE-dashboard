@@ -1,23 +1,14 @@
 home <- tabPanel(
     title = 'home',
     fluidRow(
-        column(width = 4,
+        column(width = 6,
         box(
             width = 12,
             solidHeader =  TRUE,
             status = "primary",
             HTML('<center><img src="cafe-logo.png" width="300px"></center>')
         )),
-        column(width = 4,box(
-            title = "CAFE analytics dashboard",
-            width = 12,
-            solidHeader =  TRUE,
-            status = "primary",
-            HTML('This application shows results from the \"Children and Screens\" study.  \
-            To load the data, please visit <a href="https://openlattice.com/login">OpenLattice Login</a> to activate \
-            your account.  When you come back, you should be able to load the data.')
-        )),
-        column(width = 4,box(
+        column(width = 6,box(
             width = 12,
             solidHeader =  TRUE,
             status = "primary",
