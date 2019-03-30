@@ -93,7 +93,8 @@ demographics_server <-
             renderPlot({
                 data <- get_demographics_data(rawdata, input$demcol3, input$remove_missing_maq)
                 demographics_plot(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
-            })
+            }, height = 500
+            )
         
         # output$demographicsplot_download <-
         #     downloadHandler(
@@ -139,6 +140,16 @@ demographics_server <-
 
 create_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
     if (is.null(data)){return(NA)}
+    if (col2 == ""){
+        stats <- data %>% select(col1, col3) %>% 
+            group_by_(col1) %>% 
+            summarise(
+                mean = mean(!!sym(col3), na.rm=TRUE),
+                sd = sd(!!sym(col3), na.rm=TRUE),
+                count = n(),
+                na = sum(is.na(!!sym(col3)), na.rm=TRUE)
+            )
+    } else {
     stats <- data %>% select(col1, col2, col3) %>% 
         group_by_(col1, col2) %>% 
         summarise(
@@ -147,5 +158,6 @@ create_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
             count = n(),
             na = sum(is.na(!!sym(col3)), na.rm=TRUE)
         )
+    }
     return(stats)
 }
