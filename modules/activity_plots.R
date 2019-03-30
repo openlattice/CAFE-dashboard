@@ -4,7 +4,7 @@
 
 activity_barcharts_ui <- function(id) {
     ns <- NS(id)
-    tabPanel("TUD activities",
+    tabPanel("Activities",
              fluidRow(column(
                  width = 4,
                  box(width = 12,
