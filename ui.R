@@ -28,7 +28,8 @@ tagList(
         home,
         navbarMenu(
            "participants",
-           venn_ui("participants")
+           venn_ui("participants"),
+           demographics_ui("participants")
         ),
         navbarMenu(
             "tables",

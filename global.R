@@ -41,6 +41,7 @@ source("functions/constants.R")
 source("functions/configuration.R")
 source("functions/chronicle_transform_data.R")
 source("functions/read_tables.R")
+source("functions/utils.R")
 
 source("modules/authentication.R")
 source("modules/qa.R")
@@ -51,9 +52,10 @@ source("modules/activity_plots.R")
 source("modules/summary_plots.R")
 source("modules/chrontud.R")
 source("modules/venn.R")
+source("modules/demographics.R")
 
 source("uicomponents/tabs.R")
 
-read_yaml("secrets.yaml")
+secrets <- read_yaml("secrets.yaml")
 
 
