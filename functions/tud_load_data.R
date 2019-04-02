@@ -64,7 +64,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     print("Getting data !")
     
     if (cache) {
-        rawdata <- read_data(apis, auth = auth)
+        rawdata <- read_data(apis, auth = auth, local = local)
     } else {
         rawdata <- load_data(apis)
     }
@@ -103,9 +103,14 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
 }
 
 
-read_data <- function(apis, auth = FALSE) {
+read_data <- function(apis, auth = FALSE, local = FALSE) {
     print("Getting the data !")
-    rawdata <- read_yaml("data/rawdata_20190401.yaml")
+    filename = "rawdata_20190401.yaml"
+    if (local) {
+        rawdata <- read_yaml(paste0("data/", filename))
+    } else {
+        rawdata <- read_yaml(paste0("/opt/shiny/data/", filename))
+    }
     rawdata <- add_authentication_to_raw(rawdata, apis, auth = auth)
     print("Got the data !")
     return(rawdata)
