@@ -11,7 +11,7 @@ demographics_ui <- function(id) {
                      width = 12,
                      solidHeader = TRUE,
                      title = "Select columns",
-                     # uiOutput(ns("remove_missing_maq")),
+                     uiOutput(ns("remove_missing_maq")),
                      uiOutput(ns("dem_column1")),
                      uiOutput(ns("dem_column2")),
                      uiOutput(ns("dem_column3"))
@@ -21,7 +21,7 @@ demographics_ui <- function(id) {
                  width = 8,
                  box(
                      width = 12,
-                     height = 700,
+                     height = 1000,
                      solidHeader = TRUE,
                      title = "Demographics",
                      addSpinner(plotOutput(ns("demographicsplot")), spin = "bounce", color = cols[1])
@@ -157,3 +157,70 @@ create_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
         )
     return(stats)
 }
+
+# col1 <- "ethnicity"
+# col2 <- "race"
+# col3 <- "n"
+# remove_missing_maq <- TRUE
+# data <- get_demographics_data(rawdata, col3, remove_missing_maq)
+# demographics_plot(data, col1, col2, col3, remove_missing_maq)
+
+
+demographics_plot <- function(data, col1, col2, col3, remove_missing_maq=FALSE) {
+    
+    if (is.null(data)){return(NULL)}
+    if (col3 == "n") {
+        plot = ggplot(data,
+                      aes_string(x = col1,
+                                 fill = col2)) + 
+            geom_bar(position=position_dodge())
+        
+    } else {
+        if (col2=="") {
+            plot = ggplot(data,
+                          aes_string(x = col1,
+                                     y = col3
+                          ))
+        } else {
+            plot = ggplot(data,
+                          aes_string(x = col1,
+                                     fill = col2,
+                                     y = col3
+                          ))
+        }
+        plot <- plot + geom_bar(
+            stat="summary", fun.y = "mean",
+            position=position_dodge())
+    }
+        
+    plot + theme_light() +
+        scale_fill_manual(values = cols,
+                          aesthetics = "fill",
+                          na.value = nacol) +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+}
+
+
+get_demographics_data <- function(rawdata, column, remove_missing_maq) {
+    if (column != "n"){
+        if (!rawdata$auth) {
+            return(NULL)
+        }
+        dataset <- get_dataset_from_col(rawdata, column)
+        if (dataset == "maq"){
+            data <- rawdata$maq$processed
+            return(data)
+        }
+    }
+    if (remove_missing_maq) {
+        data <- rawdata$maq$processed %>% full_join(rawdata$tud$summarised, 
+                                                    by="nc.SubjectIdentification")
+        return(data)
+    }
+    data <- rawdata$maq$processed %>% left_join(rawdata$tud$summarised, 
+                                                by="nc.SubjectIdentification")
+    return(data)
+}
+
