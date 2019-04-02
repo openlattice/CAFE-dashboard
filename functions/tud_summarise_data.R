@@ -43,6 +43,7 @@ summarise_data <- function(activitydata) {
       screen_while_feeding_hours = sum(duration[screen & str_detect(ol.activity, "Eating")], na.rm=TRUE)/60,
       
       screen_adult_coviewing_hours = sum(duration[screen & adults_present==TRUE], na.rm=TRUE)/60,
+      screen_adult_coviewing_over_screen = (sum(duration[screen & adults_present==TRUE], na.rm=TRUE)/60 / sum(duration[screen], na.rm=TRUE)/60),
       sleeping_hours = sum(duration[str_detect(ol.activity, "Sleeping")], na.rm=TRUE)/60,
       sleeping_blocks = sum(str_detect(ol.activity, "Sleeping"), na.rm=TRUE),
       sleeping_btv_hours = sum(duration[str_detect(ol.activity, "Sleeping") & background_media_tv==TRUE], na.rm=TRUE)/60,
