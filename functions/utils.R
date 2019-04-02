@@ -4,7 +4,12 @@ get_demographics <- function(rawdata) {
 }
 
 get_vars <- function(rawdata) {
-    c(list(maq = rawdata$maq$coltypes$numeric, tud = rawdata$tud$summarised_coltypes$numeric))
+    if (length(rawdata$maq$coltypes$numeric)>1){
+        maqcols <- rawdata$maq$coltypes$numeric
+    } else {
+        maqcols <- c(rawdata$maq$coltypes$numeric)
+    }
+    c(list(maq = maqcols, tud = rawdata$tud$summarised_coltypes$numeric), "n")
 }
 
 
@@ -16,22 +21,4 @@ get_dataset_from_col <- function(rawdata, column){
     return(dataset)
 }
 
-get_demographics_data <- function(rawdata, column, remove_missing_maq) {
-    if (!rawdata$auth) {
-        return(NULL)
-    }
-    dataset <- get_dataset_from_col(rawdata, column)
-    if (dataset == "maq"){
-        data <- rawdata$maq$processed
-        return(data)
-    }
-    if (remove_missing_maq) {
-        data <- rawdata$maq$processed %>% full_join(rawdata$tud$summarised, 
-                                                    by="nc.SubjectIdentification")
-        return(data)
-    }
-    data <- rawdata$maq$processed %>% left_join(rawdata$tud$summarised, 
-                                                by="nc.SubjectIdentification")
-    return(data)
-}
 
