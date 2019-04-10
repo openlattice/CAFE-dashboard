@@ -33,7 +33,8 @@ tagList(
         ),
         navbarMenu(
             "analysis",
-            concon_ui("analysis")
+            concon_ui("analysis"),
+            catcon_ui("analysis")
         ),
         navbarMenu(
             "tables",

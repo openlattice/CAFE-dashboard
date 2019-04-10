@@ -54,6 +54,7 @@ source("modules/chrontud.R")
 source("modules/venn.R")
 source("modules/demographics.R")
 source("modules/con_con.R")
+source("modules/cat_con.R")
 
 source("uicomponents/tabs.R")
 
