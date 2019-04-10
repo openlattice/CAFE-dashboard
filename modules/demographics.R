@@ -81,7 +81,7 @@ demographics_server <-
         output$dem_column3 <- renderUI(selectInput(
             inputId = ns("demcol3"),
             "Choose column 3:",
-            choices = get_vars(rawdata)
+            choices = c(get_vars(rawdata, "numeric"), other = c("n"))
         ))
         
         output$remove_missing_maq <- renderUI(checkboxInput(
@@ -209,17 +209,23 @@ get_demographics_data <- function(rawdata, column, remove_missing_maq) {
             return(NULL)
         }
         dataset <- get_dataset_from_col(rawdata, column)
+        print(dataset)
         if (dataset == "maq"){
             data <- rawdata$maq$processed
             return(data)
         }
     }
+    if (dataset == "tud") {
+        tojoin = rawdata$tud$summarised
+    } else {
+        tojoin = rawdata$chronicle$processed
+    }
     if (remove_missing_maq) {
-        data <- rawdata$maq$processed %>% full_join(rawdata$tud$summarised, 
+        data <- rawdata$maq$processed %>% full_join(tojoin, 
                                                     by="nc.SubjectIdentification")
         return(data)
     }
-    data <- rawdata$maq$processed %>% left_join(rawdata$tud$summarised, 
+    data <- rawdata$maq$processed %>% left_join(tojoin, 
                                                 by="nc.SubjectIdentification")
     return(data)
 }
