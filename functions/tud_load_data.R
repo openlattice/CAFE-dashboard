@@ -2,15 +2,19 @@ subset_data <-
     function(rawdata,
              hourbool,
              hourrange,
+             agebool,
+             agerange,
              sitesbool,
              sitesrange,
              progressbool,
-             progressrange
+             progressrange,
+             qualitybool,
+             qualityrange
              ) {
         
         output = list(tud = rawdata$tud$preprocessed,
                       maq = rawdata$maq$preprocessed)
-        
+
         # subset hours
         if (hourbool) {
             print("hours")
@@ -43,6 +47,28 @@ subset_data <-
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
         }
         
+        if (agebool) {
+            print("age")
+            subset <- rawdata$maq$preprocessed %>% 
+                filter(age_months > agerange[1] & age_months < agerange[2]) %>% select("nc.SubjectIdentification")
+            output$tud <- output$tud %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            output$maq <- output$maq %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            
+        }
+        
+        if (qualitybool) {
+            print("quality")
+            subset <- rawdata$maq$preprocessed %>% 
+                filter(mean_quality > qualityrange[1] & mean_quality < qualityrange[2]) %>% select("nc.SubjectIdentification")
+            output$tud <- output$tud %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            output$maq <- output$maq %>%
+                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            
+        }
+
         output$summary = summarise_data(output$tud)
         
         return(output)
@@ -79,25 +105,38 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     rawdata$tud[['processed']] = rawdata$tud[['preprocessed']]
     rawdata$tud[['summarised']] = summarise_data(rawdata$tud[['processed']])
     rawdata$maq[['preprocessed']] = process_maq(rawdata)
-    rawdata$maq[['processed']] = process_maq(rawdata)
+    rawdata$maq[['processed']] = rawdata$maq[['preprocessed']]
+    
+    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification")
     
     rawdata$tud[['processed_coltypes']] <- list(
-        numeric = rawdata$tud$processed %>% select(which(sapply(., is.numeric))) %>% names,
         factorial = rawdata$tud$processed %>% select(which(sapply(., is.factor))) %>% names,
         boolean = rawdata$tud$processed %>% select(which(sapply(., is.logical))) %>% names
     )
+    done = c(rawdata$tud$processed_coltypes$factorial, rawdata$tud$processed_coltypes$boolean, toremove)
+    rawdata$tud[['processed_coltypes']][['numeric']] <-  setdiff(names(rawdata$tud$processed), done)
     
-    rawdata$tud[['summarised_coltypes']] <- list(
-        numeric = rawdata$tud$summarised %>% select(which(sapply(., is.numeric))) %>% names,
+    rawdata$tud[['coltypes']] <- list(
         factorial = rawdata$tud$summarised %>% select(which(sapply(., is.factor))) %>% names,
         boolean = rawdata$tud$summarised %>% select(which(sapply(., is.logical))) %>% names
     )
+    done = c(rawdata$tud$coltypes$factorial, rawdata$tud$coltypes$boolean, toremove)
+    rawdata$tud[['coltypes']][['numeric']] <-  setdiff(names(rawdata$tud$summarised), done)
     
     rawdata$maq[['coltypes']] <- list(
-        numeric = rawdata$maq$processed %>% select(which(sapply(., is.numeric))) %>% names,
         factorial = rawdata$maq$processed %>% select(which(sapply(., is.factor))) %>% names,
         boolean = rawdata$maq$processed %>% select(which(sapply(., is.logical))) %>% names
     )
+    done = c(rawdata$maq$coltypes$factorial, rawdata$maq$coltypes$boolean, toremove)
+    rawdata$maq$coltypes[['numeric']] <-  setdiff(names(rawdata$maq$processed), done)
+    
+    rawdata$chronicle[['coltypes']] <- list(
+        factorial = rawdata$chronicle$processed %>% select(which(sapply(., is.factor))) %>% names,
+        boolean = rawdata$chronicle$processed %>% select(which(sapply(., is.logical))) %>% names
+    )
+    done = c(rawdata$chronicle$coltypes$factorial, rawdata$chronicle$coltypes$boolean, toremove)
+    rawdata$chronicle$coltypes[['numeric']] <-  setdiff(names(rawdata$chronicle$processed), done)
+    
     return(rawdata)
     
 }
@@ -105,7 +144,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
 
 read_data <- function(apis, auth = FALSE, local = FALSE) {
     print("Getting the data !")
-    filename = "rawdata_20190401.yaml"
+    filename = "rawdata_20190409.yaml"
     if (local) {
         rawdata <- read_yaml(paste0("data/", filename))
     } else {
