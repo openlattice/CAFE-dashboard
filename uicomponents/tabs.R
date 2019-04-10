@@ -91,19 +91,18 @@ home <- tabPanel(
                  max = 48,
                  value = c(18, 26)
             ),
-            # h4("Age"),
-            # tags$b("NOT WORKING YET"),
-            # checkboxInput(
-            #     "subset_age_on",
-            #     label = "Subset age"
-            # ),
-            # sliderInput(
-            #     "subset_age",
-            #     label = "",
-            #     min = 0,
-            #     max = 20,
-            #     value = c(0, 20)
-            # ),
+            h4("Age"),
+            checkboxInput(
+                "subset_age_on",
+                label = "Subset age (months)"
+            ),
+            sliderInput(
+                "subset_age",
+                label = "",
+                min = 0,
+                max = 240,
+                value = c(0, 24)
+            ),
          h4("Progress"),
             checkboxInput(
                 "subset_progress_on",
@@ -116,7 +115,19 @@ home <- tabPanel(
                 max = 100,
                 value = c(0, 100)
             ),
-            h4("Site"),
+         h4("Quality checks"),
+         checkboxInput(
+             "subset_quality_on",
+             label = "Subset quality"
+         ),
+         sliderInput(
+             "subset_quality",
+             label = "",
+             min = 0,
+             max = 1,
+             value = c(0, 1)
+         ),
+         h4("Site"),
             checkboxInput(
                 "subset_sites_on",
                 label = "Subset site"
