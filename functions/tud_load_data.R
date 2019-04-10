@@ -107,7 +107,7 @@ get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     rawdata$maq[['preprocessed']] = process_maq(rawdata)
     rawdata$maq[['processed']] = rawdata$maq[['preprocessed']]
     
-    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification", "day_id")
+    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification", "day_id", "pid")
     
     rawdata$tud[['processed_coltypes']] <- list(
         factorial = rawdata$tud$processed %>% select(which(sapply(., is.factor))) %>% names,

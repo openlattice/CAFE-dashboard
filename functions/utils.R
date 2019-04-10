@@ -1,5 +1,5 @@
 get_demographics <- function(rawdata) {
-    dem <- c("education", "employment", "race", "ethnicity")
+    dem <- c("education", "employment", "race", "ethnicity", "income")
     return (dem)
 }
 
@@ -21,6 +21,8 @@ get_numeric_vars <- function(rawdata) {
 
 get_vars <- function(rawdata, type) {
     out = list()
+    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification", "day_id", "pid", "table_access", "study_id")
+
     for (kw in c("tud", "maq", "chronicle")) {
         if (length(rawdata[[kw]]$coltypes[[type]])>1){
             cols <- rawdata[[kw]]$coltypes[[type]]
@@ -29,7 +31,7 @@ get_vars <- function(rawdata, type) {
         } else {
             cols <- c(rawdata[[kw]]$coltypes[[type]])
         }
-        out[[kw]] <- cols
+        out[[kw]] <- setdiff(cols, toremove)
     }
     return(out)
 }

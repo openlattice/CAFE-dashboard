@@ -10,6 +10,7 @@ shinyServer(function(input, output, session) {
     jwt <- callModule(authentication_server, "authentication", jwt)
 
     hide(selector = "#navbar li a[data-value=participants]")
+    hide(selector = "#navbar li a[data-value=analysis]")
     hide(selector = "#navbar li a[data-value=tables]")
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
@@ -79,6 +80,7 @@ shinyServer(function(input, output, session) {
         if (rawdata$auth) {
             shinyjs::show(selector = "#navbar li a[data-value=participants]")
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
+            shinyjs::show(selector = "#navbar li a[data-value=analysis]")
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
             shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
@@ -199,6 +201,7 @@ shinyServer(function(input, output, session) {
     callModule(venn_server, "participants", rawdata)
     callModule(demographics_server, "participants", rawdata)
     callModule(concon_server, "analysis", rawdata)
+    callModule(catcon_server, "analysis", rawdata)
     callModule(summary_plots,
                "summary",
                rawdata)
