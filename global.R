@@ -53,6 +53,7 @@ source("modules/summary_plots.R")
 source("modules/chrontud.R")
 source("modules/venn.R")
 source("modules/demographics.R")
+source("modules/con_con.R")
 
 source("uicomponents/tabs.R")
 

@@ -198,6 +198,7 @@ shinyServer(function(input, output, session) {
                rawdata)
     callModule(venn_server, "participants", rawdata)
     callModule(demographics_server, "participants", rawdata)
+    callModule(concon_server, "analysis", rawdata)
     callModule(summary_plots,
                "summary",
                rawdata)
