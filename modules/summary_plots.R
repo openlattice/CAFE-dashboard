@@ -106,7 +106,7 @@ summary_plots <-
         output$hist_column <- renderUI(
             radioButtons(
                 inputId = ns('histcol'),
-                choices = rawdata$tud$summarised_coltypes$numeric[rawdata$tud$summarised_coltypes$numeric != "nc.SubjectIdentification"],
+                choices = rawdata$tud$coltypes$numeric[rawdata$tud$coltypes$numeric != "nc.SubjectIdentification"],
                 label = 'Column'
             )
         )
@@ -133,9 +133,9 @@ summary_plots <-
             ns("crosscol"),
             "Choose columns:",
             choices = c(
-                rawdata$tud$summarised_coltypes$numeric,
-                rawdata$tud$summarised_coltypes$factorial[rawdata$tud$summarised_coltypes$factorial != "nc.SubjectIdentification"],
-                rawdata$tud$summarised_coltypes$boolean
+                rawdata$tud$coltypes$numeric,
+                rawdata$tud$coltypes$factorial[rawdata$tud$coltypes$factorial != "nc.SubjectIdentification"],
+                rawdata$tud$coltypes$boolean
             )
         ))
 
@@ -161,7 +161,7 @@ summary_plots <-
             ns("sitecol1"),
             "Choose column 1:",
             choices = c(
-                rawdata$tud$summarised_coltypes$numeric
+                rawdata$tud$coltypes$numeric
             )
         ))
         
@@ -169,7 +169,7 @@ summary_plots <-
             ns("sitecol2"),
             "Choose column 2:",
             choices = c(
-                rawdata$tud$summarised_coltypes$numeric
+                rawdata$tud$coltypes$numeric
             )
         ))
         
