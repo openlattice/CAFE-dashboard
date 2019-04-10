@@ -25,6 +25,7 @@ process_maq <- function(rawdata) {
         left_join(rawdata$maq$nodes$Children, by = c(src = "openlattice.@id")) %>%
         left_join(rawdata$maq$nodes$Device_Use, by = c(dst = "openlattice.@id")) %>%
         rename(child_id = nc.SubjectIdentification) %>%
+        select(-c(table_access.x, table_access.y)) %>%
         # rowwise() %>%
         mutate(
             mn = ol.duration,
@@ -68,7 +69,6 @@ process_maq <- function(rawdata) {
         drop_na(child_id) %>%
         left_join(rawdata$maq$nodes$ChildrenDetails,
                   by = c(dst = "openlattice.@id")) %>%
-        mutate(table_access = (table_access.x & table_access.y)) %>%
         select(-c(table_access.x, table_access.y)) %>%
         mutate(
             birthmonth = match(str_sub(ol.birthmonth, 1, 3), month.abb),
@@ -81,9 +81,17 @@ process_maq <- function(rawdata) {
         ) %>% arrange(child_id, birthyear) %>%
         group_by(child_id) %>% slice(1) %>% ungroup()
     
-    # incomes = rawdata$maq$edges$Respondents_Incomes %>%
-    #     left_join(rawdata$maq$nodes$Respondents, by = c(src = "openlattice.@id")) %>%
-    #     left_join(rawdata$maq$nodes$Incomes, by = c(dst = "openlattice.@id"))
+    incomes = rawdata$maq$edges$Respondents_Incomes %>%
+        left_join(rawdata$maq$nodes$Respondents, by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$maq$nodes$Incomes, by = c(dst = "openlattice.@id"))%>%
+        rename(
+            respondent_id = nc.SubjectIdentification,
+            study = study.x,
+            income = ol.type
+        ) %>%
+        select(-c(table_access.x, table_access.y)) %>%
+        filter(str_detect(income, "$")) %>%
+        group_by(respondent_id) %>% slice(1) %>% ungroup()
     
     employment = rawdata$maq$edges$Respondents_Employment %>%
         left_join(rawdata$maq$nodes$Respondents,
@@ -126,15 +134,127 @@ process_maq <- function(rawdata) {
         rename(respondent_id = nc.SubjectIdentification,
                study = study.x,
                education = person.highesteducation) %>%
-        mutate(table_access = (table_access.x & table_access.y)) %>%
         select(-c(table_access.x, table_access.y)) %>%
         group_by(respondent_id) %>% slice(1) %>% ungroup()
     
+    quality = rawdata$maq$edges$Respondents_QualityControl %>%
+        left_join(rawdata$maq$nodes$Respondents,
+                  by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$maq$nodes$QualityControl, by = c(dst = "openlattice.@id")) %>%
+        select(-c(table_access.x, table_access.y))%>%
+        mutate(correct = str_detect(ol.description, regex(ol.selection, ignore_case=TRUE))) %>%
+        rename(respondent_id = nc.SubjectIdentification,
+               study = study.x)  %>%
+        group_by(respondent_id) %>%
+        summarise(
+            n_quality = n(),
+            mean_quality = mean(correct, na.rm=TRUE)
+        )
+    
+    defensive_vars = c('ol.overwhelmed',
+                           'ol.parentalresponsibilities',
+                           'ol.feelingtrapped',
+                           # 'ol.dissatisfiedwithlife',
+                           'ol.relationshipissues',
+                           'ol.loneliness',
+                           'ol.socialdisinterest')
+    pd_vars = c('ol.overwhelmed',
+                    'ol.parentalresponsibilities',
+                    'ol.feelingtrapped',
+                    'ol.opportunitycost',
+                    'ol.restrictedactivities',
+                    'ol.dissatisfiedwithpurchase',
+                    # 'ol.dissatisfiedwithlife',
+                    'ol.relationshipissues',
+                    'ol.loneliness',
+                    'ol.expectations',
+                    'ol.socialdisinterest',
+                    'ol.anhedonia')
+    pcdi_vars = c('ol.dissatisfiedwithparenting', 
+                      'ol.emotionallydistant',
+                      'ol.facialexpression',
+                      'ol.unappreciated',
+                      'ol.laughter',
+                      'ol.relativespeed',
+                      'ol.relativefrequency', 
+                      'ol.limitations',
+                      'ol.behaviorchange', 
+                      'ol.parentingquality', 
+                      'ol.strengthofemotion', 
+                      'ol.behavioralissue')
+    dc_vars = c('ol.affect',
+                    'bhr.disposition',
+                    'ol.mood' , 
+                    'ol.botheredbyperson' , 
+                    'ol.reactionseverity' ,
+                    'ol.easilyupset' , 
+                    'neurological.sleeppattern' , 
+                    'ol.discipline', 
+                    # 'ol.number', 
+                    'ol.botheredbyactions' , 
+                    'ol.moreproblematic' , 
+                    'ol.demanding')
+    
+    
+    level_key_1 <- c(
+        "Strongly disagree" = '1',
+        "Disagree" = '2',
+        "Not Sure" = '3',
+        "Agree" = '4',
+        "Strongly Agree" = '5'
+    )
+    level_key_2 <- c(
+        "A very good parent" = '1',
+        "A better than average parent" = '2',
+        "An average parent" = '3',
+        "A person who has some trouble being a parent" = '4',
+        "Not very good at being a parent" = '5'
+    )
+    level_key_3 <- c("Much easier than I expected" = '1', 
+                     "Somewhat easier than I expected" = '2', 
+                     "About as hard as I expected" = '3', 
+                     "Somewhat harder than I expected" = '4', 
+                     "Much harder than I expected" = '5')
+    
+    
+    psi = rawdata$maq$edges$Respondents_PSI_Assessment %>%
+        left_join(rawdata$maq$nodes$Respondents,
+                  by = c(src = "openlattice.@id")) %>%
+        left_join(rawdata$maq$nodes$PSI_Assessment, by = c(dst = "openlattice.@id")) %>%
+        select(-c(table_access.x, table_access.y)) %>%
+        dplyr::rename(respondent_id = nc.SubjectIdentification, study = study.x)  %>%
+        group_by(respondent_id) %>% slice(1) %>%
+        mutate_at(vars(c(defensive_vars, pd_vars, pcdi_vars, dc_vars)), recode, !!!level_key_1) %>%
+        mutate_at(vars(c(defensive_vars, pd_vars, pcdi_vars, dc_vars)), recode, !!!level_key_2) %>%
+        mutate_at(vars(c(defensive_vars, pd_vars, pcdi_vars, dc_vars)), recode, !!!level_key_3) %>%
+        mutate_at(vars(c(defensive_vars, pd_vars, pcdi_vars, dc_vars)), as.numeric) %>% 
+        plyr::mutate(
+            defensive_n_missing = apply(.[,defensive_vars], 1, function(x) sum(is.na(x))),
+            defensive = apply(.[,defensive_vars], 1, function(x) mean(x)),
+            defensive_cor = ifelse(defensive_n_missing < 2, defensive, NA),
+            pd_n_missing = apply(.[,pd_vars], 1, function(x) sum(is.na(x))),
+            pd = apply(.[,pd_vars], 1, function(x) mean(x)),
+            pd_cor = ifelse(pd_n_missing < 2, pd, NA),
+            pcdi_n_missing = apply(.[,pcdi_vars], 1, function(x) sum(is.na(x))),
+            pcdi = apply(.[,pcdi_vars], 1, function(x) mean(x)),
+            pcdi_cor = ifelse(pcdi_n_missing < 2, pcdi, NA),
+            dc_n_missing = apply(.[,dc_vars], 1, function(x) sum(is.na(x))),
+            dc = apply(.[,dc_vars], 1, function(x) mean(x)),
+            dc_cor = ifelse(dc_n_missing < 2, dc, NA),
+            psi_n_missing = apply(.[,c(pd_vars, pcdi_vars, dc_vars)], 1, function(x) sum(is.na(x))),
+            psi = apply(.[,c(pd_vars, pcdi_vars, dc_vars)], 1, function(x) mean(x)),
+            psi_cor = ifelse(dc_n_missing < 2, psi, NA)
+        )
+
+
     maq = children %>%
         left_join(childrendetails, by = "child_id") %>%
         left_join(employment, by = 'respondent_id') %>%
         left_join(education, by = "respondent_id") %>%
-        left_join(deviceuse, by = "child_id")
+        left_join(deviceuse, by = "child_id") %>%
+        left_join(quality, by = "respondent_id") %>%
+        left_join(incomes, by = "respondent_id") %>%
+        left_join(psi, by = "respondent_id")
     
     maq <- maq %>% mutate(
         birthmonth = ifelse(is.na(ol.birthmonth), ol.birthmonth, ol.birthmonth),
@@ -145,7 +265,7 @@ process_maq <- function(rawdata) {
             2018 - as.numeric(person.ageatevent)
         )),
         birthmonth_num = ifelse(is.na(birthmonth_num), 1, birthmonth_num),
-        age_months = as.numeric((today() - ymd(
+        age_months = as.numeric((ymd("2018-06-06") - ymd(
             paste0(birthyear, "-", birthmonth_num, "-", 1)
         )) / (365 / 12))
     ) %>%
@@ -166,11 +286,19 @@ process_maq <- function(rawdata) {
                        "study_id",
                        "nc.SubjectIdentification",
                        "table_access",
+                       'income',
+                       n_quality,
+                       mean_quality,
                        sf_Q1_mediahours_weekday,
                        sf_Q1_mediahours_weekend,
                        sf_Q2_no_media_bedtime,
                        sf_Q3_noscreenmediahours_weekday,
-                       sf_Q3_noscreenmediahours_weekend
+                       sf_Q3_noscreenmediahours_weekend,
+                       defensive_cor,
+                       pd_cor,
+                       pcdi_cor,
+                       dc_cor,
+                       psi_cor
                    )
     
     # factor vars to factor
@@ -186,6 +314,9 @@ process_maq <- function(rawdata) {
     maq <- maq %>%
         mutate_at(factcols$nms, as.factor) %>%
         mutate_at(boolcols$nms, as.logical)
+    
+    maq <- maq %>%
+        mutate_at(c("mean_quality"), as.numeric)
 
     return(maq)
 }
