@@ -31,7 +31,11 @@ MAQ_entities <- c(
     "ImmigrationStatus",
     
     # Device Use
-    "Device_Use"
+    "Device_Use",
+    
+    # quality
+    "QualityControl",
+    "PSI_Assessment"
 )
 
 MAQ_associations <- list(
@@ -76,6 +80,11 @@ MAQ_associations <- list(
         dst = "ImmigrationStatus",
         edge = "Reported"
     ),
+    list(
+        src = "Respondents",
+        dst = "QualityControl",
+        edge = "Reported"
+    ),
     
     # DEVICES
     
@@ -83,8 +92,12 @@ MAQ_associations <- list(
         src = "Children",
         dst = "Device_Use",
         edge = "InvolvedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "PSI_Assessment",
+        edge = "ScreenedWith"
     )
-    
 )
 
 
