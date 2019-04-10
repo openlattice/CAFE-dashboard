@@ -46,9 +46,9 @@ tud_maq_base_server <-
         output$tud_cols <- renderUI(selectInput(
             inputId = ns('tud_maq_column_T'),
             choices = c(
-                rawdata$tud$summarised_coltypes$numeric,
-                rawdata$tud$summarised_coltypes$factorial,
-                rawdata$tud$summarised_coltypes$boolean
+                rawdata$tud$coltypes$numeric,
+                rawdata$tud$coltypes$factorial,
+                rawdata$tud$coltypes$boolean
             ),
             label = 'Column'
         ))
