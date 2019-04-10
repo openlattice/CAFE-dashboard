@@ -32,6 +32,10 @@ tagList(
            demographics_ui("participants")
         ),
         navbarMenu(
+            "analysis",
+            concon_ui("analysis")
+        ),
+        navbarMenu(
             "tables",
             preprocessed_table("tables"),
             summarised_table("tables"),
