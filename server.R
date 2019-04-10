@@ -5,6 +5,7 @@ shinyServer(function(input, output, session) {
     ###########################################
     
     token="NA"
+
     jwt <- reactiveVal(token)
     jwt <- callModule(authentication_server, "authentication", jwt)
 
@@ -60,10 +61,14 @@ shinyServer(function(input, output, session) {
             rawdata = rawdata,
             hourbool = input$subset_hours_on,
             hourrange = input$subset_hours,
+            agebool = input$subset_age_on,
+            agerange = input$subset_age,
             sitesbool = input$subset_sites_on,
             sitesrange = input$subset_sites,
             progressbool = input$subset_progress_on,
-            progressrange = input$subset_progress
+            progressrange = input$subset_progress,
+            qualitybool = input$subset_quality_on,
+            qualityrange = input$subset_quality
             )
         rawdata$tud$processed = newdat$tud
         rawdata$tud$summarised <- newdat$summary
