@@ -1,41 +1,7 @@
 get_demographics <- function(rawdata) {
-    dem <- c("education", "employment", "race", "ethnicity", "income")
+    dem <- c("parental_education", "parental_employment", "race", "ethnicity", "parental_highest_income", 'parental_highest_assistance', "study")
     return (dem)
 }
-
-get_numeric_vars <- function(rawdata) {
-    if (length(rawdata$maq$coltypes$numeric)>1){
-        maqcols <- rawdata$maq$coltypes$numeric
-    } else {
-        maqcols <- c(rawdata$maq$coltypes$numeric)
-    }
-    
-    if (length(rawdata$chronicle$coltypes$numeric)>1){
-        chroniclevars <- rawdata$chronicle$coltypes$numeric
-    } else {
-        chroniclevars <- c(rawdata$chronicle$coltypes$numeric)
-    }
-    
-    c(list(maq = maqcols, tud = rawdata$tud$summarised_coltypes$numeric, chronicle = chroniclevars), "n")
-}
-
-get_vars <- function(rawdata, type) {
-    out = list()
-    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification", "day_id", "pid", "table_access", "study_id")
-
-    for (kw in c("tud", "maq", "chronicle")) {
-        if (length(rawdata[[kw]]$coltypes[[type]])>1){
-            cols <- rawdata[[kw]]$coltypes[[type]]
-        } else if (length(rawdata[[kw]]$coltypes[[type]])==0) {
-            cols <- c()
-        } else {
-            cols <- c(rawdata[[kw]]$coltypes[[type]])
-        }
-        out[[kw]] <- setdiff(cols, toremove)
-    }
-    return(out)
-}
-
 
 get_dataset_from_col <- function(rawdata, column){
     dataset <- case_when(
@@ -46,4 +12,24 @@ get_dataset_from_col <- function(rawdata, column){
     return(dataset)
 }
 
+get_data_from_cols <- function(rawdata, cols) {
+    if (!rawdata$auth) {
+        return(NULL)
+    }
+
+    datasets <- c()
+    for (col in cols){
+        if (col == "n"){next}
+        dataset <- get_dataset_from_col(rawdata, col)
+        if (!(dataset %in% datasets)){
+            datasets <- c(datasets,dataset)
+        }
+    }
+    
+    data <- tibble(child_id = character(), nc.SubjectIdentification = character())
+    if ("tud" %in% datasets){data <- data %>% full_join(rawdata$tud$summarised)}
+    if ("maq" %in% datasets){data <- data %>% full_join(rawdata$maq$processed)}
+    if ("chronicle" %in% datasets){data <- data %>% full_join(rawdata$chronicle$processed)}
+    return(data)
+}
 
