@@ -115,6 +115,14 @@
   min-height: 300px;
 }
 
+.box-dad {
+    height: 70%;
+}
+
+.shiny-split-layout {
+    height: 30%;
+}
+
 .box-title{
   font-family: Open Sans, sans-serif;
   font-size: 18px;
