@@ -21,6 +21,7 @@ MAQ_entities <- c(
     "Children",
     "Respondents",
     "ChildrenDetails",
+    "RespondentDetails",
 
     # RESPONDENTS
     
@@ -35,7 +36,10 @@ MAQ_entities <- c(
     
     # quality
     "QualityControl",
-    "PSI_Assessment"
+    "PSI_Assessment",
+    "SurveyMetadata",
+    "ChildrenDetailsHealth",
+    "PublicAssistance"
 )
 
 MAQ_associations <- list(
@@ -52,7 +56,26 @@ MAQ_associations <- list(
         dst = "ChildrenDetails",
         edge = "Has"
     ),
-
+    list(
+        src = "Respondents",
+        dst = "SurveyMetadata",
+        edge = "ParticipatedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "RespondentDetails",
+        edge = "Has"
+    ),
+    list(
+        src = "Children",
+        dst = "ChildrenDetailsHealth",
+        edge = "Has"
+    ),
+    list(
+        src= "Respondents",
+        dst = "PublicAssistance",
+        edge = "Reported"
+    ),
     # RESPONDENTS
     
     list(
