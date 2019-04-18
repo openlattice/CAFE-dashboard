@@ -33,8 +33,11 @@ tagList(
         ),
         navbarMenu(
             "analysis",
+            univar_ui("analysis"),
             concon_ui("analysis"),
-            catcon_ui("analysis")
+            catcon_ui("analysis"),
+            # esquisse_ui("esquisse"),
+            multivariate_ui("analysis")
         ),
         navbarMenu(
             "tables",
@@ -49,16 +52,7 @@ tagList(
             preprocessed_barcharts_ui("activity"),
             summarised_histograms("summary"),
             summarised_crossplots("summary"),
-            summarised_site("summary"),
-            chronicle_tud("chrontud")
+            summarised_site("summary")
         ),
-        navbarMenu("QA",
-                   qa_ui("qa")),
-        navbarMenu("TUD-MAQ",
-                   tud_maq_ui("tud_maq")
-                   ),
-        navbarMenu("ScreenBestPractices",
-                   sbp_ui("sbp")
-        )
     )
 )
