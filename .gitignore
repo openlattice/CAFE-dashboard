@@ -38,3 +38,5 @@ rsconnect/
 
 /secrets.yaml
 */secrets.yaml
+
+/data/
