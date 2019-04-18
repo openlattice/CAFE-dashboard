@@ -100,8 +100,8 @@ plot_total_age_distribution <- function(maqdata) {
             ggplot(maqdata,
                    aes(
                        x = age_months,
-                       fill = study_id,
-                       colour = study_id
+                       fill = study,
+                       colour = study
                    )) +
             geom_density(alpha = 0.2, bw = 7) +
             theme_light() +
@@ -118,31 +118,18 @@ plot_total_age_distribution <- function(maqdata) {
 
 
 
-plot_summary_histogram <- function(summarydata, column) {
-    if (column %in% names(summarydata)) {
-        ggplot(summarydata,
-               aes_string(x = column)) +
-            geom_histogram(binwidth = 1,
-                           fill = "#4c14c4") +
-            scale_fill_manual(values = cols,
-                              aesthetics = "fill",
-                              na.value = nacol)
-    }
-}
 
 
 plot_subjects_by_site <- function(rawdata) {
     act_by_child <- rawdata$tud$processed %>%
-        group_by(nc.SubjectIdentification, site) %>% count() %>% mutate(source =
-                                                                            "TUD")
+        group_by(child_id, study) %>% count() %>% mutate(source = "TUD")
     maq_by_child <-
         rawdata$maq$processed %>% mutate(study = replace(study, study == "BYU", "PM")) %>%
-        group_by(nc.SubjectIdentification, study) %>% count() %>% mutate(source =
-                                                                             "MAQ", site = study)
+        group_by(child_id, study) %>% count() %>% mutate(source = "MAQ")
     all_by_child = rbind(act_by_child, maq_by_child) %>%
-        group_by(nc.SubjectIdentification, site) %>%
+        group_by(child_id, study) %>%
         summarise(source = paste0(source, collapse = " + "))
-    ggplot(all_by_child, aes(site, fill = source)) + geom_bar() +
+    ggplot(all_by_child, aes(study, fill = source)) + geom_bar() +
         theme_light() +
         scale_fill_manual(values = cols[c(5, 4, 1)],
                           aesthetics = "fill",
@@ -168,37 +155,6 @@ plot_crossplot <- function(summarydata, crosscols) {
             lower = list(continuous = wrap("smooth", colour = cols[2]))
         )
     }
-}
-
-plot_sbp <- function(rawdata) {
-    cols <- c(
-        'nc.SubjectIdentification',
-        'SBP_TV_lessthan_1h',
-        'SBP_avoid_screen_before_bedtime',
-        'SBP_balance_media_with_reading',
-        'SBP_balance_media_with_play',
-        'SBP_minimise_background_media_play',
-        'SBP_avoid_media_meals',
-        'SBP_coview',
-        'SBP_content'
-    )
-    cols_maq <- c(
-        'child_id',
-        'sf_Q1_mediahours_weekday',
-        'sf_Q1_mediahours_weekend',
-        'sf_Q2_no_media_bedtime',
-        'sf_Q3_noscreenmediahours_weekday',
-        'sf_Q3_noscreenmediahours_weekend'
-    )
-    
-    combined = rawdata$tud$summarised[cols] %>%
-        full_join(rawdata$maq$processed[cols_maq],
-                  by = c('nc.SubjectIdentification' = 'child_id')) %>%
-        select(-c(nc.SubjectIdentification))
-    corr <- round(cor(combined, use = "complete.obs"), 1)
-    ggcorrplot(corr,
-               ggtheme = theme_light(),
-               colors = c('#2c7bb6',  '#ffffbf', '#d7191c'))
 }
 
 plot_barchart_activities <-
@@ -235,7 +191,7 @@ plot_tud_chron <-
                 summarydata,
                 chronicle,
                 how = "inner",
-                by.x = "nc.SubjectIdentification",
+                by.x = "child_id",
                 by.y = "pid"
             )
         plt <- ggplot(new, aes_string(x = var1, y = var2)) +
@@ -249,7 +205,7 @@ plot_tud_chron <-
 plot_by_study <-
     function(summarydata, var1, var2) {
         plt <-
-            ggplot(summarydata, aes_string(x = var1, y = var2, color = 'site')) +
+            ggplot(summarydata, aes_string(x = var1, y = var2, color = 'study')) +
             geom_point() + theme_light() +
             stat_smooth(method = "lm") +
             scale_fill_manual(values = cols,
@@ -265,7 +221,7 @@ plot_by_study <-
 # FUNCTIONS
 
 qa_plot <- function(summarydata) {
-    plt <- ggplot(summarydata, aes(x = site, y = progress)) +
+    plt <- ggplot(summarydata, aes(x = study, y = progress)) +
         theme_light() +
         geom_bar(stat = "summary",
                  fun.y = "mean",
@@ -292,7 +248,7 @@ plot_maq <- function(rawdata, tudcol, maqcol) {
         return(NULL)
     }
     togdata <-
-        summarydata %>% inner_join(maqdata, by = "nc.SubjectIdentification")
+        summarydata %>% inner_join(maqdata, by = "child_id")
     
     tudnum = (typeof(summarydata[[tudcol]]) == "double" | typeof(summarydata[[tudcol]]) == "integer")
     maqnum = (typeof(maqdata[[maqcol]]) == "double" | typeof(maqdata[[maqcol]]) == "integer")
@@ -320,57 +276,6 @@ plot_maq <- function(rawdata, tudcol, maqcol) {
         theme_minimal() + theme(legend.position = "none")
     return(plt)
 }
-
-venn_plot <- function(rawdata) {
-    if (!rawdata$auth) {
-        return(NULL)
-    }
-    chronpi = unique(rawdata$chronicle$raw$pid)
-    tudpi = unique(rawdata$tud$processed$nc.SubjectIdentification)
-    maqpi = unique(rawdata$maq$processed$nc.SubjectIdentification)
-    
-    nC = length(chronpi)
-    nT = length(tudpi)
-    nM = length(maqpi)
-    
-    nCT = length(intersect(chronpi, tudpi))
-    nCM = length(intersect(chronpi, maqpi))
-    nTM = length(intersect(maqpi, tudpi))
-    
-    nCTM = length(intersect(intersect(chronpi, tudpi), maqpi))
-    
-    grid.newpage()
-    draw.triple.venn(
-        area1 = nC,
-        area2 = nT,
-        area3 = nM,
-        n12 = nCT,
-        n13 = nCM,
-        n23 = nTM,
-        n123 = nCTM,
-        
-        category = c("Chronicle", "TUD", "MAQ"),
-        lty = 1,
-        lwd = 2,
-        fill = c(cols[1], cols[2], cols[4]),
-        fontfamily = "sans",
-        cex = 1.5,
-        fontface = "bold",
-        cat.fontfamily = "sans",
-        cat.fontface = "bold",
-        cat.col = c(cols[1], cols[2], cols[4]),
-        scaled = TRUE,
-        euler.D = TRUE,
-        cat.dist = 0.03,
-        cat.pos = c(-10, 5, 5),
-        label.col = "white",
-        alpha = 0.8
-    )
-    
-}
-
-
-
 
 
 
