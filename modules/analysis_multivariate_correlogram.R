@@ -75,7 +75,7 @@ multivariate_cor_server <-
     }
 
 plot_multivariate <- function(data, cols) {
-    if (length(crosscols) > 0) {
+    if (length(cols) > 0) {
     combined <- data[cols]
     corr <- round(cor(combined, use = "complete.obs"), 1)
     ggcorrplot(corr,
