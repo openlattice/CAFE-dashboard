@@ -11,7 +11,6 @@ demographics_ui <- function(id) {
                      width = 12,
                      solidHeader = TRUE,
                      title = "Select columns",
-                     uiOutput(ns("remove_missing_maq")),
                      uiOutput(ns("dem_column1")),
                      uiOutput(ns("dem_column2")),
                      uiOutput(ns("dem_column3"))
@@ -25,12 +24,12 @@ demographics_ui <- function(id) {
                      solidHeader = TRUE,
                      title = "Demographics",
                      addSpinner(plotOutput(ns("demographicsplot")), spin = "bounce", color = cols[1])
-                 # ),
-                 # box(
-                 #     width = 12,
-                 #     solidHeader = FALSE,
-                 #     downloadButton(ns("demographicsplot_download"), "Download figure"),
-                 #     align = "left"
+                 ),
+                 box(
+                     width = 12,
+                     solidHeader = FALSE,
+                     downloadButton(ns("demographicsplot_download"), "Download figure"),
+                     align = "left"
                  )
              )),
              fluidRow(
@@ -39,19 +38,18 @@ demographics_ui <- function(id) {
                      solidHeader = TRUE,
                      title = "Cross-table",
                      dataTableOutput(outputId = ns("demographics_table"))
-                 )
-             )
-            # fluidRow(box(
-            #     width = 12,
-            #     column(
-            #         12,
-            #         align = "center",
-            #         downloadButton(ns("download_demographics_table"), "Download")
-            #     )
-            # )
+                 ),
+             box(
+                width = 12,
+                column(
+                    12,
+                    align = "center",
+                    downloadButton(ns("download_demographics_table"), "Download")
+                )
+            )
             
     
-             )
+             ))
     
 }
 
@@ -68,78 +66,72 @@ demographics_server <-
         
          output$dem_column1 <- renderUI(selectInput(
             inputId = ns("demcol1"),
-            "Choose column 1:",
+            "Choose demography variable:",
             choices = get_demographics(rawdata)
         ))
         
         output$dem_column2 <- renderUI(selectInput(
             inputId = ns("demcol2"),
-            "Choose column 2:",
+            "Choose demography variable for colors or leave blank:",
             choices = c("", get_demographics(rawdata))
         ))
         
         output$dem_column3 <- renderUI(selectInput(
             inputId = ns("demcol3"),
-            "Choose column 3:",
-            choices = c(get_vars(rawdata, "numeric"), other = c("n"))
+            "Choose continuous variable:",
+            choices = c(data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric")), other = c("n"))
         ))
         
-        output$remove_missing_maq <- renderUI(checkboxInput(
-            inputId = ns("remove_missing_maq"),
-            "Include children with missing MAQ (missing demography variables):",
-            value=TRUE
-        ))
-        
+
         output$demographicsplot <-
             renderPlot({
-                data <- get_demographics_data(rawdata, input$demcol3, input$remove_missing_maq)
-                demographics_plot(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
+                demographics_plot(rawdata$alldata, input$demcol1, input$demcol2, input$demcol3)
             }, height = 700
             )
         
-        # output$demographicsplot_download <-
-        #     downloadHandler(
-        #         filename = "demographics_plot",
-        #         content = function(file) {
-        #             ggsave(
-        #                 file,
-        #                 demographics_plot(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq),
-        #                 width = 8,
-        #                 height = 5
-        #             )
-        #         }
-        #     )
-        # 
+        output$demographicsplot_download <-
+            downloadHandler(
+                filename = "demographics_plot.png",
+                content = function(file) {
+                    plt <- demographics_plot(rawdata$alldata, input$demcol1, input$demcol2, input$demcol3)
+                    ggsave(
+                        file,
+                        plt,
+                        width = 8,
+                        height = 5
+                    )
+                }
+            )
+
         output$demographics_table <- renderDataTable({
-            data <- get_demographics_data(rawdata, input$demcol3, input$remove_missing_maq)
-            create_table(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
+            create_dem_table(rawdata$alldata, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
         },
         options = list(scrollX = TRUE))
         
-        # output$download_demographics_table <- downloadHandler(
-        #     filename = "CAFE_demographics_crosstable.csv",
-        #     content = function(file) {
-        #         write.csv(
-        #             create_table(data(), input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq),
-        #             file,
-        #             row.names = FALSE
-        #         )
-        #     }
-        # )
+        output$download_demographics_table <- downloadHandler(
+            filename = "CAFE_demographics_crosstable.csv",
+             content = function(file) {
+                 tbl <- create_dem_table(rawdata$alldata, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
+                 write.csv(
+                    tbl,
+                    file,
+                    row.names = FALSE
+                )
+            }
+        )
         
         
     }
 
 # function
 
-# col1 <- "ethnicity"
+# col1 <- "race"
 # col2 <- "education"
 # col3 <- "sf_Q1_mediahours_weekend"
 # col3 <- "background_tv_hours"
 # remove_missing_maq <- TRUE
-# data <- get_demographics_data(rawdata, col3, remove_missing_maq)
 
-create_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
+create_dem_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
     if (is.null(data)){return(NA)}
     if (col2 == ""){
         base <- data %>% select(col1, col3) %>% 
@@ -158,23 +150,27 @@ create_table <- function(data, col1, col2, col3, remove_missing_maq=TRUE){
     return(stats)
 }
 
-# col1 <- "ethnicity"
-# col2 <- "race"
+# col1 <- "race"
+# col2 <- "study"
 # col3 <- "n"
 # remove_missing_maq <- TRUE
-# data <- get_demographics_data(rawdata, col3, remove_missing_maq)
-# demographics_plot(data, col1, col2, col3, remove_missing_maq)
+# demographics_plot(rawdata$alldata, col1, col2, col3)
 
 
-demographics_plot <- function(data, col1, col2, col3, remove_missing_maq=FALSE) {
+demographics_plot <- function(data, col1, col2, col3) {
     
     if (is.null(data)){return(NULL)}
     if (col3 == "n") {
+        if (col2=="") {
+            plot = ggplot(data,
+                          aes_string(x = col1)) + 
+                geom_bar(position=position_dodge())
+        } else {
         plot = ggplot(data,
                       aes_string(x = col1,
                                  fill = col2)) + 
             geom_bar(position=position_dodge())
-        
+        }
     } else {
         if (col2=="") {
             plot = ggplot(data,
@@ -201,32 +197,3 @@ demographics_plot <- function(data, col1, col2, col3, remove_missing_maq=FALSE) 
     
     
 }
-
-
-get_demographics_data <- function(rawdata, column, remove_missing_maq) {
-    if (column != "n"){
-        if (!rawdata$auth) {
-            return(NULL)
-        }
-        dataset <- get_dataset_from_col(rawdata, column)
-        print(dataset)
-        if (dataset == "maq"){
-            data <- rawdata$maq$processed
-            return(data)
-        }
-    }
-    if (dataset == "tud") {
-        tojoin = rawdata$tud$summarised
-    } else {
-        tojoin = rawdata$chronicle$processed
-    }
-    if (remove_missing_maq) {
-        data <- rawdata$maq$processed %>% full_join(tojoin, 
-                                                    by="nc.SubjectIdentification")
-        return(data)
-    }
-    data <- rawdata$maq$processed %>% left_join(tojoin, 
-                                                by="nc.SubjectIdentification")
-    return(data)
-}
-
