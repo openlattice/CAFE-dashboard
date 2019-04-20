@@ -135,27 +135,7 @@ plot_subjects_by_site <- function(rawdata) {
                           aesthetics = "fill",
                           na.value = nacol)
 }
-# plot_chronicle_histogram <- function(chronicle) {
-#     if (column %in% names(summarydata)) {
-#         ggplot(summarydata,
-#                aes_string(x = column)) +
-#             geom_histogram(binwidth = 1,
-#                            fill = "#4c14c4") +
-#             scale_fill_manual(values = cols,
-#                               aesthetics = "fill",
-#                               na.value = nacol)
-#     }
-# }
 
-plot_crossplot <- function(summarydata, crosscols) {
-    if (length(crosscols) > 0) {
-        ggpairs(
-            summarydata[, crosscols],
-            diag = list(continuous = wrap("densityDiag", fill = cols[1])),
-            lower = list(continuous = wrap("smooth", colour = cols[2]))
-        )
-    }
-}
 
 plot_barchart_activities <-
     function(activitydata, grouper1, grouper2) {
@@ -184,101 +164,9 @@ plot_barchart_activities <-
         }
     }
 
-plot_tud_chron <-
-    function(summarydata, chronicle, var1, var2) {
-        new <-
-            merge(
-                summarydata,
-                chronicle,
-                how = "inner",
-                by.x = "child_id",
-                by.y = "pid"
-            )
-        plt <- ggplot(new, aes_string(x = var1, y = var2)) +
-            geom_point() + theme_light() +
-            stat_smooth(method = "lm", col = cols[1]) +
-            labs(x = "Chronicle: average usage per day",
-                 y = paste("Tud:", var2))
-        return(plt)
-    }
-
-plot_by_study <-
-    function(summarydata, var1, var2) {
-        plt <-
-            ggplot(summarydata, aes_string(x = var1, y = var2, color = 'study')) +
-            geom_point() + theme_light() +
-            stat_smooth(method = "lm") +
-            scale_fill_manual(values = cols,
-                              aesthetics = "fill",
-                              na.value = nacol) +
-            scale_colour_manual(values = cols,
-                                aesthetics = "colour",
-                                na.value = nacol) + guides(color = guide_legend(override.aes =
-                                                                                    list(fill = NA)))
-        return(plt)
-    }
-
-# FUNCTIONS
-
-qa_plot <- function(summarydata) {
-    plt <- ggplot(summarydata, aes(x = study, y = progress)) +
-        theme_light() +
-        geom_bar(stat = "summary",
-                 fun.y = "mean",
-                 fill = cols[4])
-    return(plt)
-}
 
 
 # FUNCTIONS
-
-# #cat
-# tudcol = "SBP_avoid_media_meals"
-# maqcol = "education"
-# 
-# # cont
-# maqcol = "age_months"
-# tudcol = "progress"
-
-plot_maq <- function(rawdata, tudcol, maqcol) {
-    summarydata <- rawdata$tud$summarised
-    maqdata <- rawdata$maq$processed
-    if (is.null(tudcol) |
-        is.null(maqcol) | tudcol == "" | maqcol == "") {
-        return(NULL)
-    }
-    togdata <-
-        summarydata %>% inner_join(maqdata, by = "child_id")
-    
-    tudnum = (typeof(summarydata[[tudcol]]) == "double" | typeof(summarydata[[tudcol]]) == "integer")
-    maqnum = (typeof(maqdata[[maqcol]]) == "double" | typeof(maqdata[[maqcol]]) == "integer")
-    if (tudnum & maqnum) {
-        plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
-            geom_point(color=cols[9]) + geom_smooth(method = lm, color=cols[1])
-    } else if (tudnum & !maqnum) {
-        plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol, fill = maqcol)) +
-            geom_violin(bw = "nrd", scale='count') + coord_flip() +
-            stat_summary(fun.y=median, geom="point", size=2, color="black")
-    } else if (!tudnum & maqnum) {
-        plt <- ggplot(togdata, aes_string(x = tudcol, y = maqcol, fill = tudcol)) +
-            geom_violin(bw = "nrd", scale='count') + coord_flip() +
-            stat_summary(fun.y=median, geom="point", size=2, color="black")
-    } else {
-        plt <- ggplot(togdata, aes_string(x = maqcol, y = tudcol)) +
-            geom_bar(stat = "summary",
-                              fun.y = "mean",
-                              fill = cols[5])
-    }
-    plt <- plt + 
-        scale_fill_manual(values = cols,
-                          aesthetics = "fill",
-                          na.value = nacol) +
-        theme_minimal() + theme(legend.position = "none")
-    return(plt)
-}
-
-
-
 
 
 

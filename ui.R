@@ -36,8 +36,10 @@ tagList(
             univar_ui("analysis"),
             concon_ui("analysis"),
             catcon_ui("analysis"),
-            # esquisse_ui("esquisse"),
-            multivariate_ui("analysis")
+            multivariate_ui("analysis"),
+            multivariate_cor_ui("analysis"),
+            tud_ui("analysis"),
+            esquisse_ui("esquisse")
         ),
         navbarMenu(
             "tables",
@@ -45,14 +47,6 @@ tagList(
             summarised_table("tables"),
             chronicle_table("tables"),
             maq_table("tables")
-        ),
-        navbarMenu(
-            "plots",
-            activity_barcharts_ui("activity"),
-            preprocessed_barcharts_ui("activity"),
-            summarised_histograms("summary"),
-            summarised_crossplots("summary"),
-            summarised_site("summary")
-        ),
+        )
     )
 )

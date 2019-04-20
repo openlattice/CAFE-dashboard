@@ -5,11 +5,11 @@ summarise_data <- function(activitydata) {
   }
 
     summarydata <- activitydata %>% 
-    # group_by(recruitment, site, nc.SubjectIdentification, day_id) %>%
-    group_by(site, nc.SubjectIdentification, day_id) %>%
+    group_by(study, child_id, day_id) %>%
     summarise(
       progress = mean(as.numeric(progress), na.rm=TRUE),
       total_time = sum(duration)/60,
+      time_deviance = abs(total_time - 24),
       total_blocks = n(),
       
       background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other], na.rm=TRUE)/60,
@@ -88,7 +88,9 @@ summarise_data <- function(activitydata) {
       SBP_avoid_media_meals = feeding_btv_hours == 0,
       SBP_coview = screen_adult_coviewing_hours/screen_hours >= 0.5,
       SBP_content = ((age_child_primary_media + age_younger_primary_media)/
-          (age_child_primary_media + age_older_primary_media+ age_younger_primary_media + age_adults_primary_media))==1
+          (age_child_primary_media + age_older_primary_media+ age_younger_primary_media + age_adults_primary_media))==1,
+      monthyear = paste0(year(first(starttime)),"-",str_pad(month(first(starttime)),2,"left",0))
     )
+        
   return(summarydata)
 }

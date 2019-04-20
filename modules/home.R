@@ -1,5 +1,6 @@
 home <- tabPanel(
     title = 'home',
+    tags$style("html, body {overflow: visible !important;"),
     fluidRow(
         column(width = 6,
         box(
@@ -29,7 +30,7 @@ home <- tabPanel(
          column(
              width = 8,
              box(
-             title = "Average duration of activities per child.",
+             title = "Passive sensing: average duration of activities per child.",
              width = 12,
              solidHeader = TRUE,
              status = "primary",

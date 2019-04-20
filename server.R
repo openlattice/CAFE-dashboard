@@ -1,14 +1,13 @@
 shinyServer(function(input, output, session) {
-    
     ###########################################
     # loading data and observing column names #
     ###########################################
     
-    token="NA"
+    token = "NA"
 
     jwt <- reactiveVal(token)
     jwt <- callModule(authentication_server, "authentication", jwt)
-
+    
     hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=analysis]")
     hide(selector = "#navbar li a[data-value=tables]")
@@ -16,44 +15,47 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=QA]")
     hide(selector = "#navbar li a[data-value=TUD-MAQ]")
     hide(selector = "#navbar li a[data-value=ScreenBestPractices]")
-    hide(id="waitforauth")
+    hide(id = "waitforauth")
     
     # load data
     rawdata <- reactiveValues(
-        tud = list(
-                nodes = list(),
-                edges = list()
-            ),
-        maq = list(
-            nodes = list(),
-            edges = list()
-        ),
-            chronicle = list(
-                raw = tibble(),
-                processed = tibble()
-            ),
-            auth = FALSE,
-            n_act = 0,
-            n_child = 0
-        )
-
+        tud = list(nodes = list(),
+                   edges = list()),
+        maq = list(nodes = list(),
+                   edges = list()),
+        chronicle = list(raw = tibble(),
+                         processed = tibble()),
+        auth = FALSE,
+        n_act = 0,
+        n_child = 0,
+        n_nodes = 0
+    )
+    
+    data_r <- reactiveValues(data = tibble(), name = "CAFE")
+    
     # authentication via cookie
     observe({
-        shinyjs::addCssClass(
-            id = "emptyplot",
-            class = "recalculating"
-        )
-        newdat <- get_data(jwt(), cache = TRUE, auth = FALSE, local=FALSE)
-            rawdata$tud <- newdat$tud
-            rawdata$chronicle <- newdat$chronicle
-            rawdata$maq <- newdat$maq
-            rawdata$n_child <- newdat$n_child
-            rawdata$n_act <- newdat$n_act
-            rawdata$auth = newdat$auth
-            shinyjs::removeCssClass(
-                id = "emptyplot",
-                class = "recalculating"
-            )
+        shinyjs::addCssClass(id = "emptyplot",
+                             class = "recalculating")
+        newdat <-
+            get_data(jwt(),
+                     cache = TRUE,
+                     auth = TRUE,
+                     local = TRUE)
+        rawdata$tud <- newdat$tud
+        rawdata$chronicle <- newdat$chronicle
+        rawdata$maq <- newdat$maq
+        rawdata$n_child <- newdat$n_child
+        rawdata$n_act <- newdat$n_act
+        rawdata$n_nodes <- newdat$n_nodes
+        rawdata$auth = newdat$auth
+        rawdata$alldata = newdat$alldata
+        rawdata$coltypes = newdat$coltypes
+        shinyjs::removeCssClass(id = "emptyplot",
+                                class = "recalculating")
+        columns <-
+            data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+        data_r$data <- rawdata$alldata[unique(unlist(columns, use.names=FALSE))]
     })
     
     observeEvent(input$subset, {
@@ -70,12 +72,12 @@ shinyServer(function(input, output, session) {
             progressrange = input$subset_progress,
             qualitybool = input$subset_quality_on,
             qualityrange = input$subset_quality
-            )
+        )
         rawdata$tud$processed = newdat$tud
         rawdata$tud$summarised <- newdat$summary
         rawdata$maq$processed <- newdat$maq
-       })
-
+    })
+    
     observe({
         if (rawdata$auth) {
             shinyjs::show(selector = "#navbar li a[data-value=participants]")
@@ -88,7 +90,7 @@ shinyServer(function(input, output, session) {
             shinyjs::show(id = "waitforauth")
         }
     })
-        
+    
     #############################
     # loading information boxes #
     #############################
@@ -103,7 +105,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$datasetCounterBox <- renderInfoBox({
-        valueBox(length(rawdata$nodes),
+        valueBox(rawdata$n_nodes,
                  "entities",
                  icon = icon("pie-chart"))
     })
@@ -120,7 +122,7 @@ shinyServer(function(input, output, session) {
     output$A_pie_hours_by_activity <-
         renderPlot({
             pie_hours_by_activity(rawdata$tud$processed)
-        }, height=400)
+        }, height = 400)
     
     output$A_hours_by_activity_download <-
         downloadHandler(
@@ -195,26 +197,17 @@ shinyServer(function(input, output, session) {
             empty_plot()
         })
     
-    callModule(activity_plots_server,
-               "activity",
-               rawdata)
     callModule(venn_server, "participants", rawdata)
     callModule(demographics_server, "participants", rawdata)
+    callModule(univar_server, "analysis", rawdata)
     callModule(concon_server, "analysis", rawdata)
     callModule(catcon_server, "analysis", rawdata)
-    callModule(summary_plots,
-               "summary",
-               rawdata)
+    callModule(tud_server, "analysis", rawdata)
     callModule(tables,
                "tables",
                rawdata)
-    callModule(sbp_server, "sbp", rawdata)
-    callModule(qa_server, "qa", rawdata)
-    callModule(tud_maq_base_server,
-               "tud_maq",
-               rawdata)
-    callModule(chronicle_tud_server,
-               "chrontud",
-               rawdata)
+    callModule(multivariate_server, "analysis", rawdata)
+    callModule(multivariate_cor_server, "analysis", rawdata)
+    callModule(module = esquisserServer, id = "esquisse", data = data_r)
     
 })

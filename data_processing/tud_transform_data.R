@@ -23,7 +23,9 @@ process_activities <- function(rawdata) {
         left_join(locations_by_activity, by = "primary_activity_id") %>%
         left_join(sites_by_activity, by = "primary_activity_id") %>%
         left_join(metadata_by_activity, by = "primary_activity_id") %>%
-        left_join(recruitment_by_activity, by = "primary_activity_id")
+        left_join(recruitment_by_activity, by = "primary_activity_id") %>%
+        select(-c(child_id)) %>% rename(study = site, child_id = nc.SubjectIdentification)
+
     
     # factor vars to factor
     ndist <- activity %>%
@@ -283,7 +285,7 @@ process_activity <- function(rawdata) {
                respondent_id = src)
     activity <- ppl %>%
         left_join(vis, by="primary_activity_id") %>%
-        left_join(res)
+        left_join(res, by = c("primary_activity_id","study"))
     
     activity <- activity %>%
         mutate(starttime = ymd_hms(ol.datetimestart),

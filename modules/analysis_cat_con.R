@@ -37,9 +37,31 @@ catcon_ui <- function(id) {
                      solidHeader = TRUE,
                      title = "BarChart",
                      addSpinner(plotOutput(ns("catconplot")), spin = "bounce", color = cols[1])
-                 ))
+                 ),
+                 box(
+                     width = 12,
+                     solidHeader = FALSE,
+                     downloadButton(ns("catconplot_download"), "Download figure"),
+                     align = "left"
+                 )
+            )),
+             fluidRow(
+                 box(
+                     width = 12,
+                     solidHeader = TRUE,
+                     title = "Cross-table",
+                     dataTableOutput(outputId = ns("catcon_table"))
+                 ),
+                 box(
+                     width = 12,
+                     column(
+                         12,
+                         align = "center",
+                         downloadButton(ns("download_catcon_table"), "Download")
+                     )
+                 
              )
-    )
+    ))
     
 }
 
@@ -56,22 +78,22 @@ catcon_server <-
         
         output$cat_column1 <- renderUI(selectInput(
             inputId = ns("catcol1"),
-            "Choose column 1:",
-            choices = c(get_vars(rawdata, "boolean"), get_vars(rawdata, "factorial")),
+            "Choose categorical column 1:",
+            choices = data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("boolean", "factorial")),
             selected = "race"
         ))
         
         output$cat_column2 <- renderUI(selectInput(
             inputId = ns("catcol2"),
-            "Choose column 2 (or leave blank):",
-            choices = c("", get_vars(rawdata, "boolean"), get_vars(rawdata, "factorial")),
+            "Choose categorical column 2 (or leave blank):",
+            choices = data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("boolean", "factorial")),
             selected = ""
         ))
         
         output$cont_column3 <- renderUI(selectInput(
             inputId = ns("catcol3"),
-            "Choose column 3:",
-            choices = get_vars(rawdata, "numeric"),
+            "Choose column y:",
+            choices = data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric")),
             selected = "screen_hours"
         ))
         
@@ -84,52 +106,50 @@ catcon_server <-
         
         output$catconplot <-
             renderPlot({
-                data <- get_catcon_data(rawdata, input$catcol1, input$catcol2, input$catcol3)
-                catcon_plot(data, input$catcol1, input$catcol2, input$catcol3, input$figtype)
+                catcon_plot(rawdata$alldata, input$catcol1, input$catcol2, input$catcol3, input$figtype)
             }, height = 700
             )
         
         output$catcontest <- 
             renderPrint({
-                data <- get_catcon_data(rawdata, input$catcol1, input$catcol2, input$catcol3)
-                catcon_test(data, input$catcol1, input$catcol2, input$catcol3)
+                catcon_test(rawdata$alldata, input$catcol1, input$catcol2, input$catcol3)
             })
         
         output$catconanova <- 
             renderPrint({
-                data <- get_catcon_data(rawdata, input$catcol1, input$catcol2, input$catcol3)
-                catcon_anova(data, input$catcol1, input$catcol2, input$catcol3)
+                catcon_anova(rawdata$alldata, input$catcol1, input$catcol2, input$catcol3)
             })
         
-        # output$demographicsplot_download <-
-        #     downloadHandler(
-        #         filename = "demographics_plot",
-        #         content = function(file) {
-        #             ggsave(
-        #                 file,
-        #                 demographics_plot(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq),
-        #                 width = 8,
-        #                 height = 5
-        #             )
-        #         }
-        #     )
-        # # 
-        # output$demographics_table <- renderDataTable({
-        #     data <- get_demographics_data(rawdata, input$demcol3, input$remove_missing_maq)
-        #     create_table(data, input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq)
-        # },
-        # options = list(scrollX = TRUE))
-        
-        # output$download_demographics_table <- downloadHandler(
-        #     filename = "CAFE_demographics_crosstable.csv",
-        #     content = function(file) {
-        #         write.csv(
-        #             create_table(data(), input$demcol1, input$demcol2, input$demcol3, input$remove_missing_maq),
-        #             file,
-        #             row.names = FALSE
-        #         )
-        #     }
-        # )
+        output$catconplot_download <-
+            downloadHandler(
+                filename = "catcon_plot",
+                content = function(file) {
+                    plt <- catcon_plot(rawdata$alldata, input$catcol1, input$catcol2, input$catcol3, input$figtype)
+                    ggsave(
+                        file,
+                        plt,
+                        width = 8,
+                        height = 5
+                    )
+                }
+            )
+        #
+        output$catcon_table <- renderDataTable({
+            create_con_table(rawdata$alldata, input$catcol1, input$catcol2, input$catcol3)
+        },
+        options = list(scrollX = TRUE))
+
+        output$download_catcon_table <- downloadHandler(
+            filename = "CAFE_demographics_crosstable.csv",
+            content = function(file) {
+                tbl <- create_con_table(rawdata$alldata, input$catcol1, input$catcol2, input$catcol3)
+                write.csv(
+                    data,
+                    file,
+                    row.names = FALSE
+                )
+            }
+        )
         
         
     }
@@ -139,9 +159,10 @@ catcon_server <-
 # col1 <- "race"
 # col2 <- "ethnicity"
 # col3 <- "screen_hours"
-# data <- get_catcon_data(rawdata, col1, col2, col3)
+# data <- get_data_from_cols(rawdata, c(col1, col2, col3))
 # catcon_plot(data, col1, col2, col3)
 # catcon_test(data, col1, col2, col3)
+# create_con_table(data, col1, col2, col3)
 
 catcon_test <- function(data, col1, col2, col3){
     if (is.null(data)){return(NULL)}
@@ -165,7 +186,7 @@ catcon_anova <- function(data, col1, col2, col3){
     summary(aovmod)
 }
 
-catcon_plot <- function(data, col1, col2, col3, figtype){
+catcon_plot <- function(data, col1, col2, col3, figtype = "boxplot"){
     if (col2=="") {
         plot = ggplot(data,
                       aes_string(x = col1,
@@ -192,22 +213,23 @@ catcon_plot <- function(data, col1, col2, col3, figtype){
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 }
 
-get_catcon_data <- function(rawdata, col1, col2, col3) {
-    if (!rawdata$auth) {
-        return(NULL)
+create_con_table <- function(data, col1, col2, col3){
+    if (is.null(data)){return(NA)}
+    if (col2 == ""){
+        base <- data %>% select(col1, col3) %>% 
+            group_by_(col1)
+    } else {
+        base <- data %>% select(col1, col2, col3) %>% 
+            group_by_(col1, col2)
     }
-    dat1 <- get_dataset_from_col(rawdata, col1)
-    if(dat1 == "tud"){dataset1 = rawdata$tud$summarised} else {data = rawdata[[dat1]]$processed}
-
-    if (col2 != ""){
-        dat2 <- get_dataset_from_col(rawdata, col2)
-        if(dat2 == "tud"){dataset2 = rawdata$tud$summarised} else {dataset2 = rawdata[[dat2]]$processed}
-        data = data %>% full_join(dataset2)
-    }
-
-    dat3 <- get_dataset_from_col(rawdata, col3)
-    if(dat3 == "tud"){dataset3 = rawdata$tud$summarised} else {dataset3 = rawdata[[dat3]]$processed}
-    data = data %>% full_join(dataset3)
-    return(data)
+    stats <- base  %>% 
+        summarise(
+            mean = mean(!!sym(col3), na.rm=TRUE),
+            sd = sd(!!sym(col3), na.rm=TRUE),
+            count = n(),
+            na = sum(is.na(!!sym(col3)), na.rm=TRUE),
+            se = sd/(count-na)
+        )
+    return(stats)
 }
 
