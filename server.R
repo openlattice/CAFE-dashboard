@@ -40,8 +40,8 @@ shinyServer(function(input, output, session) {
         newdat <-
             get_data(jwt(),
                      cache = TRUE,
-                     auth = TRUE,
-                     local = TRUE)
+                     auth = FALSE,
+                     local = FALSE)
         rawdata$tud <- newdat$tud
         rawdata$chronicle <- newdat$chronicle
         rawdata$maq <- newdat$maq
