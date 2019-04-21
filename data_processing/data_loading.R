@@ -2,7 +2,9 @@
 
 get_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     rawdata = get_raw_data(jwt, cache, auth, local)
-    rawdata <- data_add_processed(rawdata)
+    if (rawdata$auth){
+        rawdata <- data_add_processed(rawdata)
+    }
     return(rawdata)
 }
 
@@ -134,8 +136,10 @@ get_empty_rawdata <- function() {
                    edges = list()),
         chronicle = list(raw = tibble(),
                          processed = tibble()),
+        alldata = tibble(),
         auth = FALSE,
         n_act = 0,
+        n_nodes = 0,
         n_child = 0
     ))
 }
