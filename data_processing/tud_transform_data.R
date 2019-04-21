@@ -1,6 +1,3 @@
-library(tidyverse)
-library(lubridate)
-
 ## combine everything
 process_activities <- function(rawdata) {
     if (rawdata$auth == FALSE) {
@@ -26,7 +23,9 @@ process_activities <- function(rawdata) {
         left_join(locations_by_activity, by = "primary_activity_id") %>%
         left_join(sites_by_activity, by = "primary_activity_id") %>%
         left_join(metadata_by_activity, by = "primary_activity_id") %>%
-        left_join(recruitment_by_activity, by = "primary_activity_id")
+        left_join(recruitment_by_activity, by = "primary_activity_id") %>%
+        select(-c(child_id)) %>% rename(study = site, child_id = nc.SubjectIdentification)
+
     
     # factor vars to factor
     ndist <- activity %>%
@@ -42,13 +41,6 @@ process_activities <- function(rawdata) {
         mutate_at(factcols$nms, as.factor) %>%
         mutate_at(boolcols$nms, as.logical)
 
-    dur_by_session <- activity %>%
-        group_by(day_id) %>%
-        summarise(duration = sum(duration) / 60) %>%
-        filter(duration > 18 & duration < 26) %>%
-        select("day_id")
-    activity <- activity %>% filter(day_id %in% as_vector(dur_by_session))
-    
     return(activity)
 }
 
@@ -236,7 +228,7 @@ process_metadata <- function(rawdata) {
         rename(primary_activity_id = src) %>%
         group_by(primary_activity_id) %>%
         summarise(
-            progress = ol.status
+            progress = mean(as.numeric(ol.status), na.rm=TRUE)
         )
         return(metadata_by_activity)
 }
@@ -293,7 +285,7 @@ process_activity <- function(rawdata) {
                respondent_id = src)
     activity <- ppl %>%
         left_join(vis, by="primary_activity_id") %>%
-        left_join(res)
+        left_join(res, by = c("primary_activity_id","study"))
     
     activity <- activity %>%
         mutate(starttime = ymd_hms(ol.datetimestart),

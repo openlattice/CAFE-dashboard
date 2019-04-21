@@ -1,154 +1,104 @@
-library(shiny)
-library(shinydashboard)
-library(shinyWidgets)
-library(yaml)
-library(shinyjs)
-
-source("pipelines/tud_load_data.R")
-source("pipelines/tud_transform_data.R")
-source("pipelines/maq_transform_data.R")
-source("pipelines/tud_summarise_data.R")
-source("servercomponents/plots.R")
-
-
-read_yaml("secrets.yaml")
-
-cols <- c("#ff3c5d",
-          "#6124e2",
-          "#ffe671",
-          "#ff9a58",
-          "#dd9e00",
-          "#00be84")
-
-
-
 shinyServer(function(input, output, session) {
-    
     ###########################################
     # loading data and observing column names #
     ###########################################
     
+    token = "NA"
+    jwt <- reactiveVal(token)
+    jwt <- callModule(authentication_server, "authentication", jwt)
+    
+    hide(selector = "#navbar li a[data-value=participants]")
+    hide(selector = "#navbar li a[data-value=analysis]")
     hide(selector = "#navbar li a[data-value=tables]")
     hide(selector = "#navbar li a[data-value=plots]")
     hide(selector = "#navbar li a[data-value=QA]")
     hide(selector = "#navbar li a[data-value=TUD-MAQ]")
+    hide(selector = "#navbar li a[data-value=ScreenBestPractices]")
+    hide(id = "waitforauth")
     
     # load data
-    rawdata <-
-        eventReactive(input$login, {
-            print("reading...")
-            rawdata <- get_data(input$jwt, cache = TRUE, auth=FALSE)
-            rawdata
-        }, ignoreNULL = FALSE)
+    rawdata <- reactiveValues(
+        tud = list(nodes = list(),
+                   edges = list()),
+        maq = list(nodes = list(),
+                   edges = list()),
+        chronicle = list(raw = tibble(),
+                         processed = tibble()),
+        auth = FALSE,
+        n_act = 0,
+        n_child = 0,
+        n_nodes = 0
+    )
     
-    activitydata <- reactive({
-        print("processing TUD...")
-        process_activities(rawdata())
+    data_r <- reactiveValues(data = tibble(), name = "CAFE")
+    
+    # authentication via cookie
+    observe({
+        # be careful not to create dependencies on rawdata here:
+        # it will trigger reloading and overwriting any changes.
+        shinyjs::addCssClass(id = "emptyplot",
+                             class = "recalculating")
+        newdat <-
+            get_data(jwt(),
+                     cache = TRUE,
+                     auth = FALSE,
+                     local = FALSE)
+        rawdata$tud <- newdat$tud
+        rawdata$chronicle <- newdat$chronicle
+        rawdata$maq <- newdat$maq
+        rawdata$n_child <- newdat$n_child
+        rawdata$n_act <- newdat$n_act
+        rawdata$n_nodes <- newdat$n_nodes
+        rawdata$auth = newdat$auth
+        rawdata$alldata = newdat$alldata
+        rawdata$coltypes = newdat$coltypes
+        shinyjs::removeCssClass(id = "emptyplot",
+                                class = "recalculating")
+        if (rawdata$auth){
+            columns <-
+                data_get_coltypes(newdat, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+            data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+        }
     })
     
-    maqdata <- reactive({
-        print("processing MAQ...")
-        process_maq(rawdata())
-    })
-    
-    summarydata <- reactive({
-        print("summarising...")
-        summarise_data(activitydata())
+    observeEvent(input$subset, {
+        print("subsetting...")
+        newdat <- subset_data(
+            rawdata = rawdata,
+            hourbool = input$subset_hours_on,
+            hourrange = input$subset_hours,
+            agebool = input$subset_age_on,
+            agerange = input$subset_age,
+            sitesbool = input$subset_sites_on,
+            sitesrange = input$subset_sites,
+            progressbool = input$subset_progress_on,
+            progressrange = input$subset_progress,
+            qualitybool = input$subset_quality_on,
+            qualityrange = input$subset_quality
+        )
+        rawdata$tud$processed = newdat$tud
+        rawdata$tud$summarised <- newdat$summary
+        rawdata$maq$processed <- newdat$maq
+        rawdata$alldata <- newdat$alldata
+        columns <-
+            data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+        data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+        rawdata$n_child <- newdat$n_child
+        rawdata$n_act <- newdat$n_act
+        rawdata$n_nodes <- newdat$n_nodes
     })
     
     observe({
-        if (rawdata()$auth) {
+        if (rawdata$auth) {
+            shinyjs::show(selector = "#navbar li a[data-value=participants]")
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
+            shinyjs::show(selector = "#navbar li a[data-value=analysis]")
             shinyjs::show(selector = "#navbar li a[data-value=plots]")
             shinyjs::show(selector = "#navbar li a[data-value=QA]")
             shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
+            shinyjs::show(selector = "#navbar li a[data-value=ScreenBestPractices]")
+            shinyjs::show(id = "waitforauth")
         }
-    })
-    
-    activity_coltypes <- reactive({
-        if (rawdata()$auth) {
-            list(
-                numeric = activitydata() %>% select(which(sapply(
-                    ., is.numeric
-                ))) %>% names,
-                factorial = activitydata() %>% select(which(sapply(
-                    ., is.factor
-                ))) %>% names,
-                boolean = activitydata() %>% select(which(sapply(
-                    ., is.logical
-                ))) %>% names
-            )
-        } else {
-            list()
-        }
-    })
-    
-    summary_coltypes <- reactive({
-        if (rawdata()$auth) {
-            list(
-                numeric = summarydata() %>% select(which(sapply(
-                    ., is.numeric
-                ))) %>% names,
-                factorial = summarydata() %>% select(which(sapply(
-                    ., is.factor
-                ))) %>% names,
-                boolean = summarydata() %>% select(which(sapply(
-                    ., is.logical
-                ))) %>% names
-            )
-        } else {
-            list()
-        }
-    })
-    
-    observe({
-        updateSelectInput(
-            session,
-            "barchart_columns",
-            choices = c(
-                activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
-                activity_coltypes()$boolean
-            )
-        )
-        updateSelectInput(
-            session,
-            "activity_columns",
-            choices = c(
-                activity_coltypes()$factorial[!activity_coltypes()$factorial %in% c("site")],
-                activity_coltypes()$boolean
-            )
-        )
-    })
-    
-    observe({
-        updateRadioButtons(session, "hist_column", choices = summary_coltypes()$numeric[summary_coltypes()$numeric != "nc.SubjectIdentification"])
-        updateCheckboxGroupInput(
-            session,
-            "cross_columns",
-            choices = c(
-                summary_coltypes()$numeric,
-                summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
-                summary_coltypes()$boolean
-            )
-        )
-        updateSelectInput(
-            session,
-            "tud_maq_column_T",
-            choices = c(
-                summary_coltypes()$numeric,
-                summary_coltypes()$factorial[summary_coltypes()$factorial != "nc.SubjectIdentification"],
-                summary_coltypes()$boolean
-            )
-        )
-        updateRadioButtons(session,
-                           "tud_chron_tud",
-                           choices = summary_coltypes()$numeric)
-        
-    })
-    
-    # authenticated
-    output$auth <- reactive({
-        rawdata()$auth
     })
     
     #############################
@@ -156,85 +106,33 @@ shinyServer(function(input, output, session) {
     #############################
     
     output$activityCounterBox <- renderInfoBox({
-        valueBox(rawdata()$n_act,
+        valueBox(rawdata$n_act,
                  "activity blocks",
                  icon = icon("heartbeat"))
     })
     output$kidsCounterBox <- renderInfoBox({
-        valueBox(rawdata()$n_child, "children", icon = icon("child"))
+        valueBox(rawdata$n_child, "children", icon = icon("child"))
     })
     
     output$datasetCounterBox <- renderInfoBox({
-        valueBox(length(rawdata()$nodes),
+        valueBox(rawdata$n_nodes,
                  "entities",
                  icon = icon("pie-chart"))
     })
     
-    
-    #######################################
-    # showing and downloading data tables #
-    #######################################
-    
-    output$preprocessed <- renderDataTable({
-        activitydata() %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification"))
-    },
-    options = list(scrollX = TRUE))
-    
-    output$summarised <- renderDataTable({
-        summarydata() %>% filter(table_access == TRUE)
-    },
-    options = list(scrollX = TRUE))
-    
-    output$chronicle <- renderDataTable({
-        rawdata()$chronicle$processed %>% filter(table_access == TRUE)
-    },
-    options = list(scrollX = TRUE))
-    
-    output$chronicle_raw <- renderDataTable({
-        rawdata()$chronicle$raw %>% filter(table_access == TRUE)
-    },
-    options = list(scrollX = TRUE))
-    
-    output$download_preprocessed <- downloadHandler(
-        filename = "CAFE_TUD_preprocessed.csv",
-        content = function(file) {
-            write.csv(
-                activitydata() %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
-                file,
-                row.names = FALSE
-            )
-        }
-    )
-    
-    output$download_summarised <- downloadHandler(
-        filename = "CAFE_TUD_summarised.csv",
-        content = function(file) {
-            write.csv(
-                summarydata() %>% filter(table_access == TRUE) %>% select(-c("nc.SubjectIdentification")),
-                file,
-                row.names = FALSE
-            )
-        }
-    )
-    
-    output$download_chronicle <- downloadHandler(
-        filename = "CAFE_chronicle.csv",
-        content = function(file) {
-            write.csv(
-                rawdata()$chronicle$raw %>% filter(table_access == TRUE) %>% select(-c("study", "pid")),
-                file,
-                row.names = FALSE
-            )
-        }
-    )
     #################
     # showing plots #
     #################
     
     output$A_hours_by_activity <-
         renderPlot({
-            plot_hours_by_activity(activitydata())
+            plot_hours_by_activity(rawdata$tud$processed)
         })
+    
+    output$A_pie_hours_by_activity <-
+        renderPlot({
+            pie_hours_by_activity(rawdata$tud$processed)
+        }, height = 400)
     
     output$A_hours_by_activity_download <-
         downloadHandler(
@@ -242,175 +140,84 @@ shinyServer(function(input, output, session) {
             content = function(file) {
                 ggsave(
                     file,
-                    plot_hours_by_activity(activitydata()),
+                    plot_hours_by_activity(rawdata$tud$processed),
                     width = 8,
                     height = 5
                 )
             }
         )
     
-    output$A_hours_by_activity_grouped <-
-        renderPlot({
-            plot_hours_by_activity(activitydata(), input$activity_columns)
-        })
-    
-    output$A_hours_by_activity_grouped_download <-
+    output$A_pie_hours_by_activity_download <-
         downloadHandler(
-            filename = "hours_by_activity_grouped.png",
+            filename = "pie_hours_by_activity.png",
             content = function(file) {
                 ggsave(
                     file,
-                    plot_hours_by_activity(activitydata(), input$activity_columns),
+                    pie_hours_by_activity(rawdata$tud$processed),
                     width = 8,
                     height = 5
                 )
             }
         )
     
+    output$A_subjects_by_site <-
+        renderPlot({
+            plot_subjects_by_site(rawdata)
+        })
+    
     output$A_hours_total <-
         renderPlot({
-            plot_total_hour_distribution(activitydata())
+            plot_total_hour_distribution(rawdata$tud$processed)
         })
     
     output$A_hours_total_download <-
         downloadHandler(
-            filename = "hours_total.png",
+            filename = "hours_distribution.png",
             content = function(file) {
                 ggsave(
                     file,
-                    plot_total_hour_distribution(activitydata()),
+                    plot_total_hour_distribution(rawdata$tud$processed),
                     width = 8,
                     height = 5
                 )
             }
         )
     
-    
-    output$A_activities_cross <-
+    output$A_ages_total <-
         renderPlot({
-            plot_barchart_activities(activitydata(),
-                                     input$barchart_columns,
-                                     input$barchart_grouper_columns)
+            plot_total_age_distribution(rawdata$maq$processed)
         })
     
-    output$A_activities_cross_download <-
+    output$A_ages_total_download <-
         downloadHandler(
-            filename = "activities_cross.png",
+            filename = "ages_distribution.png",
             content = function(file) {
                 ggsave(
                     file,
-                    plot_barchart_activities(
-                        activitydata(),
-                        input$barchart_columns,
-                        input$barchart_grouper_columns
-                    ),
+                    plot_total_age_distribution(rawdata$maq$processed),
                     width = 8,
                     height = 5
                 )
             }
         )
-    
-    output$histogram <-
-        renderPlot({
-            plot_summary_histogram(summarydata(), input$hist_column)
-        })
-    
-    output$histogram_download <-
-        downloadHandler(
-            filename = "histogram.png",
-            content = function(file) {
-                ggsave(
-                    file,
-                    plot_summary_histogram(summarydata(), input$hist_column),
-                    width = 8,
-                    height = 5
-                )
-            }
-        )
-    
-    output$crossplot <-
-        renderPlot({
-            plot_crossplot(summarydata(), input$cross_columns)
-        })
-    
-    output$crossplot_download <-
-        downloadHandler(
-            filename = "crossplot.png",
-            content = function(file) {
-                ggsave(
-                    file,
-                    plot_crossplot(summarydata(), input$cross_columns),
-                    width = 8,
-                    height = 5
-                )
-            }
-        )
-    
-    output$tud_chron_plot <-
-        renderPlot({
-            plot_tud_chron(
-                summarydata(),
-                rawdata()$chronicle$processed,
-                "meantime",
-                input$tud_chron_tud
-            )
-        })
-    
-    
-    
-    output$tudchronplot_download <-
-        downloadHandler(
-            filename = "tudchronplot.png",
-            content = function(file) {
-                ggsave(
-                    file,
-                    plot_tud_chron(
-                        summarydata(),
-                        rawdata()$chronicle$processed,
-                        input$tud_chron_tud,
-                        input$tud_chron_chron
-                    ),
-                    width = 8,
-                    height = 5
-                )
-            }
-        )
-    
-    output$sbp_plot <-
-        renderPlot({
-            plot_sbp(summarydata())
-        })
-    
-    output$sbp_plot_download <-
-        downloadHandler(
-            filename = "bestpractices.png",
-            content = function(file) {
-                ggsave(file,
-                       plot_sbp(summarydata()),
-                       width = 8,
-                       height = 5)
-            }
-        )
-    
-    output$qc_base <- 
-        renderPlot({
-            plot_qc_progress(summarydata())
-        })
-    
-    
     
     output$emptyplot <-
         renderPlot({
-            data <- rawdata()
+            justtmp <- rawdata
             empty_plot()
         })
     
-    output$plot_maq_tud <-
-        renderPlot({
-            plot_maq(summarydata(), maqdata(), input$tud_maq_column_T, input$tud_maq_column_M)
-        })
-    
-    
-    outputOptions(output, 'auth', suspendWhenHidden = FALSE)
+    callModule(venn_server, "participants", rawdata)
+    callModule(demographics_server, "participants", rawdata)
+    callModule(univar_server, "analysis", rawdata)
+    callModule(concon_server, "analysis", rawdata)
+    callModule(catcon_server, "analysis", rawdata)
+    callModule(tud_server, "analysis", rawdata)
+    callModule(tables,
+               "tables",
+               rawdata)
+    callModule(multivariate_server, "analysis", rawdata)
+    callModule(multivariate_cor_server, "analysis", rawdata)
+    callModule(module = esquisserServer, id = "esquisse", data = data_r)
     
 })

@@ -18,22 +18,28 @@ MAQ_entities <- c(
     
     # SUBJECTS
     
-    "Subjects",
-    "HouseHolds",
-    "ChildCare_Weekdays",
-    "ChildCare_Weekends",
-    "Household_Communication",
+    "Children",
     "Respondents",
-    "Subject_Details",
-    "Caregiver_Communication",
-    
+    "ChildrenDetails",
+    "RespondentDetails",
+
     # RESPONDENTS
     
     "RespondentDetails", 
     "Employment", 
     "Education", 
     "Incomes", 
-    "ImmigrationStatus"
+    "ImmigrationStatus",
+    
+    # Device Use
+    "Device_Use",
+    
+    # quality
+    "QualityControl",
+    "PSI_Assessment",
+    "SurveyMetadata",
+    "ChildrenDetailsHealth",
+    "PublicAssistance"
 )
 
 MAQ_associations <- list(
@@ -41,47 +47,41 @@ MAQ_associations <- list(
     # SUBJECTS
     
     list(
-        src = "Subjects",
-        dst = "Households",
-        edge = "PartOf"
-    ),
-    list(
-        src = "Subjects",
-        dst = "ChildCare_Weekdays",
-        edge = "InvolvedIn"
-    ),
-    list(
-        src = "Subjects",
-        dst = "Household_Communication",
-        edge = "InvolvedIn"
-    ),
-    list(
         src = "Respondents",
-        dst = "Subjects",
+        dst = "Children",
         edge = "RelatedTo"
     ),
     list(
-        src = "Subjects",
-        dst = "Subject_Details",
+        src = "Children",
+        dst = "ChildrenDetails",
         edge = "Has"
     ),
     list(
         src = "Respondents",
-        dst = "ChildCare_Weekends",
-        edge = "InvolvedIn"
+        dst = "SurveyMetadata",
+        edge = "ParticipatedIn"
     ),
     list(
-        src = "Subjects",
-        dst = "Caregiver_Communication",
-        edge = "InvolvedIn"
+        src = "Respondents",
+        dst = "RespondentDetails",
+        edge = "Has"
     ),
-    
+    list(
+        src = "Children",
+        dst = "ChildrenDetailsHealth",
+        edge = "Has"
+    ),
+    list(
+        src= "Respondents",
+        dst = "PublicAssistance",
+        edge = "Reported"
+    ),
     # RESPONDENTS
     
     list(
         src = "Respondents",
         dst = "RespondentDetails",
-        edge = "Has"
+        edge = "Reported"
     ),
     list(
         src = "Respondents",
@@ -102,9 +102,25 @@ MAQ_associations <- list(
         src = "Respondents",
         dst = "ImmigrationStatus",
         edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "QualityControl",
+        edge = "Reported"
+    ),
+    
+    # DEVICES
+    
+    list(
+        src = "Children",
+        dst = "Device_Use",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "PSI_Assessment",
+        edge = "ScreenedWith"
     )
-    
-    
 )
 
 

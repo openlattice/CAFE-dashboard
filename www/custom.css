@@ -82,10 +82,13 @@
 }
 
 
-.js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {
+.irs-bar {
   background: #6124e2;
   border-color: #6124e2;
+}
 
+.irs-from, .irs-to {
+  background: #361876;
 }
 
 .content-wrapper{
@@ -110,6 +113,14 @@
 
 .box-primary {
   min-height: 300px;
+}
+
+.box-dad {
+    height: 70%;
+}
+
+.shiny-split-layout {
+    height: 30%;
 }
 
 .box-title{
@@ -144,7 +155,6 @@
 .small-box{
   background-color:#b6bbc7!important;
 }
-
 
 @font-face {  
   font-family: Open Sans, sans serif!important;
