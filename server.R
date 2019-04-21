@@ -78,6 +78,7 @@ shinyServer(function(input, output, session) {
         rawdata$tud$processed = newdat$tud
         rawdata$tud$summarised <- newdat$summary
         rawdata$maq$processed <- newdat$maq
+        rawdata$alldata <- newdat$alldata
     })
     
     observe({

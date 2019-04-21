@@ -1,17 +1,19 @@
 subset_data <-
     function(rawdata,
-             hourbool,
-             hourrange,
-             agebool,
-             agerange,
-             sitesbool,
-             sitesrange,
-             progressbool,
-             progressrange,
-             qualitybool,
-             qualityrange) {
+             hourbool=FALSE,
+             hourrange=NULL,
+             agebool=FALSE,
+             agerange=NULL,
+             sitesbool=FALSE,
+             sitesrange=NULL,
+             progressbool=FALSE,
+             progressrange=NULL,
+             qualitybool=FALSE,
+             qualityrange=NULL) {
         output = list(tud = rawdata$tud$preprocessed,
-                      maq = rawdata$maq$preprocessed)
+                      maq = rawdata$maq$preprocessed,
+                      alldata = rawdata$alldata
+                      )
         
         # subset hours
         if (hourbool) {
@@ -24,6 +26,8 @@ subset_data <-
                 filter(day_id %in% subset$day_id)
             output$maq <- output$maq %>%
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            output$alldata <- output$alldata %>%
+                filter(child_id %in% subset$nc.SubjectIdentification)
         }
         print(dim(output$tud))
         # subset sites
@@ -34,6 +38,8 @@ subset_data <-
                 output$tud %>% filter(str_detect(study, sites))
             output$maq <-
                 output$maq %>% filter(str_detect(study, sites))
+            output$alldata <- output$alldata %>%
+                filter(str_detect(study, sites))
         }
         print(dim(output$tud))
         
@@ -47,6 +53,8 @@ subset_data <-
                 filter(day_id %in% subset$day_id)
             output$maq <- output$maq %>%
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            output$alldata <- output$alldata %>%
+                filter(child_id %in% subset$nc.SubjectIdentification)
         }
         
         if (agebool) {
@@ -58,6 +66,8 @@ subset_data <-
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
             output$maq <- output$maq %>%
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            output$alldata <- output$alldata %>%
+                filter(child_id %in% subset$nc.SubjectIdentification)
             
         }
         
@@ -70,6 +80,8 @@ subset_data <-
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
             output$maq <- output$maq %>%
                 filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+            output$alldata <- output$alldata %>%
+                filter(child_id %in% subset$nc.SubjectIdentification)
             
         }
         
