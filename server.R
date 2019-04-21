@@ -4,7 +4,6 @@ shinyServer(function(input, output, session) {
     ###########################################
     
     token = "NA"
-
     jwt <- reactiveVal(token)
     jwt <- callModule(authentication_server, "authentication", jwt)
     
@@ -55,8 +54,8 @@ shinyServer(function(input, output, session) {
                                 class = "recalculating")
         if (rawdata$auth){
             columns <-
-                data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
-            data_r$data <- rawdata$alldata[unique(unlist(columns, use.names=FALSE))]
+                data_get_coltypes(newdat, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+            data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
         }
     })
     
@@ -79,6 +78,12 @@ shinyServer(function(input, output, session) {
         rawdata$tud$summarised <- newdat$summary
         rawdata$maq$processed <- newdat$maq
         rawdata$alldata <- newdat$alldata
+        columns <-
+            data_get_coltypes(newdat, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+        data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+        rawdata$n_child <- newdat$n_child
+        rawdata$n_act <- newdat$n_act
+        rawdata$n_nodes <- newdat$n_nodes
     })
     
     observe({
