@@ -53,9 +53,11 @@ shinyServer(function(input, output, session) {
         rawdata$coltypes = newdat$coltypes
         shinyjs::removeCssClass(id = "emptyplot",
                                 class = "recalculating")
-        columns <-
-            data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
-        data_r$data <- rawdata$alldata[unique(unlist(columns, use.names=FALSE))]
+        if (rawdata$auth){
+            columns <-
+                data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+            data_r$data <- rawdata$alldata[unique(unlist(columns, use.names=FALSE))]
+        }
     })
     
     observeEvent(input$subset, {
