@@ -2,26 +2,26 @@ read_data <- function(apis, auth = FALSE, local = FALSE) {
     ptm <- proc.time()
     filename = "rawdata_20190419.yaml"
     if (local) {
-        print("Reading the data from disk...")
+        cat(file=stderr(), "Reading the data from disk...")
         rawdata <- read_yaml(paste0("data/", filename))
     } else {
         rawdata <- read_yaml(paste0("/opt/shiny/data/", filename))
     }
     rawdata <- add_authentication_to_raw(rawdata, apis, auth = auth)
-    print(paste0("    ---- Reading in the data took: ", (proc.time() - ptm)['elapsed'], " seconds."))
+    cat(file=stderr(), paste0("    ---- Reading in the data took: ", (proc.time() - ptm)['elapsed'], " seconds."))
     return(rawdata)
 }
 
 load_data <-
     function(apis) {
-        print("Loading the data from the platform...")
+        cat(file=stderr(), "Loading the data from the platform...")
         
         # TUD
-        print("  -- TUD: Getting nodes.")
+        cat(file=stderr(), "  -- TUD: Getting nodes.")
         datasets <- TUD_entities %>% map(get_node_table, apis)
         names(datasets) <- TUD_entities
         
-        print("  -- TUD: Getting edges.")
+        cat(file=stderr(), "  -- TUD: Getting edges.")
         edgesdata <-
             TUD_associations %>% map(get_edge_table, datasets, apis)
         names(edgesdata) <-
@@ -30,11 +30,11 @@ load_data <-
             })
         
         # MAQ
-        print("  -- MAQ: Getting nodes.")
+        cat(file=stderr(), "  -- MAQ: Getting nodes.")
         maqdatasets <- MAQ_entities %>% map(get_node_table, apis)
         names(maqdatasets) <- MAQ_entities
         
-        print("  -- MAQ: Getting edges.")
+        cat(file=stderr(), "  -- MAQ: Getting edges.")
         maqedgesdata <-
             MAQ_associations %>% map(get_edge_table, maqdatasets, apis)
         names(maqedgesdata) <-
@@ -57,7 +57,7 @@ load_data <-
         outdata <-
             add_authentication_to_raw(outdata, apis, auth = TRUE)
         
-        print("Got the data !")
+        cat(file=stderr(), "Got the data !")
         return (outdata)
     }
 
