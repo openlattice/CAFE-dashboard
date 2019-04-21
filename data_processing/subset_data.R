@@ -31,7 +31,7 @@ subset_data <-
             print("sites")
             sites = paste0(sitesrange, collapse = "|")
             output$tud <-
-                output$tud %>% filter(str_detect(site, sites))
+                output$tud %>% filter(str_detect(study, sites))
             output$maq <-
                 output$maq %>% filter(str_detect(study, sites))
         }
