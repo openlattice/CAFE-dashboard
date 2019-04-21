@@ -1,27 +1,27 @@
 read_data <- function(apis, auth = FALSE, local = FALSE) {
     ptm <- proc.time()
-    filename = "rawdata_20190419.yaml"
+    filename = "rawdata_20190421.yaml"
     if (local) {
-        cat(file=stderr(), "Reading the data from disk...")
+        cat(file=stderr(), "Reading the data from disk...\n")
         rawdata <- read_yaml(paste0("data/", filename))
     } else {
         rawdata <- read_yaml(paste0("/opt/shiny/data/", filename))
     }
     rawdata <- add_authentication_to_raw(rawdata, apis, auth = auth)
-    cat(file=stderr(), paste0("    ---- Reading in the data took: ", (proc.time() - ptm)['elapsed'], " seconds."))
+    cat(file=stderr(), paste0("    ---- Reading in the data took: ", (proc.time() - ptm)['elapsed'], " seconds.\n"))
     return(rawdata)
 }
 
 load_data <-
     function(apis) {
-        cat(file=stderr(), "Loading the data from the platform...")
+        cat(file=stderr(), "Loading the data from the platform...\n")
         
         # TUD
-        cat(file=stderr(), "  -- TUD: Getting nodes.")
+        cat(file=stderr(), "  -- TUD: Getting nodes.\n")
         datasets <- TUD_entities %>% map(get_node_table, apis)
         names(datasets) <- TUD_entities
         
-        cat(file=stderr(), "  -- TUD: Getting edges.")
+        cat(file=stderr(), "  -- TUD: Getting edges.\n")
         edgesdata <-
             TUD_associations %>% map(get_edge_table, datasets, apis)
         names(edgesdata) <-
@@ -30,11 +30,11 @@ load_data <-
             })
         
         # MAQ
-        cat(file=stderr(), "  -- MAQ: Getting nodes.")
+        cat(file=stderr(), "  -- MAQ: Getting nodes.\n")
         maqdatasets <- MAQ_entities %>% map(get_node_table, apis)
         names(maqdatasets) <- MAQ_entities
         
-        cat(file=stderr(), "  -- MAQ: Getting edges.")
+        cat(file=stderr(), "  -- MAQ: Getting edges.\n")
         maqedgesdata <-
             MAQ_associations %>% map(get_edge_table, maqdatasets, apis)
         names(maqedgesdata) <-
@@ -57,7 +57,7 @@ load_data <-
         outdata <-
             add_authentication_to_raw(outdata, apis, auth = TRUE)
         
-        cat(file=stderr(), "Got the data !")
+        cat(file=stderr(), "Got the data !\n")
         return (outdata)
     }
 
