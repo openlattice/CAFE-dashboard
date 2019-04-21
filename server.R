@@ -34,6 +34,8 @@ shinyServer(function(input, output, session) {
     
     # authentication via cookie
     observe({
+        # be careful not to create dependencies on rawdata here:
+        # it will trigger reloading and overwriting any changes.
         shinyjs::addCssClass(id = "emptyplot",
                              class = "recalculating")
         newdat <-
@@ -79,7 +81,7 @@ shinyServer(function(input, output, session) {
         rawdata$maq$processed <- newdat$maq
         rawdata$alldata <- newdat$alldata
         columns <-
-            data_get_coltypes(newdat, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+            data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
         data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
         rawdata$n_child <- newdat$n_child
         rawdata$n_act <- newdat$n_act
