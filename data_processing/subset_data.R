@@ -85,7 +85,10 @@ subset_data <-
             
         }
         
+        output[['n_act']] = dim(output$tud)[1]
+        output[['n_child']] = dim(output$alldata)[1]
+        output[['n_nodes']] = length(names(rawdata$tud$nodes)) + length(names(rawdata$maq$edges))
         output$summary = summarise_data(output$tud)
-        
+
         return(output)
     }
