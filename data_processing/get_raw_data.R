@@ -120,16 +120,8 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE) {
         rawtable <- rawtable %>% mutate(table_access = TRUE)
     }
     
-    proctable <- as.tibble(data$chronicle$processed)
-    if (auth == FALSE) {
-        proctable <-
-            proctable %>% mutate(table_access = study %in% entitysets)
-    } else {
-        proctable <- proctable %>% mutate(table_access = TRUE)
-    }
     newdata$chronicle$raw = rawtable
-    newdata$chronicle$processed = proctable
-    
+
     return(newdata)
     
 }
