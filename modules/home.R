@@ -119,7 +119,7 @@ home <- tabPanel(
          h4("Quality checks"),
          checkboxInput(
              "subset_quality_on",
-             label = "Subset quality"
+             label = "Subset quality (percentage correct)"
          ),
          sliderInput(
              "subset_quality",
