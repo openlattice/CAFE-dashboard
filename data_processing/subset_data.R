@@ -1,3 +1,8 @@
+# out = subset_data(rawdata, hourbool=TRUE, hourrange = c(18,24), agebool = TRUE, agerange=c(0,100),
+#             sitesbool = TRUE, sitesrange = c("PM", "UM"), progressbool = TRUE, progressrange = c(0,100),
+#             qualitybool = TRUE, qualityrange = c(0, 100)
+#             )
+
 subset_data <-
     function(rawdata,
              hourbool=FALSE,
@@ -20,16 +25,17 @@ subset_data <-
             print("hours")
             subset <- rawdata$tud$summarised %>%
                 filter(total_time > hourrange[1] &
-                           total_time < hourrange[2]) %>% select("nc.SubjectIdentification", "day_id")
+                           total_time < hourrange[2]) %>% select("child_id", "day_id")
             output$tud <- output$tud %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification) %>%
+                filter(child_id %in% subset$child_id) %>%
                 filter(day_id %in% subset$day_id)
             output$maq <- output$maq %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
-                filter(child_id %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
         }
         print(dim(output$tud))
+        
         # subset sites
         if (sitesbool) {
             print("sites")
@@ -47,27 +53,27 @@ subset_data <-
             print("progress")
             subset <- rawdata$tud$summarised %>%
                 filter(progress > progressrange[1] &
-                           progress < progressrange[2]) %>% select("nc.SubjectIdentification", "day_id")
+                           progress < progressrange[2]) %>% select("child_id", "day_id")
             output$tud <- output$tud %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification) %>%
+                filter(child_id %in% subset$child_id) %>%
                 filter(day_id %in% subset$day_id)
             output$maq <- output$maq %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
-                filter(child_id %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
         }
         
         if (agebool) {
             print("age")
             subset <- rawdata$maq$preprocessed %>%
                 filter(age_months > agerange[1] &
-                           age_months < agerange[2]) %>% select("nc.SubjectIdentification")
+                           age_months < agerange[2]) %>% select("child_id")
             output$tud <- output$tud %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             output$maq <- output$maq %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
-                filter(child_id %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             
         }
         
@@ -75,13 +81,13 @@ subset_data <-
             print("quality")
             subset <- rawdata$maq$preprocessed %>%
                 filter(mean_quality > qualityrange[1] &
-                           mean_quality < qualityrange[2]) %>% select("nc.SubjectIdentification")
+                           mean_quality < qualityrange[2]) %>% select("child_id")
             output$tud <- output$tud %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             output$maq <- output$maq %>%
-                filter(nc.SubjectIdentification %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
-                filter(child_id %in% subset$nc.SubjectIdentification)
+                filter(child_id %in% subset$child_id)
             
         }
         
