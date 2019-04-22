@@ -172,6 +172,12 @@ process_maq <- function(rawdata) {
 
         )
 
+    race_key <- c('amindian' = "Native American / Pacific Islander", 
+                     "black" = 'Black', 
+                     "biracial" = 'Biracial', 
+                     "asian" = 'Asian', 
+                     "white" = 'White')
+
     employment = rawdata$maq$edges$Respondents_Employment %>%
         left_join(rawdata$maq$nodes$Respondents,
                   by = c(src = "openlattice.@id")) %>%
@@ -211,7 +217,10 @@ process_maq <- function(rawdata) {
         ) %>%
         mutate(
             parental_employment = fct_relevel(parental_employment, levels=list("No", "Maternity / parental leave", "One part-time job", "One full-time job", "Multiple jobs"))
-        )
+        ) %>%
+        mutate_at('race', recode, !!!race_key)
+
+    
     
     education_levels = list(
         "No formal school"  ,
