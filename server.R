@@ -50,6 +50,7 @@ shinyServer(function(input, output, session) {
         rawdata$n_act <- newdat$n_act
         rawdata$n_nodes <- newdat$n_nodes
         rawdata$auth = newdat$auth
+        rawdata$alldata_complete = newdat$alldata
         rawdata$alldata = newdat$alldata
         rawdata$coltypes = newdat$coltypes
         shinyjs::removeCssClass(id = "emptyplot",

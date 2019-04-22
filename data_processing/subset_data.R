@@ -12,7 +12,7 @@ subset_data <-
              qualityrange=NULL) {
         output = list(tud = rawdata$tud$preprocessed,
                       maq = rawdata$maq$preprocessed,
-                      alldata = rawdata$alldata
+                      alldata = rawdata$alldata_complete
                       )
         
         # subset hours
