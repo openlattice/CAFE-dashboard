@@ -40,3 +40,5 @@ rsconnect/
 */secrets.yaml
 
 /data/
+
+testscript.R
