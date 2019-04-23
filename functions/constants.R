@@ -39,7 +39,8 @@ MAQ_entities <- c(
     "PSI_Assessment",
     "SurveyMetadata",
     "ChildrenDetailsHealth",
-    "PublicAssistance"
+    "PublicAssistance",
+    "ParentMediationScale"
 )
 
 MAQ_associations <- list(
@@ -120,6 +121,11 @@ MAQ_associations <- list(
         src = "Respondents",
         dst = "PSI_Assessment",
         edge = "ScreenedWith"
+    ),
+    list(
+        src = "Respondents",
+        dst = "ParentMediationScale",
+        edge = "Reported"
     )
 )
 
