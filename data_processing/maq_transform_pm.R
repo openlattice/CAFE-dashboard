@@ -39,7 +39,7 @@ pm_level_key = c(
     'Not applicable' = NA
 )
 
-pm_transform <- function(rawdata) {
+pm_transform <- function(rawdata, children_respondents) {
     pm_ungrouped = rawdata$maq$edges$Respondents_ParentMediationScale %>%
         left_join(rawdata$maq$nodes$Respondents,
                   by = c(src = "openlattice.@id")) %>%

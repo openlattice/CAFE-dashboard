@@ -79,7 +79,7 @@ level_key_3 <- c("Much easier than I expected" = '1',
                  "Much harder than I expected" = '5')
 
 
-psi_transform <- function(rawdata) {
+psi_transform <- function(rawdata, children_respondents) {
     psi_ungrouped = rawdata$maq$edges$Respondents_PSI_Assessment %>%
         left_join(rawdata$maq$nodes$Respondents,
                   by = c(src = "openlattice.@id")) %>%
