@@ -214,6 +214,7 @@ shinyServer(function(input, output, session) {
     callModule(concon_server, "analysis", rawdata)
     callModule(catcon_server, "analysis", rawdata)
     callModule(tud_server, "analysis", rawdata)
+    callModule(scales_server, "analysis", rawdata)
     callModule(tables,
                "tables",
                rawdata)
