@@ -9,7 +9,7 @@ summarise_data <- function(activitydata) {
     summarise(
       progress = mean(as.numeric(progress), na.rm=TRUE),
       total_time = sum(duration)/60,
-      time_deviance = abs(total_time - 24),
+      time_deviance_from_24 = abs(total_time - 24),
       total_blocks = n(),
       
       background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other], na.rm=TRUE)/60,
