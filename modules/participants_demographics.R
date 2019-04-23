@@ -79,7 +79,7 @@ demographics_server <-
         output$dem_column3 <- renderUI(selectInput(
             inputId = ns("demcol3"),
             "Choose continuous variable:",
-            choices = c(data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric")), other = c("n"))
+            choices = c(n = c("n"),data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric")))
         ))
         
 
