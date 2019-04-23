@@ -33,3 +33,12 @@ get_data_from_cols <- function(rawdata, cols) {
     return(data)
 }
 
+get_scales_columns <- function(rawdata, scale = "PSI") {
+    columns <-
+        data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
+    columns = unlist(columns, use.names = FALSE)
+    columns = columns[str_detect(columns, scale)]
+    return(columns)
+}
+
+
