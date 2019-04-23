@@ -1,6 +1,6 @@
 read_data <- function(apis, auth = FALSE, local = FALSE) {
     ptm <- proc.time()
-    filename = "rawdata_20190421.yaml"
+    filename = "rawdata_20190422.yaml"
     if (local) {
         cat(file=stderr(), "Reading the data from disk...\n")
         rawdata <- read_yaml(paste0("data/", filename))
@@ -13,46 +13,53 @@ read_data <- function(apis, auth = FALSE, local = FALSE) {
 }
 
 load_data <-
-    function(apis) {
+    function(apis, TUD = TRUE, MAQ = TRUE) {
         cat(file=stderr(), "Loading the data from the platform...\n")
         
         # TUD
-        cat(file=stderr(), "  -- TUD: Getting nodes.\n")
-        datasets <- TUD_entities %>% map(get_node_table, apis)
-        names(datasets) <- TUD_entities
-        
-        cat(file=stderr(), "  -- TUD: Getting edges.\n")
-        edgesdata <-
-            TUD_associations %>% map(get_edge_table, datasets, apis)
-        names(edgesdata) <-
-            TUD_associations %>% map_chr(function(x) {
-                return (paste0(x['src'], "_", x['dst']))
-            })
+        if (TUD){
+            cat(file=stderr(), "  -- TUD: Getting nodes.\n")
+            datasets <- TUD_entities %>% map(get_node_table, apis)
+            names(datasets) <- TUD_entities
+            
+            cat(file=stderr(), "  -- TUD: Getting edges.\n")
+            edgesdata <-
+                TUD_associations %>% map(get_edge_table, datasets, apis)
+            names(edgesdata) <-
+                TUD_associations %>% map_chr(function(x) {
+                    return (paste0(x['src'], "_", x['dst']))
+                })
+        }
         
         # MAQ
-        cat(file=stderr(), "  -- MAQ: Getting nodes.\n")
-        maqdatasets <- MAQ_entities %>% map(get_node_table, apis)
-        names(maqdatasets) <- MAQ_entities
+        if (MAQ) {
+            cat(file=stderr(), "  -- MAQ: Getting nodes.\n")
+            maqdatasets <- MAQ_entities %>% map(get_node_table, apis)
+            names(maqdatasets) <- MAQ_entities
+            
+            cat(file=stderr(), "  -- MAQ: Getting edges.\n")
+            maqedgesdata <-
+                MAQ_associations %>% map(get_edge_table, maqdatasets, apis)
+            names(maqedgesdata) <-
+                MAQ_associations %>% map_chr(function(x) {
+                    return (paste0(x['src'], "_", x['dst']))
+                })
+        }
         
-        cat(file=stderr(), "  -- MAQ: Getting edges.\n")
-        maqedgesdata <-
-            MAQ_associations %>% map(get_edge_table, maqdatasets, apis)
-        names(maqedgesdata) <-
-            MAQ_associations %>% map_chr(function(x) {
-                return (paste0(x['src'], "_", x['dst']))
-            })
-        
-        outdata <- list(
-            tud = list(nodes = datasets,
-                       edges = edgesdata),
-            chronicle = list(raw = tibble(),
-                             processed = tibble()),
-            maq = list(nodes = maqdatasets,
-                       edges = maqedgesdata),
-            n_act = dim(datasets$primary_activity)[1],
-            n_child = dim(datasets$people)[1],
-            auth = TRUE
-        )
+        outdata <- list()
+        if (TUD){
+            outdata[['tud']] <- list(nodes = datasets,
+                                     edges = edgesdata)
+            outdata[['n_act']] = dim(datasets$primary_activity)[1]
+            outdata[['n_child']] = dim(datasets$people)[1]
+        }
+        if (MAQ) {
+            outdata[['maq']] <- list(nodes = maqdatasets,
+                                     edges = maqedgesdata)
+        }
+        outdata[['chronicle']] <- list(raw = tibble(),
+                             processed = tibble())
+        outdata[['auth']] <- TRUE
         
         outdata <-
             add_authentication_to_raw(outdata, apis, auth = TRUE)
