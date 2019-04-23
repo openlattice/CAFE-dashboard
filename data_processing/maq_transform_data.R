@@ -274,8 +274,8 @@ process_maq <- function(rawdata) {
     ## PSI variables
     ######
     
-    psi <- psi_transform(rawdata)
-    pm <- pm_transform(rawdata)
+    psi <- psi_transform(rawdata, children_respondents)
+    pm <- pm_transform(rawdata, children_respondents)
     
          
     maq <- children %>%
