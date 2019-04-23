@@ -57,7 +57,7 @@ data_add_processed <- function(rawdata) {
     bigdataset = tud_sm %>%
         full_join(maq_pr, by = c('child_id', "study")) %>%
         full_join(chr_pr, by = 'child_id') %>%
-        arrange(time_deviance) %>%
+        arrange(time_deviance_from_24) %>%
         mutate(study = study.x, table_access = table_access.x & table_access.y) %>%
         group_by(study, child_id, tud_present, maq_present, chr_present) %>% 
         filter(row_number() <= 1) %>%
