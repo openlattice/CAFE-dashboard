@@ -39,6 +39,7 @@ tagList(
             multivariate_ui("analysis"),
             multivariate_cor_ui("analysis"),
             tud_ui("analysis"),
+            scales_ui("analysis"),
             esquisse_ui("esquisse")
         ),
         navbarMenu(
