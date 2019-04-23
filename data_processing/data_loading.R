@@ -85,7 +85,7 @@ data_add_processed <- function(rawdata) {
 
 data_get_coltypes <- function(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("numeric", "factorial", "boolean")) {
     
-    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification", "day_id")
+    toremove <- c("child_id", "respondent_id", "nc.SubjectIdentification", "day_id", "table_access")
     
     coltype = list(
         tud_activity = list(
