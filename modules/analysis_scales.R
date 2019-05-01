@@ -49,7 +49,7 @@ scales_server <-
         output$scales_cols <- renderUI(selectInput(
             ns("scales_cols"),
             "",
-            choices = c("PSI", "Valkenburg")
+            choices = c("PSI", "Valkenburg", "short form")
         ))
         
         

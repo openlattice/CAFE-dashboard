@@ -34,6 +34,7 @@ get_data_from_cols <- function(rawdata, cols) {
 }
 
 get_scales_columns <- function(rawdata, scale = "PSI") {
+    if (scale == "short form"){scale = "sf_"}
     columns <-
         data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
     columns = unlist(columns, use.names = FALSE)
