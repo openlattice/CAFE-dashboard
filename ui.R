@@ -47,7 +47,8 @@ tagList(
             preprocessed_table("tables"),
             summarised_table("tables"),
             chronicle_table("tables"),
-            maq_table("tables")
+            maq_table("tables"),
+            linked_table("tables")
         )
     )
 )
