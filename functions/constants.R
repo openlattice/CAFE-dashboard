@@ -40,7 +40,10 @@ MAQ_entities <- c(
     "SurveyMetadata",
     "ChildrenDetailsHealth",
     "PublicAssistance",
-    "ParentMediationScale"
+    "ParentMediationScale",
+    "Devices",
+    "MediaUseAttitudes",
+    "MediaDeviceUse"
 )
 
 MAQ_associations <- list(
@@ -86,6 +89,11 @@ MAQ_associations <- list(
     ),
     list(
         src = "Respondents",
+        edge = "Reported",
+        dst = "MediaUseAttitudes"
+    ),
+    list(
+        src = "Respondents",
         dst = "Employment",
         edge = "Reported"
     ),
@@ -118,9 +126,19 @@ MAQ_associations <- list(
         edge = "InvolvedIn"
     ),
     list(
+        src = "Devices",
+        dst = "Children",
+        edge = "UsedBy"
+    ),
+    list(
         src = "Respondents",
         dst = "PSI_Assessment",
         edge = "ScreenedWith"
+    ),
+    list(
+      src = "Respondents",
+      dst = "MediaDeviceUse",
+      edge = "Reported"
     ),
     list(
         src = "Respondents",

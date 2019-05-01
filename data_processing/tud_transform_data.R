@@ -175,6 +175,9 @@ process_media_exposure <- function(rawdata) {
                 str_detect(ol.priority, "secondary"),
             screen = sum(str_detect(
                 ol.type, "television|video|Video|internet"
+            )) > 0,
+            videochat = sum(str_detect(
+                ol.type, "Video chat"
             )) > 0
         )
     return(media_exposure_by_activity)
