@@ -56,9 +56,7 @@ shinyServer(function(input, output, session) {
         shinyjs::removeCssClass(id = "emptyplot",
                                 class = "recalculating")
         if (rawdata$auth){
-            columns <-
-                data_get_coltypes(newdat, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
-            data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+            data_r$data <- newdat$alldata[unique(unlist(names(newdat$alldata), use.names=FALSE))]
         }
     })
     
@@ -81,9 +79,10 @@ shinyServer(function(input, output, session) {
         rawdata$tud$summarised <- newdat$summary
         rawdata$maq$processed <- newdat$maq
         rawdata$alldata <- newdat$alldata
+        rawdata$chronicle$processed <- newdat$chronicle
         columns <-
             data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
-        data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+        data_r$data <- newdat$alldata[unique(unlist(names(newdat$alldata), use.names=FALSE))]
         rawdata$n_child <- newdat$n_child
         rawdata$n_act <- newdat$n_act
         rawdata$n_nodes <- newdat$n_nodes
