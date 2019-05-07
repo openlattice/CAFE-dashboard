@@ -38,8 +38,8 @@ process_maq <- function(rawdata) {
                   "white" = 'White')
     
     children_demographics = recombine(list("Respondents", "Children"), rawdata) %>%
-        select(child_id, respondent_id, Respondents.nc.PersonRace, Respondents.nc.PersonEthnicity, study_id, Children.table_access) %>%
-        group_by(child_id, study_id, Children.table_access) %>% 
+        select(child_id, respondent_id, Respondents.nc.PersonRace, Respondents.nc.PersonEthnicity, study_id, Children.table_access, Children.nc.PersonSex) %>%
+        group_by(child_id, study_id, Children.table_access, Children.nc.PersonSex) %>% 
         summarise(
             race = paste(unique(Respondents.nc.PersonRace[!is.na(Respondents.nc.PersonRace)]), collapse=","),
             ethnicity = paste(unique(Respondents.nc.PersonEthnicity[!is.na(Respondents.nc.PersonEthnicity)]), collapse = ",")
@@ -49,7 +49,8 @@ process_maq <- function(rawdata) {
             race = ifelse(str_detect(race, "NA"), NA, race),
             ethnicity = ifelse(str_detect(ethnicity, ","), "multiple", ethnicity),
             ethnicity = ifelse(ethnicity == "", NA, ethnicity),
-            table_access = Children.table_access
+            table_access = Children.table_access,
+            sex = Children.nc.PersonSex
         ) %>%
         mutate_at('race', recode, !!!race_key)
     
@@ -105,7 +106,6 @@ process_maq <- function(rawdata) {
     ## Children details
     ######
     
-    childrendetails = recombine(list("Children", "ChildrenDetails"), rawdata) %>%
         mutate(
             birthmonth = match(str_sub(Children.ol.birthmonth, 1, 3), month.abb),
             birthmonth = ifelse(is.na(birthmonth), as.numeric(Children.ol.birthmonth), birthmonth),
@@ -120,11 +120,55 @@ process_maq <- function(rawdata) {
         select(birthmonth, birthyear, child_id, age) %>% 
         left_join(metadata) %>% 
         mutate(
-        birthdate = ymd( paste(birthyear, birthmonth, "01",sep="-")),
-        age_months = time_length(date(date_maq) - ymd(birthdate), unit="month"),
-        age_months = ifelse(is.na(age_months), as.numeric(age)*12, age_months)
+            birthdate = ymd( paste(birthyear, birthmonth, "01",sep="-")),
+            age_months = time_length(date(date_maq) - ymd(birthdate), unit="month"),
+            age_months = ifelse(is.na(age_months), as.numeric(age)*12, age_months)
+        )
+        
+    ######
+    ## Children details health
+    ######
+    
+    birthweight_gram_key <- c(
+        "Less than 2 pounds" = '750', 
+        '2 lbs - 3 lbs, 5 oz' = "1250",
+        "1000-1500 grams/2lbs 3oz-3lbs 5oz" = '1250', 
+        "3 lbs, 6 oz - 4 lbs, 7 oz" = '1750',
+        "4 lbs, 8 oz - 5 lbs, 8 oz" = '2250', 
+        "2001-2500 grams/4lbs 6oz-5lbs 8oz" = '2250', 
+        "5 lbs, 9 oz - 6 lbs, 9 oz" = '2750', 
+        "2501-3000 grams/5lbs 8oz-6lbs 9oz" = '2750', 
+        "6 lbs, 10 oz or above" = '3250', 
+        "more than 3000 grams/6lbs 9oz" = '3250'
     )
     
+    birthweight_pound_key <- c(
+        "Less than 2 pounds" = '1.65', 
+        '2 lbs - 3 lbs, 5 oz' = "2.76",
+        "1000-1500 grams/2lbs 3oz-3lbs 5oz" = '2.76', 
+        "3 lbs, 6 oz - 4 lbs, 7 oz" = '3.86',
+        "4 lbs, 8 oz - 5 lbs, 8 oz" = '4.96', 
+        "2001-2500 grams/4lbs 6oz-5lbs 8oz" = '4.96', 
+        "5 lbs, 9 oz - 6 lbs, 9 oz" = '6.06', 
+        "2501-3000 grams/5lbs 8oz-6lbs 9oz" = '6.06', 
+        "6 lbs, 10 oz or above" = '7.17', 
+        "more than 3000 grams/6lbs 9oz" = '7.17'
+    )
+    
+    childrendetailshealth = recombine(list("Children", "ChildrenDetailsHealth"), rawdata) %>%
+        group_by(child_id) %>%
+        summarise(
+            birthweight = first(ChildrenDetailsHealth.ol.birthweight),
+            premature = first(ChildrenDetailsHealth.ol.prematurebirth),
+            gestationalage = as.numeric(first(ChildrenDetailsHealth.ol.gestationalage))
+        ) %>%
+        mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
+        mutate(
+            birthweight_g = as.numeric(recode(birthweight, !!!birthweight_gram_key)),
+            birthweight_lbs = as.numeric(recode(birthweight, !!!birthweight_pound_key))
+        ) %>%
+        select(child_id, birthweight, birthweight_pound, birthweight_gram, premature, gestationalage)
+
     ######
     ## Respondent details
     ######
@@ -268,7 +312,8 @@ process_maq <- function(rawdata) {
     left_join(parents_mediation_sf, by = "child_id") %>%
     left_join(deviceuse, by = "child_id") %>%
     left_join(psi, by = "child_id") %>%
-    left_join(pm, by = "child_id") # %>%
+    left_join(pm, by = "child_id")  %>%
+    left_join(childrendetailshealth, by = "child_id")
     # left_join(childlanguage, by = "child_id")
     
 

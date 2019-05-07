@@ -1,5 +1,5 @@
 get_demographics <- function(rawdata) {
-    dem <- c("parental_education", "parental_employment", "race", "ethnicity", "parental_highest_income", 'parental_least_public_assistance', "study")
+    dem <- c("parental_education", "parental_employment", "race", "ethnicity", "parental_highest_income", 'parental_least_public_assistance', "sex", "study")
     return (dem)
 }
 
