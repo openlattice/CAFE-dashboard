@@ -43,7 +43,10 @@ MAQ_entities <- c(
     "ParentMediationScale",
     "Devices",
     "MediaUseAttitudes",
-    "MediaDeviceUse"
+    "MediaDeviceUse",
+    "VocabularyAssessment_WG_8_18",
+    "VocabularyAssessment_WS_18_30",
+    "VocabularyAssessment_WS_30_38"
 )
 
 MAQ_associations <- list(
@@ -54,6 +57,21 @@ MAQ_associations <- list(
         src = "Respondents",
         dst = "Children",
         edge = "RelatedTo"
+    ),
+    list(
+        src = "Respondents",
+        dst = "VocabularyAssessment_WG_8_18",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "VocabularyAssessment_WS_18_30",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "VocabularyAssessment_WS_30_38",
+        edge = "Reported"
     ),
     list(
         src = "Children",
@@ -208,11 +226,6 @@ TUD_associations <- list(
       src = 'primary_activity',
       dst = 'sites',
       edge = 'located'
-  ),
-  list(
-    src = 'primary_activity',
-    dst = 'survey_metadata',
-    edge = 'recorded'
   ),
   list(
     src = 'people',
