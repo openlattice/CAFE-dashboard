@@ -26,6 +26,21 @@ get_raw_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
         rawdata <- load_data(apis)
     }
     
+    if (local) {
+        basedir = "data/"
+    } else {
+        basedir = "/opt/shiny/data/"   
+    }
+    wg <- read_csv(paste0(basedir, "words_produced_norms_table_WG.csv"))
+    cols = names(wg)[str_detect(names(wg), "percentile")]
+    wg[cols] = wg[cols]/max(wg[cols])
+    ws <- read_csv(paste0(basedir, "words_produced_norms_table_WS.csv"))
+    cols = names(ws)[str_detect(names(ws), "percentile")]
+    ws[cols] = ws[cols]/max(ws[cols])
+    norms = rbind(wg, ws)
+    
+    rawdata[['language_norms']] = list(wg = wg, ws = ws)
+    
     if (auth == FALSE) {
         rawdata['auth'] <- is_authorized(apis, local)
     } else {
@@ -71,6 +86,7 @@ data_add_processed <- function(rawdata) {
     outdata$tud[['summarised']] = tud_sm
     outdata$maq[['preprocessed']] = maq_pr
     outdata$maq[['processed']] = maq_pr
+    outdata$chronicle[['preprocessed']] = chr_pr
     outdata$chronicle[['processed']] = chr_pr
     outdata[['alldata']] = bigdataset
     outdata[['coltypes']] = data_get_coltypes(outdata, datasets = c("tud_activity", "tud", "maq", "chronicle"))
