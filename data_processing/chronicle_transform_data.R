@@ -11,11 +11,13 @@ process_chronicle <- function(rawdata) {
         ) %>%
         group_by(study, child_id) %>%
         summarise(
-            meantime = mean(totaltime)
-        ) %>% select(-c(study))
+            meantime = mean(totaltime),
+        )  %>%
+        mutate(
+            study_id = str_sub(child_id, start = 1, end = 2)
+            ) %>% select(-c(study))
     return(chronicle)
 }
-
 
 
 
