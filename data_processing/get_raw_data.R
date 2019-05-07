@@ -1,6 +1,6 @@
 read_data <- function(apis, auth = FALSE, local = FALSE) {
     ptm <- proc.time()
-    filename = "rawdata_20190430.yaml"
+    filename = "rawdata_20190506.yaml"
     if (local) {
         cat(file=stderr(), "Reading the data from disk...\n")
         rawdata <- read_yaml(paste0("data/", filename))
