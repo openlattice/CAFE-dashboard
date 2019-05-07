@@ -42,7 +42,7 @@ process_maq <- function(rawdata) {
         group_by(child_id, study_id, Children.table_access) %>% 
         summarise(
             race = paste(unique(Respondents.nc.PersonRace[!is.na(Respondents.nc.PersonRace)]), collapse=","),
-            ethnicity = paste(unique(Respondents.nc.PersonRace[!is.na(Respondents.nc.PersonEthnicity)]), collapse = ",")
+            ethnicity = paste(unique(Respondents.nc.PersonEthnicity[!is.na(Respondents.nc.PersonEthnicity)]), collapse = ",")
         ) %>%
         mutate(
             race = ifelse(str_detect(race, ","), "biracial", race),
@@ -88,6 +88,19 @@ process_maq <- function(rawdata) {
             sf_maq_Q11_avoid_media_for_calming = sum(str_detect(MediaDeviceUse.ol.reason, "calm child down") & str_detect(MediaDeviceUse.general.frequency, "Never")) > 0
         )
             
+    
+    ######
+    ## Metadata
+    ######
+    
+    metadata = recombine(list("Respondents", "SurveyMetadata"), rawdata) %>%
+        left_join(children, by = 'respondent_id') %>%
+        group_by(child_id) %>% 
+        summarise(
+            date_maq = first(ymd_hms(SurveyMetadata.ol.recordeddate))
+        ) %>%
+        select(child_id, date_maq)
+
     ######
     ## Children details
     ######
@@ -100,10 +113,17 @@ process_maq <- function(rawdata) {
                 is.na(Children.ol.birthyear),
                 2018 - as.numeric(ChildrenDetails.person.ageatevent),
                 as.numeric(Children.ol.birthyear)
-            )
+            ),
+            age = ChildrenDetails.person.ageatevent
         ) %>% arrange(child_id, birthyear) %>%
         group_by(child_id) %>% slice(1) %>% ungroup() %>%
-        select(birthmonth, birthyear, child_id)
+        select(birthmonth, birthyear, child_id, age) %>% 
+        left_join(metadata) %>% 
+        mutate(
+        birthdate = ymd( paste(birthyear, birthmonth, "01",sep="-")),
+        age_months = time_length(date(date_maq) - ymd(birthdate), unit="month"),
+        age_months = ifelse(is.na(age_months), as.numeric(age)*12, age_months)
+    )
     
     ######
     ## Respondent details
@@ -159,18 +179,6 @@ process_maq <- function(rawdata) {
             parental_least_public_assistance = first(assistance)
         ) %>% 
         select(child_id, parental_least_public_assistance)
-    
-    ######
-    ## Metadata
-    ######
-
-    metadata = recombine(list("Respondents", "SurveyMetadata"), rawdata) %>%
-        left_join(children, by = 'respondent_id') %>%
-        group_by(child_id) %>% 
-        summarise(
-            date_maq = first(ymd_hms(SurveyMetadata.ol.recordeddate))
-        ) %>%
-        select(child_id, date_maq)
         
     ######
     ## Employment
@@ -243,6 +251,7 @@ process_maq <- function(rawdata) {
     deviceuse <- deviceuse_transform(rawdata)            
     psi <- psi_transform(rawdata, children)
     pm <- pm_transform(rawdata, children)
+    # childlanguage <-  childlanguage_transform(rawdata, children, childrendetails)
     
     maq <- children_demographics %>%
     left_join(devices, by = "child_id") %>%
@@ -259,13 +268,9 @@ process_maq <- function(rawdata) {
     left_join(parents_mediation_sf, by = "child_id") %>%
     left_join(deviceuse, by = "child_id") %>%
     left_join(psi, by = "child_id") %>%
-    left_join(pm, by = "child_id")
+    left_join(pm, by = "child_id") # %>%
+    # left_join(childlanguage, by = "child_id")
     
-    maq <- maq %>% mutate(
-        birthdate = ymd( paste(birthyear, birthmonth, "01",sep="-")),
-        age_months = time_length(date(date_maq) - ymd(birthdate), unit="month")
-        # age_months = ifelse(is.na(age_from_dob), as.numeric(person.ageatevent)*12, age_from_dob)
-        )
 
     # factor vars to factor
     numericcols <- maq %>% select_if(is.numeric) %>% names()
