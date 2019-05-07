@@ -113,7 +113,7 @@ tables <-
         options = list(scrollX = TRUE))
         
         output$chronicle_raw <- renderDataTable({
-            rawdata$chronicle$raw %>% filter(table_access == TRUE) #%>% select(-c("pid"))
+            rawdata$chronicle$processed %>% filter(table_access == TRUE) #%>% select(-c("pid"))
         },
         options = list(scrollX = TRUE))
         
@@ -159,7 +159,7 @@ tables <-
             filename = "CAFE_chronicle.csv",
             content = function(file) {
                 write.csv(
-                    rawdata$chronicle$raw %>% filter(table_access == TRUE), #%>% select(-c("pid")),
+                    rawdata$chronicle$processed %>% filter(table_access == TRUE), #%>% select(-c("pid")),
                     file,
                     row.names = FALSE
                 )
