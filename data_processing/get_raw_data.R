@@ -30,7 +30,20 @@ load_data <-
                     return (paste0(x['src'], "_", x['dst']))
                 })
         }
-        
+
+        # # to be removed if code below works :-)
+        # a <- list(
+        #     a = tibble(A = c(1,2,3), B = c(3,4,5)),
+        #     b = tibble(A = c(1,2,3), C = c(3,4,5)),
+        #     a = tibble(A = c(3,4,5), B = c(5,5,6))
+        # )
+        # 
+        # atib = tibble(a)
+        # atib['name'] = names(a)
+        # atib = atib %>% unnest() %>% group_by(name) %>% nest() %>% pull(data)
+        # anew = atib %>% map(function(x){return(remove_empty(x, which = c("cols")))})
+        # names(anew) = atib %>% pull(name)
+
         # MAQ
         if (MAQ) {
             cat(file=stderr(), "  -- MAQ: Getting nodes.\n")
@@ -44,6 +57,13 @@ load_data <-
                 MAQ_associations %>% map_chr(function(x) {
                     return (paste0(x['src'], "_", x['dst']))
                 })
+            
+            # fun fact: sometimes same name in list !
+            maqedges = tibble(maqedgesdata)
+            maqedges['name'] = names(maqedgesdata)
+            maqedges = maqedges %>% unnest() %>% group_by(name) %>% nest()
+            maqedgesdata = maqedges %>% pull(data) %>% map(function(x){return(remove_empty(x, which = c("cols")))})
+            names(maqedgesdata) = maqedges %>% pull(name)
         }
         
         outdata <- list()

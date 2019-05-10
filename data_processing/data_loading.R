@@ -12,9 +12,13 @@ get_raw_data <- function(jwt, cache = FALSE, auth = FALSE, local = FALSE) {
     print("Getting authenticated...")
     
     if (auth == FALSE) {
-        apis <- get_apis(jwt, local)
-        if (is.null(apis)) {
-            return (get_empty_rawdata())
+        if (jwt == TRUE){
+            apis <- NULL
+        } else {
+            apis <- get_apis(jwt, local)
+            if (is.null(apis)) {
+                return (get_empty_rawdata())
+            }
         }
     } else {
         apis <- NULL
