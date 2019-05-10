@@ -5,7 +5,7 @@ shinyServer(function(input, output, session) {
     
     token = "NA"
     jwt <- reactiveVal(token)
-    jwt <- callModule(authentication_server, "authentication", jwt)
+    jwt <- callModule(authentication_email_server, "authentication", jwt)
     
     hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=analysis]")
