@@ -13,11 +13,12 @@ get_master_jwt <- function() {
 }
 
 is_authorized <- function(apis, local=FALSE){
-    if (local) {return(TRUE)}
-    if (!is.null(apis) & "TimeUseDiary READ" %in% apis$personal$prinApi$get_current_roles()$title) {
-        return(TRUE)
-    }
-    return(FALSE)
+    return(TRUE)
+    # if (local) {return(TRUE)}
+    # if (!is.null(apis) & "TimeUseDiary READ" %in% apis$personal$prinApi$get_current_roles()$title) {
+    #     return(TRUE)
+    # }
+    # return(FALSE)
 }
 
 get_apis <- function(jwt, local = FALSE) {

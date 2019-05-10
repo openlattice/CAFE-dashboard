@@ -54,6 +54,7 @@ source("functions/utils.R")
 
 source("modules/home.R")
 source("modules/authentication.R")
+source("modules/authentication_email.R")
 source("modules/tables.R")
 source("modules/participants_venn.R")
 source("modules/participants_demographics.R")
