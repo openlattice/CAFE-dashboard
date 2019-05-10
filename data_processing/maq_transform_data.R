@@ -6,8 +6,8 @@ recombine <- function(nodes, rawdata) {
     dst = rawdata$maq$nodes[[nodes[[2]]]]
     names(dst) = paste0(nodes[[2]], ".", names(dst))
     combined = rawdata$maq$edges[[paste0(nodes[1], "_", nodes[2])]] %>%
-        full_join(src, by = c(src = paste0(nodes[[1]],".openlattice.@id"))) %>%
-        full_join(dst, by = c(dst = paste0(nodes[[2]],".openlattice.@id"))) %>%
+        left_join(src, by = c(src = paste0(nodes[[1]],".openlattice.@id"))) %>%
+        left_join(dst, by = c(dst = paste0(nodes[[2]],".openlattice.@id"))) %>%
         separate(paste0(nodes[[1]],".study"), c("not1", 'not2', 'study_id', 'not3'), sep = "_") %>%
         select(-c(not1, not2, not3))
     
@@ -63,8 +63,12 @@ process_maq <- function(rawdata) {
         
     devices = recombine(list("Devices", "Children"), rawdata) %>%
         group_by(child_id) %>%
-        summarise(sf_maq_Q10_uses_videochat_a = sum(str_detect(Devices.ol.id, "videochat")) > 0) %>%
+        summarise(
+            sf_maq_Q10_uses_videochat_a = sum(str_detect(Devices.ol.id, "videochat")) > 0
+            ) %>%
         select(child_id, sf_maq_Q10_uses_videochat_a)
+    
+    
 
     ######
     ## Videochat
@@ -106,6 +110,7 @@ process_maq <- function(rawdata) {
     ## Children details
     ######
     
+    childrendetails = recombine(list("Children", "ChildrenDetails"), rawdata) %>%
         mutate(
             birthmonth = match(str_sub(Children.ol.birthmonth, 1, 3), month.abb),
             birthmonth = ifelse(is.na(birthmonth), as.numeric(Children.ol.birthmonth), birthmonth),
@@ -155,19 +160,19 @@ process_maq <- function(rawdata) {
         "more than 3000 grams/6lbs 9oz" = '7.17'
     )
     
-    childrendetailshealth = recombine(list("Children", "ChildrenDetailsHealth"), rawdata) %>%
-        group_by(child_id) %>%
-        summarise(
-            birthweight = first(ChildrenDetailsHealth.ol.birthweight),
-            premature = first(ChildrenDetailsHealth.ol.prematurebirth),
-            gestationalage = as.numeric(first(ChildrenDetailsHealth.ol.gestationalage))
-        ) %>%
-        mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
-        mutate(
-            birthweight_g = as.numeric(recode(birthweight, !!!birthweight_gram_key)),
-            birthweight_lbs = as.numeric(recode(birthweight, !!!birthweight_pound_key))
-        ) %>%
-        select(child_id, birthweight, birthweight_pound, birthweight_gram, premature, gestationalage)
+    # childrendetailshealth = recombine(list("Children", "ChildrenDetailsHealth"), rawdata) %>%
+    #     group_by(child_id) %>%
+    #     summarise(
+    #         birthweight = first(ChildrenDetailsHealth.ol.birthweight),
+    #         premature = first(ChildrenDetailsHealth.ol.prematurebirth),
+    #         gestationalage = as.numeric(first(ChildrenDetailsHealth.ol.gestationalage))
+    #     ) %>%
+    #     mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
+    #     mutate(
+    #         birthweight_g = as.numeric(recode(birthweight, !!!birthweight_gram_key)),
+    #         birthweight_lbs = as.numeric(recode(birthweight, !!!birthweight_pound_key))
+    #     ) %>%
+    #     select(child_id, birthweight, birthweight_pound, birthweight_gram, premature, gestationalage)
 
     ######
     ## Respondent details
@@ -177,8 +182,8 @@ process_maq <- function(rawdata) {
         left_join(children, by = 'respondent_id') %>%
         group_by(child_id) %>% 
         summarise(
-            parental_mean_age = mean(as.numeric(RespondentDetails.person.ageatevent), na.rm=TRUE),
-            parental_mean_numchildren = sum(as.numeric(RespondentDetails.ol.numberofchildren), na.rm=TRUE),
+            parental_mean_age = mean(as.numeric(RespondentDetails.person.ageatevent)),
+            parental_mean_numchildren = sum(as.numeric(RespondentDetails.ol.numberofchildren)),
             parental_marital = paste(unique(RespondentDetails.person.maritalstatus), collapse=", "),
             parental_nationality = paste(unique(RespondentDetails.ol.nationality), collapse = ", ")
         ) %>%
@@ -312,8 +317,8 @@ process_maq <- function(rawdata) {
     left_join(parents_mediation_sf, by = "child_id") %>%
     left_join(deviceuse, by = "child_id") %>%
     left_join(psi, by = "child_id") %>%
-    left_join(pm, by = "child_id")  %>%
-    left_join(childrendetailshealth, by = "child_id")
+    left_join(pm, by = "child_id")  #%>%
+    # left_join(childrendetailshealth, by = "child_id")
     # left_join(childlanguage, by = "child_id")
     
 

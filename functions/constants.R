@@ -144,6 +144,11 @@ MAQ_associations <- list(
         edge = "InvolvedIn"
     ),
     list(
+        src = "Children",
+        dst = "Device_Use",
+        edge = "UsedBy"
+    ),
+    list(
         src = "Devices",
         dst = "Children",
         edge = "UsedBy"
