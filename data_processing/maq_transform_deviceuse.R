@@ -7,6 +7,7 @@ deviceuse_key = c(
     "3-4 hours" = 3.5,
     "4-5 hours" = 4.5,
     "More than 5 hours" = 5,
+    "2 weeks" = 336,
     .default = NA_integer_
 )
 
@@ -45,8 +46,8 @@ deviceuse_transform <- function(rawdata) {
             sf_maq_Q6_avoid_media_during_mealtimes = sum(str_detect(Device_Use.ol.id, "mediause_duringmeals") &
                                                              str_detect(Device_Use.ol.status, "Not very likely|I never do this"), na.rm=TRUE)>0,
             sf_maq_Q7_avoid_media_during_playtime = sum(str_detect(Device_Use.ol.id, "mediause_playtime") &
-                                                            str_detect(Device_Use.ol.status, "Not very likely|I never do this"), na.rm=TRUE)>0
-            
+                                                            str_detect(Device_Use.ol.status, "Not very likely|I never do this"), na.rm=TRUE)>0,
+            number_devices_2weeks = sum(str_detect(Device_Use.ol.id, "recent_childuse"))
         ) %>%
         select(
             child_id,
@@ -57,7 +58,8 @@ deviceuse_transform <- function(rawdata) {
             sf_maq_Q3_balancemedia_reading_weekend,
             sf_maq_Q5_minimize_background_play,
             sf_maq_Q6_avoid_media_during_mealtimes,
-            sf_maq_Q7_avoid_media_during_playtime
+            sf_maq_Q7_avoid_media_during_playtime,
+            number_devices_2weeks
         )
     return(deviceuse)
 }
