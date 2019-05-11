@@ -27,7 +27,7 @@ social_vars = c(
 instructive_replace = instructive_vars
 names(instructive_replace) = instructive_vars %>% str_replace("ol.", "Valkenburg_instructive_mediation_")
 restrictive_replace = restrictive_vars
-names(restrictive_replace) = restrictive_vars %>% str_replace("ol.", "Valkenburg_restrictive_mediation_")
+names(restrictive_replace) = restrictive_vars %>% str_replace("ol.", "Valkenburg_restrictive_mediation_") %>% str_replace('sharing.', "Valkenburg_restrictive_mediation_")
 social_replace = social_vars
 names(social_replace) = social_vars %>% str_replace("ol.", "Valkenburg_social_coviewing_")
 
