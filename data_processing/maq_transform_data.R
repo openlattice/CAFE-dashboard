@@ -1,13 +1,13 @@
 ## combine everything
 
-recombine <- function(nodes, rawdata) {
+recombine <- function(nodes, rawdata, joinfnc = left_join) {
     src = rawdata$maq$nodes[[nodes[[1]]]]
     names(src) = paste0(nodes[[1]],".", names(src))
     dst = rawdata$maq$nodes[[nodes[[2]]]]
     names(dst) = paste0(nodes[[2]], ".", names(dst))
     combined = rawdata$maq$edges[[paste0(nodes[1], "_", nodes[2])]] %>%
-        left_join(src, by = c(src = paste0(nodes[[1]],".openlattice.@id"))) %>%
-        left_join(dst, by = c(dst = paste0(nodes[[2]],".openlattice.@id"))) %>%
+        joinfnc(src, by = c(src = paste0(nodes[[1]],".openlattice.@id"))) %>%
+        joinfnc(dst, by = c(dst = paste0(nodes[[2]],".openlattice.@id"))) %>%
         separate(paste0(nodes[[1]],".study"), c("not1", 'not2', 'study_id', 'not3'), sep = "_") %>%
         select(-c(not1, not2, not3))
     
@@ -110,7 +110,7 @@ process_maq <- function(rawdata) {
     ## Children details
     ######
     
-    childrendetails = recombine(list("Children", "ChildrenDetails"), rawdata) %>%
+    childrendetails = recombine(list("Children", "ChildrenDetails"), rawdata, joinfnc = full_join) %>%
         mutate(
             birthmonth = match(str_sub(Children.ol.birthmonth, 1, 3), month.abb),
             birthmonth = ifelse(is.na(birthmonth), as.numeric(Children.ol.birthmonth), birthmonth),
