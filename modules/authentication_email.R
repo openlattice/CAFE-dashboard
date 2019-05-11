@@ -22,7 +22,11 @@ emails <- c(
     'vadktori@umich.edu',
     'kirkorian@wisc.edu',
     'earlylearning@georgetown.edu',
-    'ckblackwell@northwestern.edu'
+    'ckblackwell@northwestern.edu',
+    'oab7@georgetown.edu',
+    'rfb5@georgetown.edu',
+    'snr30@georgetown.edu', 
+    'roslatva@med.umich.edu'
 )
 
 custom_auth_function <- function(jwt, local_access = NA) {
