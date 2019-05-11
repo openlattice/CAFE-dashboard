@@ -1,6 +1,6 @@
 read_data <- function(apis, auth = FALSE, local = FALSE) {
     ptm <- proc.time()
-    filename = "rawdata_20190506.yaml"
+    filename = "rawdata_20190510.yaml"
     if (local) {
         cat(file=stderr(), "Reading the data from disk...\n")
         rawdata <- read_yaml(paste0("data/", filename))
@@ -99,7 +99,8 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE) {
     )
     
     if (auth == FALSE) {
-        entitysets <- apis$personal$edmApi$get_all_entity_sets()$name
+        # entitysets <- apis$personal$edmApi$get_all_entity_sets()$name
+        entitysets <- c()
     }
     
     # TUD
