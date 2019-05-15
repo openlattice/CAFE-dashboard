@@ -9,7 +9,7 @@ recombine <- function(nodes, rawdata, joinfnc = left_join) {
         joinfnc(src, by = c(src = paste0(nodes[[1]],".openlattice.@id"))) %>%
         joinfnc(dst, by = c(dst = paste0(nodes[[2]],".openlattice.@id"))) %>%
         separate(paste0(nodes[[1]],".study"), c("not1", 'not2', 'study_id', 'not3'), sep = "_") %>%
-        select(-c(not1, not2, not3))
+        select(-c(not1, not2, not3)) %>% unique()
     
     if ("Children.nc.SubjectIdentification" %in% names(combined)) {
         combined = combined %>% rename(child_id = Children.nc.SubjectIdentification)
@@ -55,7 +55,7 @@ process_maq <- function(rawdata) {
         mutate_at('race', recode, !!!race_key)
     
     children = recombine(list("Respondents", "Children"), rawdata) %>%
-        select(child_id, respondent_id)
+        select(child_id, respondent_id, study_id)
     
     ######
     ## Devices
