@@ -34,7 +34,7 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
-            outpu$chronicle <- output$chronicle %>%
+            output$chronicle <- output$chronicle %>%
                 filter(child_id %in% subset$child_id)
         }
         print(dim(output$tud))
@@ -66,7 +66,7 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
-            outpu$chronicle <- output$chronicle %>%
+            output$chronicle <- output$chronicle %>%
                 filter(child_id %in% subset$child_id)
         }
         
@@ -81,7 +81,7 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
-            outpu$chronicle <- output$chronicle %>%
+            output$chronicle <- output$chronicle %>%
                 filter(child_id %in% subset$child_id)
         }
         
