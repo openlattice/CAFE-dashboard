@@ -96,7 +96,7 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
-            outpu$chronicle <- output$chronicle %>%
+            output$chronicle <- output$chronicle %>%
                 filter(child_id %in% subset$child_id)
             
         }
