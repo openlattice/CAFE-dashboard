@@ -88,8 +88,8 @@ subset_data <-
         if (qualitybool) {
             print("quality")
             subset <- rawdata$maq$preprocessed %>%
-                filter(mean_quality > qualityrange[1] &
-                           mean_quality < qualityrange[2]) %>% select("child_id")
+                filter(mean_quality >= qualityrange[1] &
+                           mean_quality <= qualityrange[2]) %>% select("child_id")
             output$tud <- output$tud %>%
                 filter(child_id %in% subset$child_id)
             output$maq <- output$maq %>%
