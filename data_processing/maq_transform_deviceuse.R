@@ -15,12 +15,19 @@ deviceuse_transform <- function(rawdata) {
     deviceuse = recombine(list("Children", "Device_Use"), rawdata) %>%
         mutate(duration = recode(Device_Use.ol.duration, !!!deviceuse_key)) %>%
         group_by(child_id)%>% summarise(
-            sf_maq_Q1_nomorethan1h_weekday = sum(
+            sf_maq_Q1_nomorethan1h_weekday_TV_DVD = sum(
                 duration[
-                    str_detect(Device_Use.ol.description, "TV or DVDs|computer|smartphone|mobile device|console video|iPad|virtual assistant") &
+                    str_detect(Device_Use.ol.description, "TV or DVDs") &
                         str_detect(Device_Use.ol.description, "weekday") &
                         str_detect(Device_Use.ol.description, "Time spent")
                     ], na.rm=TRUE
+            ),
+            sf_maq_Q1_nomorethan1h_weekday_computer = sum(
+              duration[
+                str_detect(Device_Use.ol.description, "computer") &
+                  str_detect(Device_Use.ol.description, "weekday") &
+                  str_detect(Device_Use.ol.description, "Time spent")
+                ], na.rm=TRUE
             ),
             sf_maq_Q1_nomorethan1h_weekend = sum(
                 duration[
