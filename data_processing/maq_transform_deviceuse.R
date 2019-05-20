@@ -92,6 +92,13 @@ deviceuse_transform <- function(rawdata) {
                 na.rm =
                     TRUE
             ) > 0,
+            sf_maq_Q1_nomorethan1h_weekday_all = sf_maq_Q1_nomorethan1h_weekday_TV_DVD &
+                sf_maq_Q1_nomorethan1h_weekday_computer &
+                sf_maq_Q1_nomorethan1h_weekday_ebooks &
+                sf_maq_Q1_nomorethan1h_weekday_consolevideo &
+                sf_maq_Q1_nomorethan1h_weekday_mobiledevice &
+                sf_maq_Q1_nomorethan1h_weekday_smartphone &
+                sf_maq_Q1_nomorethan1h_weekday_virtualassistant,
             sf_maq_Q1_nomorethan1h_weekend_TV_DVD = sum(
                 str_detect(Device_Use.ol.description, "TV or DVDs") &
                     str_detect(Device_Use.ol.description, "weekend") &
@@ -169,6 +176,13 @@ deviceuse_transform <- function(rawdata) {
                 na.rm =
                     TRUE
             ) > 0,
+            sf_maq_Q1_nomorethan1h_weekend_all = sf_maq_Q1_nomorethan1h_weekend_TV_DVD &
+                sf_maq_Q1_nomorethan1h_weekend_computer &
+                sf_maq_Q1_nomorethan1h_weekend_ebooks &
+                sf_maq_Q1_nomorethan1h_weekend_consolevideo &
+                sf_maq_Q1_nomorethan1h_weekend_mobiledevice &
+                sf_maq_Q1_nomorethan1h_weekend_smartphone &
+                sf_maq_Q1_nomorethan1h_weekday_virtualassistant,
             all_NA = sum(is.na(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
                                                                        "hour before bedtime|while falling asleep")]))
             ==
@@ -240,6 +254,7 @@ deviceuse_transform <- function(rawdata) {
             sf_maq_Q1_nomorethan1h_weekday_mobiledevice,
             sf_maq_Q1_nomorethan1h_weekday_smartphone,
             sf_maq_Q1_nomorethan1h_weekday_virtualassistant,
+            sf_maq_Q1_nomorethan1h_weekday_all,
             sf_maq_Q1_nomorethan1h_weekend_TV_DVD,
             sf_maq_Q1_nomorethan1h_weekend_computer,
             sf_maq_Q1_nomorethan1h_weekend_ebooks,
@@ -247,6 +262,7 @@ deviceuse_transform <- function(rawdata) {
             sf_maq_Q1_nomorethan1h_weekend_mobiledevice,
             sf_maq_Q1_nomorethan1h_weekend_smartphone,
             sf_maq_Q1_nomorethan1h_weekend_virtualassistant,
+            sf_maq_Q1_nomorethan1h_weekend_all,
             sf_maq_Q2_avoid_screen_bedtime,
             hourbeforebedtimequants,
             sf_maq_Q3_balancemedia_reading_weekday,

@@ -160,24 +160,36 @@ process_maq <- function(rawdata) {
                     str_detect(MediaDeviceUse.general.frequency, "Never")
             ) > 0,
             calming_down = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "calm child down")], collapse = ", "),
-            avoid_media_for_educating = sum(
+            use_media_for_educating = sum(
                 str_detect(MediaDeviceUse.ol.reason, "educate child") &
-                    str_detect(MediaDeviceUse.general.frequency, "Never")
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
             ) > 0,
             educating_child = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "educate child")], collapse = ", "),
-            avoid_media_for_keeping_child_busy = sum(
+            use_media_for_keeping_child_busy = sum(
                 str_detect(MediaDeviceUse.ol.reason, "keep child busy") &
-                    str_detect(MediaDeviceUse.general.frequency, "Never")
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
             ) > 0,
             keeping_child_busy = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "keep child busy")], collapse = ", "),
-            avoid_media_for_communicating = sum(
+            use_media_for_communicating = sum(
                 str_detect(MediaDeviceUse.ol.reason, "communicate") &
-                    str_detect(MediaDeviceUse.general.frequency, "Never")
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
             ) > 0,
             communicating = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "communicate")], collapse = ", "),
-            avoid_media_for_enjoying = sum(
+            use_media_for_enjoying = sum(
                 str_detect(MediaDeviceUse.ol.reason, "enjoys using") &
-                    str_detect(MediaDeviceUse.general.frequency, "Never")
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
             ) > 0,
             enjoying = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "enjoys using")], collapse = ", ")
         ) %>%
@@ -185,13 +197,13 @@ process_maq <- function(rawdata) {
             child_id,
             sf_maq_Q11_avoid_media_for_calming,
             calming_down,
-            avoid_media_for_educating,
+            use_media_for_educating,
             educating_child,
-            avoid_media_for_keeping_child_busy,
+            use_media_for_keeping_child_busy,
             keeping_child_busy,
-            avoid_media_for_communicating,
+            use_media_for_communicating,
             communicating,
-            avoid_media_for_enjoying,
+            use_media_for_enjoying,
             enjoying
         )
     
