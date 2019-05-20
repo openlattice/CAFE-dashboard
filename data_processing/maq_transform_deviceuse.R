@@ -13,7 +13,7 @@ deviceuse_key = c(
 
 deviceuse_transform <- function(rawdata) {
     deviceuse = recombine(list("Children", "Device_Use"), rawdata) %>%
-        mutate(duration = recode(Device_Use.ol.duration, !!!deviceuse_key)) %>%
+        mutate(duration = recode(Device_Use.ol.duration,!!!deviceuse_key)) %>%
         group_by(child_id) %>% summarise(
             sf_maq_Q1_nomorethan1h_weekday_TV_DVD = sum(
                 str_detect(Device_Use.ol.description, "TV or DVDs") &
@@ -169,11 +169,14 @@ deviceuse_transform <- function(rawdata) {
                 na.rm =
                     TRUE
             ) > 0,
-            all_NA = sum(is.na(Device_Use.general.frequency[str_detect(Device_Use.ol.description, "hour before bedtime|while falling asleep")]))
+            all_NA = sum(is.na(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
+                                                                       "hour before bedtime|while falling asleep")]))
             ==
-            length(Device_Use.general.frequency[str_detect(Device_Use.ol.description, "hour before bedtime|while falling asleep")]), 
+                length(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
+                                                               "hour before bedtime|while falling asleep")]),
             
-            hourbeforebedtimequants = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.description, "hour before bedtime|while falling asleep")], collapse = ","),
+            hourbeforebedtimequants = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
+                                                                                     "hour before bedtime|while falling asleep")], collapse = ","),
             hourbeforebedtime = sum(
                 str_detect(
                     Device_Use.ol.description,
