@@ -69,7 +69,7 @@ process_maq <- function(rawdata) {
             table_access = Children.table_access,
             sex = Children.nc.PersonSex
         ) %>%
-        mutate_at('race', recode, !!!race_key)
+        mutate_at('race', recode,!!!race_key)
     
     children = recombine(list("Respondents", "Children"), rawdata) %>%
         select(child_id, respondent_id, study_id)
@@ -168,12 +168,11 @@ process_maq <- function(rawdata) {
                     )
             ) > 0,
             educating_child = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "educate child")], collapse = ", "),
-            use_media_for_keeping_child_busy = sum(
-                str_detect(MediaDeviceUse.ol.reason, "keep child busy") &
-                    !str_detect(
-                        MediaDeviceUse.general.frequency,
-                        "Never|Less than once per week"
-                    )
+            avoid_media_for_keeping_child_busy = sum(
+                str_detect(MediaDeviceUse.ol
+                           .reason, "keep child busy") &
+                    str_detect(MediaDeviceUse.general.frequency,
+                               "Never")
             ) > 0,
             keeping_child_busy = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "keep child busy")], collapse = ", "),
             use_media_for_communicating = sum(
@@ -199,7 +198,7 @@ process_maq <- function(rawdata) {
             calming_down,
             use_media_for_educating,
             educating_child,
-            use_media_for_keeping_child_busy,
+            avoid_media_for_keeping_child_busy,
             keeping_child_busy,
             use_media_for_communicating,
             communicating,
