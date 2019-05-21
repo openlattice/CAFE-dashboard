@@ -99,8 +99,7 @@ add_authentication_to_raw <- function(data, apis, auth = FALSE) {
     )
     
     if (auth == FALSE) {
-        # entitysets <- apis$personal$edmApi$get_all_entity_sets()$name
-        entitysets <- c()
+        entitysets <- apis$personal$edmApi$get_all_entity_sets()$name
     }
     
     # TUD
