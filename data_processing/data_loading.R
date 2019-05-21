@@ -20,14 +20,10 @@ get_raw_data <-
         print("Getting authenticated...")
         
         if (auth == FALSE) {
-            if (jwt == TRUE) {
-                apis <- NULL
-            } else {
                 apis <- get_apis(jwt, local)
                 if (is.null(apis)) {
                     return (get_empty_rawdata())
                 }
-            }
         } else {
             apis <- NULL
         }
@@ -73,7 +69,6 @@ get_raw_data <-
         
         rawdata[['language_norms']] = list(norms_18_30 = voc_prod)
         
-        if (auth == FALSE) {
             rawdata['auth'] <- is_authorized(apis, local)
         } else {
             rawdata['auth'] <- TRUE
