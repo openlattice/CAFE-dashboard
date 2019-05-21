@@ -78,11 +78,20 @@ process_maq <- function(rawdata) {
     ## Devices
     ######
     
-    devices = recombine(list("Devices", "Children"), rawdata) %>%
+    devices = recombine(list("Devices", "Children"), rawdata)
+    mediauseattitudes = recombine(list("Respondents", "MediaUseAttitudes"), rawdata) %>%
+        left_join(children)
+    devices_mediauseattitudes = devices %>%
+        left_join(mediauseattitudes, by = "child_id") %>%
         group_by(child_id) %>%
-        summarise(sf_maq_Q10_uses_videochat_a = sum(str_detect(Devices.ol.id, "videochat")) > 0) %>%
+        summarise(sf_maq_Q10_uses_videochat_a = sum(
+            str_detect(Devices.ol.id, "videochat") &
+                str_detect(
+                    MediaUseAttitudes.ol.levelofagreement,
+                    "Sometimes|Often|Very often|Very Frequently"
+                )
+        ) > 0) %>%
         select(child_id, sf_maq_Q10_uses_videochat_a)
-    
     
     
     ######
@@ -92,26 +101,111 @@ process_maq <- function(rawdata) {
     videochat = recombine(list("Respondents", "MediaUseAttitudes"), rawdata) %>%
         full_join(children, by = 'respondent_id') %>%
         group_by(child_id) %>%
-        summarise(sf_maq_Q10_uses_videochat_b = sum(
-            str_detect(
-                MediaUseAttitudes.ol.levelofagreement,
-                "Sometimes|Often|Very often"
-            )
-        ) > 0) %>%
-        select(child_id, sf_maq_Q10_uses_videochat_b)
-    
+        summarise(
+            uses_videochat_relatives = sum(
+                str_detect(MediaUseAttitudes.ol.reason, "distant relatives") &
+                    str_detect(
+                        MediaUseAttitudes.ol.levelofagreement,
+                        "Sometimes|Often|Very often|Very Frequently"
+                    )
+            ) > 0,
+            uses_videochat_relatives_text = paste0(MediaUseAttitudes.ol.levelofagreement[str_detect(MediaUseAttitudes.ol.reason, "distant relatives")], collapse = ", "),
+            uses_videochat_see_parents = sum(
+                str_detect(MediaUseAttitudes.ol.reason, "see parents") &
+                    str_detect(
+                        MediaUseAttitudes.ol.levelofagreement,
+                        "Sometimes|Often|Very often|Very Frequently"
+                    )
+            ) > 0,
+            uses_videochat_see_parents_text = paste0(MediaUseAttitudes.ol.levelofagreement[str_detect(MediaUseAttitudes.ol.reason, "see parents")], collapse = ", "),
+            uses_videochat_connect_day = sum(
+                str_detect(MediaUseAttitudes.ol.reason, "throughout the day") &
+                    str_detect(
+                        MediaUseAttitudes.ol.levelofagreement,
+                        "Sometimes|Often|Very often|Very Frequently"
+                    )
+            ) > 0,
+            uses_videochat_connect_day_text = paste0(MediaUseAttitudes.ol.levelofagreement[str_detect(MediaUseAttitudes.ol.reason, "throughout the day")], collapse = ", "),
+            uses_videochat_connect_work = sum(
+                str_detect(MediaUseAttitudes.ol.reason, "because of work schedule") &
+                    str_detect(
+                        MediaUseAttitudes.ol.levelofagreement,
+                        "Sometimes|Often|Very often|Very Frequently"
+                    )
+            ) > 0,
+            uses_videochat_connect_work_text = paste0(MediaUseAttitudes.ol.levelofagreement[str_detect(MediaUseAttitudes.ol.reason, "because of work schedule")], collapse = ", ")
+        ) %>%
+        select(
+            child_id,
+            uses_videochat_relatives,
+            uses_videochat_relatives_text,
+            uses_videochat_see_parents,
+            uses_videochat_see_parents_text,
+            uses_videochat_connect_day,
+            uses_videochat_connect_day_text,
+            uses_videochat_connect_work,
+            uses_videochat_connect_work_text
+        )
+
     ######
-    ## Media device use
+    ## Media device use/ Parent Attitudes
     ######
     
     mediadeviceuse = recombine(list("Respondents", "MediaDeviceUse"), rawdata) %>%
         full_join(children, by = 'respondent_id') %>%
         group_by(child_id) %>%
-        summarise(sf_maq_Q11_avoid_media_for_calming = sum(
-            str_detect(MediaDeviceUse.ol.reason, "calm child down") &
-                str_detect(MediaDeviceUse.general.frequency, "Never")
-        ) > 0)
-    
+        summarise(
+            sf_maq_Q11_avoid_media_for_calming = sum(
+                str_detect(MediaDeviceUse.ol.reason, "calm child down") &
+                    str_detect(MediaDeviceUse.general.frequency, "Never")
+            ) > 0,
+            calming_down = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "calm child down")], collapse = ", "),
+            use_media_for_educating = sum(
+                str_detect(MediaDeviceUse.ol.reason, "educate child") &
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
+            ) > 0,
+            educating_child = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "educate child")], collapse = ", "),
+            avoid_media_for_keeping_child_busy = sum(
+                str_detect(MediaDeviceUse.ol
+                           .reason, "keep child busy") &
+                    str_detect(MediaDeviceUse.general.frequency,
+                               "Never")
+            ) > 0,
+            keeping_child_busy = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "keep child busy")], collapse = ", "),
+            use_media_for_communicating = sum(
+                str_detect(MediaDeviceUse.ol.reason, "communicate") &
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
+            ) > 0,
+            communicating = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "communicate")], collapse = ", "),
+            use_media_for_enjoying = sum(
+                str_detect(MediaDeviceUse.ol.reason, "enjoys using") &
+                    !str_detect(
+                        MediaDeviceUse.general.frequency,
+                        "Never|Less than once per week"
+                    )
+            ) > 0,
+            enjoying = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "enjoys using")], collapse = ", ")
+        ) %>%
+        select(
+            child_id,
+            sf_maq_Q11_avoid_media_for_calming,
+            calming_down,
+            use_media_for_educating,
+            educating_child,
+            avoid_media_for_keeping_child_busy,
+            keeping_child_busy,
+            use_media_for_communicating,
+            communicating,
+            use_media_for_enjoying,
+            enjoying
+        )
+
     
     ######
     ## Metadata
@@ -206,7 +300,7 @@ process_maq <- function(rawdata) {
             premature,
             gestationalage
         )
-    
+
     ######
     ## Respondent details
     ######
