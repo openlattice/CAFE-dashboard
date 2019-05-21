@@ -65,12 +65,14 @@ process_maq <- function(rawdata) {
             race = ifelse(str_detect(race, ","), "biracial", race),
             race = ifelse(str_detect(race, "NA"), NA, race),
             ethnicity = ifelse(str_detect(ethnicity, ","), "multiple", ethnicity),
-            ethnicity = ifelse(ethnicity == "", NA, ethnicity),
+            ethnicity = ifelse(ethnicity == "", NA, ethnicity)
+        ) %>%
+        rename(
             table_access = Children.table_access,
             sex = Children.nc.PersonSex
         ) %>%
         mutate_at('race', recode,!!!race_key)
-    
+
     children = recombine(list("Respondents", "Children"), rawdata) %>%
         select(child_id, respondent_id, study_id)
     
@@ -146,7 +148,7 @@ process_maq <- function(rawdata) {
             uses_videochat_connect_work,
             uses_videochat_connect_work_text
         )
-    
+
     ######
     ## Media device use/ Parent Attitudes
     ######
@@ -169,8 +171,7 @@ process_maq <- function(rawdata) {
             ) > 0,
             educating_child = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "educate child")], collapse = ", "),
             avoid_media_for_keeping_child_busy = sum(
-                str_detect(MediaDeviceUse.ol
-                           .reason, "keep child busy") &
+                str_detect(MediaDeviceUse.ol.reason, "keep child busy") &
                     str_detect(MediaDeviceUse.general.frequency,
                                "Never")
             ) > 0,
@@ -205,7 +206,7 @@ process_maq <- function(rawdata) {
             use_media_for_enjoying,
             enjoying
         )
-    
+
     
     ######
     ## Metadata
@@ -244,7 +245,8 @@ process_maq <- function(rawdata) {
             age_months = time_length(date(date_maq) - ymd(birthdate), unit =
                                          "month"),
             age_months = ifelse(is.na(age_months), as.numeric(age) * 12, age_months)
-        )
+        ) %>%
+        select(-c(date_maq))
     
     ######
     ## Children details health
@@ -276,20 +278,31 @@ process_maq <- function(rawdata) {
         "more than 3000 grams/6lbs 9oz" = '7.17'
     )
     
-    # childrendetailshealth = recombine(list("Children", "ChildrenDetailsHealth"), rawdata) %>%
-    #     group_by(child_id) %>%
-    #     summarise(
-    #         birthweight = first(ChildrenDetailsHealth.ol.birthweight),
-    #         premature = first(ChildrenDetailsHealth.ol.prematurebirth),
-    #         gestationalage = as.numeric(first(ChildrenDetailsHealth.ol.gestationalage))
-    #     ) %>%
-    #     mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
-    #     mutate(
-    #         birthweight_g = as.numeric(recode(birthweight, !!!birthweight_gram_key)),
-    #         birthweight_lbs = as.numeric(recode(birthweight, !!!birthweight_pound_key))
-    #     ) %>%
-    #     select(child_id, birthweight, birthweight_pound, birthweight_gram, premature, gestationalage)
-    
+    childrendetailshealth = recombine(list("Children", "ChildrenDetailsHealth"), rawdata) %>%
+        group_by(child_id) %>%
+        summarise(
+            birthweight = first(ChildrenDetailsHealth.ol.birthweight),
+            premature = first(ChildrenDetailsHealth.ol.prematurebirth),
+            gestationalage = as.numeric(first(
+                ChildrenDetailsHealth.ol.gestationalage
+            ))
+        ) %>%
+        mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
+        mutate(birthweight_g = as.numeric(recode(
+            birthweight,!!!birthweight_gram_key
+        )),
+        birthweight_lbs = as.numeric(recode(
+            birthweight,!!!birthweight_pound_key
+        ))) %>%
+        select(
+            child_id,
+            birthweight,
+            birthweight_lbs,
+            birthweight_g,
+            premature,
+            gestationalage
+        )
+
     ######
     ## Respondent details
     ######
@@ -473,15 +486,21 @@ process_maq <- function(rawdata) {
     deviceuse <- deviceuse_transform(rawdata)
     psi <- psi_transform(rawdata, children)
     pm <- pm_transform(rawdata, children)
-    # childlanguage <-  childlanguage_transform(rawdata, children, childrendetails)
+    
+    
+    
+    
+    children_age_sex = childrendetails %>% left_join(children_demographics) %>% select(c(sex, age_months, child_id))
+    childlanguage <-
+        childlanguage_transform(rawdata, children_age_sex)
     
     maq <- children_demographics %>%
-        left_join(devices, by = "child_id") %>%
+        left_join(devices_mediauseattitudes, by = "child_id") %>%
         left_join(videochat, by = "child_id") %>%
-        left_join(mediadeviceuse, by = "child_id") %>%
+        left_join(mediadeviceuse, by = "child_id") %>% 
         left_join(childrendetails, by = "child_id") %>%
-        left_join(respondentdetails, by = "child_id") %>%
-        left_join(incomes, by = "child_id") %>%
+        left_join(respondentdetails, by = "child_id") %>% 
+        left_join(incomes, by = "child_id") %>% 
         left_join(public_assistance, by = "child_id") %>%
         left_join(metadata, by = "child_id") %>%
         left_join(employment, by = "child_id") %>%
@@ -490,9 +509,9 @@ process_maq <- function(rawdata) {
         left_join(parents_mediation_sf, by = "child_id") %>%
         left_join(deviceuse, by = "child_id") %>%
         left_join(psi, by = "child_id") %>%
-        left_join(pm, by = "child_id")  #%>%
-    # left_join(childrendetailshealth, by = "child_id")
-    # left_join(childlanguage, by = "child_id")
+        left_join(pm, by = "child_id")  %>%
+        left_join(childrendetailshealth, by = "child_id") %>%
+        left_join(childlanguage, by = "child_id")
     
     
     # factor vars to factor
@@ -505,7 +524,7 @@ process_maq <- function(rawdata) {
     factcols <-
         colndistinct %>% filter(nums >= 4) %>% filter(nums <= 10) %>% filter(!(nms %in% numericcols))
     boolcols <-
-        colndistinct %>% filter(nums <= 2) %>% filter(!(nms %in% numericcols))
+        colndistinct %>% filter(nums <= 3) %>% filter(!(nms %in% numericcols))
     
     maq <- maq %>%
         mutate_at(factcols$nms, as.factor) %>%
