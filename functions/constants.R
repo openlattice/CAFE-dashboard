@@ -46,7 +46,20 @@ MAQ_entities <- c(
     "MediaDeviceUse",
     "VocabularyAssessment_WG_8_18",
     "VocabularyAssessment_WS_18_30",
-    "VocabularyAssessment_WS_30_38"
+    "VocabularyAssessment_WS_30_38",
+    
+    "SleepTimes",
+    "AwakeTimes",
+    "InterruptedSleep",
+    "SleepPatterns",
+    "SleepArrangements",
+    "SleepPositions",
+    "SleepNight",
+    "SleepDay",
+    "NapDuringDay",
+    "FallAsleep",
+    "SleepConcerns",
+    "MediaExposure"
 )
 
 MAQ_associations <- list(
@@ -59,19 +72,24 @@ MAQ_associations <- list(
         edge = "RelatedTo"
     ),
     list(
-        src = "Respondents",
+        src = "Children",
+        dst = "MediaExposure",
+        edge = "SubjectOf"
+    ),
+    list(
+        src = "Children",
         dst = "VocabularyAssessment_WG_8_18",
-        edge = "Reported"
+        edge = "ScreenedWith"
     ),
     list(
-        src = "Respondents",
+        src = "Children",
         dst = "VocabularyAssessment_WS_18_30",
-        edge = "Reported"
+        edge = "ScreenedWith"
     ),
     list(
-        src = "Respondents",
+        src = "Children",
         dst = "VocabularyAssessment_WS_30_38",
-        edge = "Reported"
+        edge = "ScreenedWith"
     ),
     list(
         src = "Children",
@@ -98,6 +116,63 @@ MAQ_associations <- list(
         dst = "PublicAssistance",
         edge = "Reported"
     ),
+    list(
+        src = "Children",
+        dst = "SleepTimes",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "AwakeTimes",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "InterruptedSleep",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepPatterns",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepArrangements",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepPositions",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepNight",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepDay",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "NapDuringDay",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "FallAsleep",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepConcerns",
+        edge = "InvolvedIn"
+    ),
+
+    
     # RESPONDENTS
     
     list(
