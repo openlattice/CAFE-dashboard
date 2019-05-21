@@ -65,12 +65,14 @@ process_maq <- function(rawdata) {
             race = ifelse(str_detect(race, ","), "biracial", race),
             race = ifelse(str_detect(race, "NA"), NA, race),
             ethnicity = ifelse(str_detect(ethnicity, ","), "multiple", ethnicity),
-            ethnicity = ifelse(ethnicity == "", NA, ethnicity),
+            ethnicity = ifelse(ethnicity == "", NA, ethnicity)
+        ) %>%
+        rename(
             table_access = Children.table_access,
             sex = Children.nc.PersonSex
         ) %>%
         mutate_at('race', recode,!!!race_key)
-    
+
     children = recombine(list("Respondents", "Children"), rawdata) %>%
         select(child_id, respondent_id, study_id)
     
@@ -169,8 +171,7 @@ process_maq <- function(rawdata) {
             ) > 0,
             educating_child = paste0(MediaDeviceUse.general.frequency[str_detect(MediaDeviceUse.ol.reason, "educate child")], collapse = ", "),
             avoid_media_for_keeping_child_busy = sum(
-                str_detect(MediaDeviceUse.ol
-                           .reason, "keep child busy") &
+                str_detect(MediaDeviceUse.ol.reason, "keep child busy") &
                     str_detect(MediaDeviceUse.general.frequency,
                                "Never")
             ) > 0,
@@ -244,7 +245,8 @@ process_maq <- function(rawdata) {
             age_months = time_length(date(date_maq) - ymd(birthdate), unit =
                                          "month"),
             age_months = ifelse(is.na(age_months), as.numeric(age) * 12, age_months)
-        )
+        ) %>%
+        select(-c(date_maq))
     
     ######
     ## Children details health
@@ -493,12 +495,12 @@ process_maq <- function(rawdata) {
         childlanguage_transform(rawdata, children_age_sex)
     
     maq <- children_demographics %>%
-        left_join(devices, by = "child_id") %>%
+        left_join(devices_mediauseattitudes, by = "child_id") %>%
         left_join(videochat, by = "child_id") %>%
-        left_join(mediadeviceuse, by = "child_id") %>%
+        left_join(mediadeviceuse, by = "child_id") %>% 
         left_join(childrendetails, by = "child_id") %>%
-        left_join(respondentdetails, by = "child_id") %>%
-        left_join(incomes, by = "child_id") %>%
+        left_join(respondentdetails, by = "child_id") %>% 
+        left_join(incomes, by = "child_id") %>% 
         left_join(public_assistance, by = "child_id") %>%
         left_join(metadata, by = "child_id") %>%
         left_join(employment, by = "child_id") %>%
@@ -522,7 +524,7 @@ process_maq <- function(rawdata) {
     factcols <-
         colndistinct %>% filter(nums >= 4) %>% filter(nums <= 10) %>% filter(!(nms %in% numericcols))
     boolcols <-
-        colndistinct %>% filter(nums <= 2) %>% filter(!(nms %in% numericcols))
+        colndistinct %>% filter(nums <= 3) %>% filter(!(nms %in% numericcols))
     
     maq <- maq %>%
         mutate_at(factcols$nms, as.factor) %>%
