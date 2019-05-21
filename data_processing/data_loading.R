@@ -69,11 +69,8 @@ get_raw_data <-
         
         rawdata[['language_norms']] = list(norms_18_30 = voc_prod)
         
-            rawdata['auth'] <- is_authorized(apis, local)
-        } else {
-            rawdata['auth'] <- TRUE
-        }
-        
+        rawdata['auth'] <- is_authorized(apis, local)
+
         return(rawdata)
         
     }
