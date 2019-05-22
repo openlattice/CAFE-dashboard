@@ -110,9 +110,9 @@ documentation_server <-
         doc = gsheet2tbl("docs.google.com/spreadsheets/d/1KlUTXi_s_AHa7hslB8ZeI0I1QHqGczzDQwQJbGYs8-E/edit?usp=sharing")
         sfvars = doc %>% filter(str_detect(Variable, "sf_")) %>% pull(Variable)
         keywords = list(
-            codebook_short_form = "Avoiding Media Device Use",
-            codebook_avoid_media = "Video Chat",
-            codebook_videochat = "Demographics",
+            codebook_demographics = "Demographics",
+            codebook_avoid_media = "Avoiding Media Device Use",
+            codebook_videochat = "Video Chat",
             codebook_qa = "Quality Control",
             codebook_deviceuse = "Device Use",
             codebook_childsleep = "Child Sleep",
