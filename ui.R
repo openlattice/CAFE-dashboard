@@ -49,6 +49,7 @@ tagList(
             chronicle_table("tables"),
             maq_table("tables"),
             linked_table("tables")
-        )
+        ),
+        codebook("documentation")
     )
 )
