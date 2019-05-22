@@ -243,7 +243,7 @@ deviceuse_transform <- function(rawdata) {
                     str_detect(Device_Use.ol.status, "Not very likely|I never do this"),
                 na.rm = TRUE
             ) > 0,
-            number_devices_2weeks = sum(str_detect(Device_Use.ol.id, "recent_childuse"))
+            number_devices_2weeks = sum(str_detect(Device_Use.ol.id, "recent_childuse|start_childuse"))
         ) %>%
         select(
             child_id,
