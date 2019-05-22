@@ -105,6 +105,8 @@ documentation_server <-
              output,
              session) {
         
+        ns <- session$ns
+
         doc = gsheet2tbl("docs.google.com/spreadsheets/d/1KlUTXi_s_AHa7hslB8ZeI0I1QHqGczzDQwQJbGYs8-E/edit?usp=sharing")
         sfvars = doc %>% filter(str_detect(Variable, "sf_")) %>% pull(Variable)
         keywords = list(
@@ -117,7 +119,6 @@ documentation_server <-
             codebook_parentmediation = "Parent Mediation",
             codebook_tuactivity = "Time Use Diary activity"
         )
-        ns <- session$ns
         
         output$codebook_short_form <- renderDataTable({
             doc %>% filter(Variable %in% sfvars) %>% select(Variable, Description)

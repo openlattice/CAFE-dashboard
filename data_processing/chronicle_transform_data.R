@@ -5,11 +5,11 @@ process_chronicle <- function(rawdata) {
     chronicle = rawdata$chronicle$raw %>% 
         rename(child_id = pid) %>%
         mutate(date = as_date(as_datetime(ol.datetimestart))) %>%
-        group_by(study, child_id, date) %>%
+        group_by(study, child_id, date, table_access) %>%
         summarise(
             totaltime = sum(general.Duration) / 3600
         ) %>%
-        group_by(study, child_id) %>%
+        group_by(study, child_id, table_access) %>%
         summarise(
             meantime = mean(totaltime),
         )  %>%
