@@ -125,19 +125,19 @@ documentation_server <-
         }, options = list(scrollX = TRUE))
         
         output$codebook_avoid_media <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_avoid_media]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_avoid_media']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_videochat <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_videochat]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_videochat']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_demographics <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_demographics]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_demographics']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_qa <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_qa]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_qa']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         # output$codebook_coview <- renderDataTable({
@@ -145,19 +145,19 @@ documentation_server <-
         # }, options = list(scrollX = TRUE))
         
         output$codebook_deviceuse <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_deviceuse]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_deviceuse']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_childsleep <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_childsleep]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_childsleep']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_parentmediation <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_parentmediation]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_parentmediation']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_tuactivity <- renderDataTable({
-            doc %>% filter(str_detect(Domain, keywords[codebook_tuactivity]) & !Variable %in% sfvars) %>% select(Variable, Description)
+            doc %>% filter(str_detect(Domain, keywords['codebook_tuactivity']) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
         output$codebook_other <- renderDataTable({
