@@ -208,22 +208,28 @@ deviceuse_transform <- function(rawdata) {
             ),
             sf_maq_Q2_avoid_screen_bedtime = hourbeforebedtimenever == hourbeforebedtime,
             sf_maq_Q2_avoid_screen_bedtime = if_else(all_NA, NA, sf_maq_Q2_avoid_screen_bedtime),
-            sf_maq_Q3_balancemedia_reading_weekday = sum(duration[str_detect(Device_Use.ol.description, "paper books|electronic books") &
-                                                                      str_detect(Device_Use.ol.description, "weekday") &
-                                                                      str_detect(Device_Use.ol.description, "Time spent") &
-                                                                      str_detect(
-                                                                          Device_Use.ol.duration,
-                                                                          "30 minutes to 1 hour|1-2 hours|2-3 hours|3-4 hours|4-5 hours|More than 5 hours"
-                                                                      )], na.rm =
-                                                             TRUE) > 0,
-            sf_maq_Q3_balancemedia_reading_weekend = sum(duration[str_detect(Device_Use.ol.description, "paper books|electronic books") &
-                                                                      str_detect(Device_Use.ol.description, "weekend") &
-                                                                      str_detect(Device_Use.ol.description, "Time spent") &
-                                                                      str_detect(
-                                                                          Device_Use.ol.duration,
-                                                                          "30 minutes to 1 hour|1-2 hours|2-3 hours|3-4 hours|4-5 hours|More than 5 hours"
-                                                                      )], na.rm =
-                                                             TRUE) > 0,
+            sf_maq_Q3_balancemedia_reading_weekday = sum(
+                str_detect(Device_Use.ol.description, "paper books|electronic books") &
+                    str_detect(Device_Use.ol.description, "weekday") &
+                    str_detect(Device_Use.ol.description, "Time spent") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "30 minutes to 1 hour|1-2 hours|2-3 hours|3-4 hours|4-5 hours|More than 5 hours"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            sf_maq_Q3_balancemedia_reading_weekend = sum(
+                str_detect(Device_Use.ol.description, "paper books|electronic books") &
+                    str_detect(Device_Use.ol.description, "weekend") &
+                    str_detect(Device_Use.ol.description, "Time spent") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "30 minutes to 1 hour|1-2 hours|2-3 hours|3-4 hours|4-5 hours|More than 5 hours"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
             sf_maq_Q5_minimize_background_play = sum(
                 str_detect(Device_Use.ol.id, "television_in_home") &
                     str_detect(Device_Use.general.frequency, "Never|Hardly ever"),
@@ -243,7 +249,34 @@ deviceuse_transform <- function(rawdata) {
                     str_detect(Device_Use.ol.status, "Not very likely|I never do this"),
                 na.rm = TRUE
             ) > 0,
-            number_devices_2weeks = sum(str_detect(Device_Use.ol.id, "recent_childuse"))
+            num_devices_recent2wks = sum(str_detect(
+                Device_Use.ol.status, "used very recently"
+            )),
+            devices_recent2wks = paste0(Device_Use.ol.name[str_detect(Device_Use.ol.status, "used very recently")], collapse = ", "),
+            num_devices_start2wks = sum(
+                str_detect(Device_Use.ol.id, "start_childuse") &
+                    str_detect(
+                        Device_Use.ol.status,
+                        "Started using in last 2 weeks|Started using in the last 2 weeks"
+                    )
+            ),
+            devices_start2wks = paste0(Device_Use.ol.name[str_detect(Device_Use.ol.id, "start_childuse") &
+                                                              str_detect(
+                                                                  Device_Use.ol.status,
+                                                                  "Started using in last 2 weeks|Started using in the last 2 weeks"
+                                                              )], collapse = ", "),
+            num_devices_start6mos = sum(
+                str_detect(Device_Use.ol.id, "start_childuse") &
+                    str_detect(
+                        Device_Use.ol.status,
+                        "Started using in the last 6 months|Started using in last 6 months"
+                    )
+            ),
+            devices_start6mos = paste0(Device_Use.ol.name[str_detect(Device_Use.ol.id, "start_childuse") &
+                                                              str_detect(
+                                                                  Device_Use.ol.status,
+                                                                  "Started using in the last 6 months|Started using in last 6 months"
+                                                              )], collapse = ", "),
         ) %>%
         select(
             child_id,
@@ -270,7 +303,12 @@ deviceuse_transform <- function(rawdata) {
             sf_maq_Q5_minimize_background_play,
             sf_maq_Q6_avoid_media_during_mealtimes,
             sf_maq_Q7_avoid_media_during_play,
-            number_devices_2weeks
+            num_devices_recent2wks,
+            devices_recent2wks,
+            num_devices_start2wks,
+            devices_start2wks,
+            num_devices_start6mos,
+            devices_start6mos
         )
     return(deviceuse)
 }
