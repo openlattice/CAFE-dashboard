@@ -27,13 +27,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
                                                         TRUE),
             WG_8_18_does_not_understand = mean(does_not_understand, na.rm =
                                                    TRUE),
-            WG_8_18_ntotal = mean(n_words, na.rm = TRUE),
-            WG_8_18_understands_and_says_percentage = WG_8_18_understands_and_says /
-                WG_8_18_ntotal,
-            WG_8_18_understands_does_not_say_percentage = WG_8_18_understands_does_not_say /
-                WG_8_18_ntotal,
-            WG_8_18_does_not_understand_percentage = WG_8_18_does_not_understand /
-                WG_8_18_ntotal
+            WG_8_18_ntotal = mean(n_words, na.rm = TRUE)
         )
     
     WS_18_30 = recombine(list("Children", "VocabularyAssessment_WS_18_30"),
@@ -41,7 +35,8 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         rowwise() %>%
         mutate(
             WS_18_30_split = strsplit(VocabularyAssessment_WS_18_30.ol.vocabularyword, ","),
-            WS_18_30_n = length(WS_18_30_split[!is.na(WS_18_30_split)])
+            WS_18_30_n = length(WS_18_30_split[!is.na(WS_18_30_split)]),
+            WS_18_30_n = ifelse(is.na(VocabularyAssessment_WS_18_30.ol.vocabularyword), NA, WS_18_30_n)
         ) %>%
         spread(VocabularyAssessment_WS_18_30.ol.name, WS_18_30_n) %>%
         rename(says = "Yes (says the word)",
@@ -51,9 +46,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         summarise(
             WS_18_30_says = mean(says, na.rm = TRUE),
             WS_18_30_does_not_say = mean(does_not_say, na.rm = TRUE),
-            WS_18_30_ntotal = mean(n_words, na.rm = TRUE),
-            WS_18_30_says_percentage = WS_18_30_says / WS_18_30_ntotal,
-            WS_18_30_does_not_say_percentage = WS_18_30_does_not_say / WS_18_30_ntotal
+            WS_18_30_ntotal = mean(n_words, na.rm = TRUE)
         )
     
     WS_30_38 = recombine(list("Children", "VocabularyAssessment_WS_30_38"),
@@ -61,7 +54,8 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         rowwise() %>%
         mutate(
             WS_30_38_split = strsplit(VocabularyAssessment_WS_30_38.ol.vocabularyword, ","),
-            WS_30_38_n = length(WS_30_38_split[!is.na(WS_30_38_split)])
+            WS_30_38_n = length(WS_30_38_split[!is.na(WS_30_38_split)]),
+            WS_30_38_n = ifelse(is.na(VocabularyAssessment_WS_30_38.ol.vocabularyword), NA, WS_30_38_n)
         ) %>%
         group_by(child_id) %>%
         summarise(WS_30_38_says = mean(WS_30_38_n, na.rm = TRUE))
