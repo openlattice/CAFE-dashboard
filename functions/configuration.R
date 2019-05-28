@@ -14,7 +14,7 @@ get_master_jwt <- function() {
 
 is_authorized <- function(apis, local=FALSE){
     if (local) {return(TRUE)}
-    if (!is.null(apis) & "TimeUseDiary READ" %in% apis$personal$prinApi$get_current_roles()$title) {
+    if (!is.null(apis) & "Cafe READ" %in% apis$personal$prinApi$get_current_roles()$title) {
         return(TRUE)
     }
     return(FALSE)
@@ -41,10 +41,10 @@ get_apis <- function(jwt, local = FALSE) {
     if (local == TRUE) {
         master_jwt <- jwt
     } else {
-        if ("TimeUseDiary READ" %in% prinApi$get_current_roles()$title) {
-        master_jwt = get_master_jwt()
+        if ("Cafe READ" %in% prinApi$get_current_roles()$title) {
+            master_jwt = get_master_jwt()
         } else {
-        print("You're not authorized to see this data !")
+            runjs("console.log('You're not authorized to see this data !');")
         return (NULL)
         }
     }
