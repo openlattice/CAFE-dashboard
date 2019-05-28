@@ -12,7 +12,7 @@ summarise_data <- function(activitydata) {
       time_deviance_from_24 = abs(total_time - 24),
       total_blocks = n(),
       
-      background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other], na.rm=TRUE)/60,
+      background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other] * background_media_mean_percentage, na.rm=TRUE)/60,
       background_media_blocks = sum(background_media_tv | background_media_audio | background_media_other, na.rm=TRUE),
       
       background_tv_hours = sum(duration[background_media_tv], na.rm = TRUE)/60,
