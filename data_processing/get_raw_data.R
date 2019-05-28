@@ -31,19 +31,6 @@ load_data <-
                 })
         }
 
-        # # to be removed if code below works :-)
-        # a <- list(
-        #     a = tibble(A = c(1,2,3), B = c(3,4,5)),
-        #     b = tibble(A = c(1,2,3), C = c(3,4,5)),
-        #     a = tibble(A = c(3,4,5), B = c(5,5,6))
-        # )
-        # 
-        # atib = tibble(a)
-        # atib['name'] = names(a)
-        # atib = atib %>% unnest() %>% group_by(name) %>% nest() %>% pull(data)
-        # anew = atib %>% map(function(x){return(remove_empty(x, which = c("cols")))})
-        # names(anew) = atib %>% pull(name)
-
         # MAQ
         if (MAQ) {
             cat(file=stderr(), "  -- MAQ: Getting nodes.\n")

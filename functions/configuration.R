@@ -42,9 +42,9 @@ get_apis <- function(jwt, local = FALSE) {
         master_jwt <- jwt
     } else {
         if ("Cafe READ" %in% prinApi$get_current_roles()$title) {
-        master_jwt = get_master_jwt()
+            master_jwt = get_master_jwt()
         } else {
-        print("You're not authorized to see this data !")
+            runjs("console.log('You're not authorized to see this data !');")
         return (NULL)
         }
     }
