@@ -26,8 +26,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
             WG_8_18_understands_does_not_say = mean(understands_does_not_say, na.rm =
                                                         TRUE),
             WG_8_18_does_not_understand = mean(does_not_understand, na.rm =
-                                                   TRUE),
-            WG_8_18_ntotal = mean(n_words, na.rm = TRUE)
+                                                   TRUE)
         )
     
     WS_18_30 = recombine(list("Children", "VocabularyAssessment_WS_18_30"),
@@ -45,8 +44,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         mutate(n_words = sum(says, does_not_say, na.rm = TRUE)) %>%
         summarise(
             WS_18_30_says = mean(says, na.rm = TRUE),
-            WS_18_30_does_not_say = mean(does_not_say, na.rm = TRUE),
-            WS_18_30_ntotal = mean(n_words, na.rm = TRUE)
+            WS_18_30_does_not_say = mean(does_not_say, na.rm = TRUE)
         )
     
     WS_30_38 = recombine(list("Children", "VocabularyAssessment_WS_30_38"),
@@ -70,7 +68,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         mutate(
             # percentile_wg_8_18 = get_percentiles(WG_8_18_says, age_months, sex, norms$wg),
             # percentile_ws_30_38 = get_percentiles(WS_30_38_says, age_months, sex, voc_prod)
-            percentile_ws_18_30 = get_percentiles(
+            WS_18_30_percentile = get_percentiles(
                 WS_18_30_says,
                 age_months,
                 sex,
