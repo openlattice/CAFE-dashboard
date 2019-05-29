@@ -716,7 +716,7 @@ process_maq <- function(rawdata) {
                                                                               str_detect(Device_Use.ol.subject, "adult") &
                                                                               str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
                                                        ","),
-            
+            smartphonechecks = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.description, "times respondent checks")], collapse=","),
             
         ) %>%
         select(
@@ -759,7 +759,8 @@ process_maq <- function(rawdata) {
             parent_weekend_ipad_avoid,
             parent_weekend_ipad_use,
             parent_weekend_smartphone_avoid,
-            parent_weekend_smartphone_use
+            parent_weekend_smartphone_use,
+            smartphonechecks
         )
     
     parentmediaattitudes = recombine(list("Respondents", "MediaAttitudes"), rawdata) %>%
