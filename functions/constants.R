@@ -1,11 +1,11 @@
 TUD_entities <- c(
-  "primary_activity", 
-  "survey_metadata", 
-  "people", 
-  "relatives", 
-  "devices", 
-  "adult_use", 
-  "media_exposure", 
+  "primary_activity",
+  "survey_metadata",
+  "people",
+  "relatives",
+  "devices",
+  "adult_use",
+  "media_exposure",
   "locations",
   "sites",
   "survey_respondents",
@@ -15,42 +15,82 @@ TUD_entities <- c(
   )
 
 MAQ_entities <- c(
-    
+
     # SUBJECTS
-    
+
     "Children",
     "Respondents",
     "ChildrenDetails",
     "RespondentDetails",
 
     # RESPONDENTS
-    
-    "RespondentDetails", 
-    "Employment", 
-    "Education", 
-    "Incomes", 
+
+    "RespondentDetails",
+    "Employment",
+    "Education",
+    "Incomes",
     "ImmigrationStatus",
-    
+
     # Device Use
     "Device_Use",
-    
+
     # quality
     "QualityControl",
     "PSI_Assessment",
     "SurveyMetadata",
     "ChildrenDetailsHealth",
     "PublicAssistance",
-    "ParentMediationScale"
+    "ParentMediationScale",
+    "Devices",
+    "MediaUseAttitudes",
+    "MediaDeviceUse",
+    "VocabularyAssessment_WG_8_18",
+    "VocabularyAssessment_WS_18_30",
+    "VocabularyAssessment_WS_30_38",
+    "MediaAttitudes"
+
+    "SleepTimes",
+    "AwakeTimes",
+    "InterruptedSleep",
+    "SleepPatterns",
+    "SleepArrangements",
+    "SleepPositions",
+    "SleepNight",
+    "SleepDay",
+    "NapDuringDay",
+    "FallAsleep",
+    "SleepConcerns",
+    "MediaExposure"
 )
 
 MAQ_associations <- list(
-    
+
     # SUBJECTS
-    
+
     list(
         src = "Respondents",
         dst = "Children",
         edge = "RelatedTo"
+    ),
+    list(
+        src = "Children",
+        dst = "MediaExposure",
+        edge = "SubjectOf"
+    ),
+    list(
+        src = "Children",
+        dst = "VocabularyAssessment_WG_8_18",
+        edge = "ScreenedWith"
+    ),
+    list(
+        src = "Children",
+        dst = "VocabularyAssessment_WS_18_30",
+        edge = "ScreenedWith"
+    ),
+    list(
+        src = "Children",
+        dst = "VocabularyAssessment_WS_30_38",
+        edge = "ScreenedWith"
     ),
     list(
         src = "Children",
@@ -77,12 +117,74 @@ MAQ_associations <- list(
         dst = "PublicAssistance",
         edge = "Reported"
     ),
+    list(
+        src = "Children",
+        dst = "SleepTimes",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "AwakeTimes",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "InterruptedSleep",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepPatterns",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepArrangements",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepPositions",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepNight",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepDay",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "NapDuringDay",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "FallAsleep",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "SleepConcerns",
+        edge = "InvolvedIn"
+    ),
+
+
     # RESPONDENTS
-    
+
     list(
         src = "Respondents",
         dst = "RespondentDetails",
         edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        edge = "Reported",
+        dst = "MediaUseAttitudes"
     ),
     list(
         src = "Respondents",
@@ -109,18 +211,48 @@ MAQ_associations <- list(
         dst = "QualityControl",
         edge = "Reported"
     ),
-    
+    list(
+        src = "Respondents",
+        dst = "Device_Use",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "MediaAttitudes",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "MediaExposure",
+        edge = "Reported"
+    ),
+
     # DEVICES
-    
+
     list(
         src = "Children",
         dst = "Device_Use",
         edge = "InvolvedIn"
     ),
     list(
+        src = "Children",
+        dst = "Device_Use",
+        edge = "UsedBy"
+    ),
+    list(
+        src = "Devices",
+        dst = "Children",
+        edge = "UsedBy"
+    ),
+    list(
         src = "Respondents",
         dst = "PSI_Assessment",
         edge = "ScreenedWith"
+    ),
+    list(
+      src = "Respondents",
+      dst = "MediaDeviceUse",
+      edge = "Reported"
     ),
     list(
         src = "Respondents",
@@ -192,14 +324,9 @@ TUD_associations <- list(
       edge = 'located'
   ),
   list(
-    src = 'primary_activity',
-    dst = 'survey_metadata',
-    edge = 'recorded'
-  ),
-  list(
     src = 'people',
     dst = 'primary_activity',
     edge = 'engagedin'
   )
-  
+
 )
