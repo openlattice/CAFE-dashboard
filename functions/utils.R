@@ -1,5 +1,5 @@
 get_demographics <- function(rawdata) {
-    dem <- c("parental_education", "parental_employment", "race", "ethnicity", "parental_highest_income", 'parental_least_public_assistance', "study")
+    dem <- c("parental_education", "parental_employment", "race", "ethnicity", "parental_highest_income", 'parental_least_public_assistance', "sex", "study")
     return (dem)
 }
 
@@ -34,6 +34,7 @@ get_data_from_cols <- function(rawdata, cols) {
 }
 
 get_scales_columns <- function(rawdata, scale = "PSI") {
+    if (scale == "short form"){scale = "sf_"}
     columns <-
         data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
     columns = unlist(columns, use.names = FALSE)

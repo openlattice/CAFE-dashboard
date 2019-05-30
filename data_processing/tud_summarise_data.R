@@ -12,7 +12,7 @@ summarise_data <- function(activitydata) {
       time_deviance_from_24 = abs(total_time - 24),
       total_blocks = n(),
       
-      background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other], na.rm=TRUE)/60,
+      background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other] * background_media_mean_percentage, na.rm=TRUE)/60,
       background_media_blocks = sum(background_media_tv | background_media_audio | background_media_other, na.rm=TRUE),
       
       background_tv_hours = sum(duration[background_media_tv], na.rm = TRUE)/60,
@@ -36,6 +36,7 @@ summarise_data <- function(activitydata) {
 
       screen_hours = sum(duration[screen], na.rm=TRUE)/60,
       screen_blocks = sum(screen, na.rm=TRUE),
+      videochat_hours = sum(duration[videochat], na.rm=TRUE)/60,
       screen_mean_hours = mean(duration[screen], na.rm=TRUE)/60,
       screen_median_hours = median(duration[screen], na.rm=TRUE)/60,
       screen_1hfromsleeping_hours = sum(duration[screen & time_to_sleep<1], na.rm=TRUE)/60,
@@ -80,15 +81,17 @@ summarise_data <- function(activitydata) {
       
       table_access = mean(table_access)==1,
       
-      SBP_TV_lessthan_1h = total_tv_hours<= 1,
-      SBP_avoid_screen_before_bedtime = screen_1hfromsleeping_hours==0,
-      SBP_balance_media_with_reading = primary_book_hours>=0.5,
-      SBP_balance_media_with_play = primary_media_hours <= play_hours,
-      SBP_minimise_background_media_play = play_bmedia_hours == 0,
-      SBP_avoid_media_meals = feeding_btv_hours == 0,
-      SBP_coview = screen_adult_coviewing_hours/screen_hours >= 0.5,
-      SBP_content = ((age_child_primary_media + age_younger_primary_media)/
+      sf_tud_Q1_morethan1h = total_tv_hours<= 1,
+      sf_tud_Q2_avoid_screen_bedtime = screen_1hfromsleeping_hours==0,
+      sf_tud_Q3_balancemedia_reading = primary_book_hours>=0.5,
+      sf_tud_Q4_balancemedia_play = primary_media_hours <= play_hours,
+      sf_tud_Q5_minimize_background_play = play_bmedia_hours == 0,
+      sf_tud_Q6_avoid_media_during_mealtimes = feeding_btv_hours == 0,
+      # sf_tud_Q7_avoid_media_during_playtimes = feeding_btv_hours == 0, #this one needs parents use in percent, which we don't have yet?
+      sf_tud_Q8_coview_mediate = screen_adult_coviewing_hours/screen_hours >= 0.5,
+      sf_tud_Q9_mediacontent = ((age_child_primary_media + age_younger_primary_media)/
           (age_child_primary_media + age_older_primary_media+ age_younger_primary_media + age_adults_primary_media))==1,
+      sf_tud_Q10_videochat = videochat_hours > 0,
       monthyear = paste0(year(first(starttime)),"-",str_pad(month(first(starttime)),2,"left",0))
     )
         

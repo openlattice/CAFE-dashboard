@@ -84,7 +84,6 @@ psi_transform <- function(rawdata, children_respondents) {
         left_join(rawdata$maq$nodes$Respondents,
                   by = c(src = "openlattice.@id")) %>%
         left_join(rawdata$maq$nodes$PSI_Assessment, by = c(dst = "openlattice.@id")) %>%
-        select(-c(table_access.x, table_access.y)) %>%
         dplyr::rename(respondent_id = nc.SubjectIdentification, study = study.x) %>%
         left_join(children_respondents, by = 'respondent_id') %>%
         group_by(child_id) %>%

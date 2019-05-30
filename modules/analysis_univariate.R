@@ -18,6 +18,12 @@ univar_ui <- function(id) {
                  width = 6,
                  box(
                      width = 12,
+                     solidHeader = TRUE,
+                     title = "Univeriate statistics",
+                     verbatimTextOutput(ns("con_text"))
+                 ),
+                 box(
+                     width = 12,
                      height = 1000,
                      solidHeader = TRUE,
                      title = "Histogram",
@@ -52,6 +58,11 @@ univar_server <-
             "Choose column:",
             choices = c(data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric")), other = c("n"))
         ))
+        
+        output$con_text <-
+            renderPrint({
+                print(summary(rawdata$alldata[input$concol]))
+            })
         
         output$histogramplot <-
             renderPlot({

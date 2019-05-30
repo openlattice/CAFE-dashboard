@@ -86,8 +86,8 @@ catcon_server <-
         output$cat_column2 <- renderUI(selectInput(
             inputId = ns("catcol2"),
             "Choose categorical column 2 (or leave blank):",
-            choices = data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("boolean", "factorial")),
-            selected = ""
+            choices = c("NULL", data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("boolean", "factorial"))),
+            selected = "NULL"
         ))
         
         output$cont_column3 <- renderUI(selectInput(
@@ -101,7 +101,8 @@ catcon_server <-
             inputId = ns("figtype"),
             "Choose figure type:",
             choices = c("boxplot", "violinplot"),
-            selected = "boxplot"
+            selected = "boxplot",
+            selectize = FALSE
         ))
         
         output$catconplot <-
@@ -166,7 +167,7 @@ catcon_server <-
 
 catcon_test <- function(data, col1, col2, col3){
     if (is.null(data)){return(NULL)}
-    if (col2 == ""){
+    if (col2 == "NULL"){
         formula = as.formula(paste(col3, "~", col1))
     } else {
         formula = as.formula(paste(col3, "~", col1, "+", col2))
@@ -177,7 +178,7 @@ catcon_test <- function(data, col1, col2, col3){
 
 catcon_anova <- function(data, col1, col2, col3){
     if (is.null(data)){return(NULL)}
-    if (col2 == ""){
+    if (col2 == "NULL"){
         formula = as.formula(paste(col3, "~", col1))
     } else {
         formula = as.formula(paste(col3, "~", col1, "+", col2))
@@ -187,7 +188,7 @@ catcon_anova <- function(data, col1, col2, col3){
 }
 
 catcon_plot <- function(data, col1, col2, col3, figtype = "boxplot"){
-    if (col2=="") {
+    if (col2=="NULL") {
         plot = ggplot(data,
                       aes_string(x = col1,
                                  y = col3
@@ -215,7 +216,7 @@ catcon_plot <- function(data, col1, col2, col3, figtype = "boxplot"){
 
 create_con_table <- function(data, col1, col2, col3){
     if (is.null(data)){return(NA)}
-    if (col2 == ""){
+    if (col2 == "NULL"){
         base <- data %>% select(col1, col3) %>% 
             group_by_(col1)
     } else {

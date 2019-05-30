@@ -141,6 +141,7 @@ process_media_exposure <- function(rawdata) {
         ) %>%
         # summarise
         rename(primary_activity_id = dst) %>%
+        mutate(percentage_background = as.numeric(ol.duration)) %>%
         group_by(primary_activity_id) %>%
         summarise(
             background_media = sum(str_detect(ol.priority, "secondary")) > 0,
@@ -151,7 +152,16 @@ process_media_exposure <- function(rawdata) {
             background_media_other = str_detect(ol.type, "other") &&
                 str_detect(ol.priority, "secondary"),
             
-            primary_media = sum(str_detect(ol.priority, "primary")) > 0,
+            background_media_mean_percentage = mean(percentage_background[background_media]),
+            background_media_tv_mean_percentage = mean(percentage_background[background_media_tv]),
+            background_media_audio_mean_percentage = mean(percentage_background[background_media_audio]),
+            background_media_other_mean_percentage = mean(percentage_background[background_media_other]),
+
+            background_media_sum_percentage = sum(percentage_background[background_media]),
+            background_media_tv_sum_percentage = sum(percentage_background[background_media_tv]),
+            background_media_audio_sum_percentage = sum(percentage_background[background_media_audio]),
+            background_media_other_sum_percentage = sum(percentage_background[background_media_other]),
+
             primary_media_age = paste(ol.category[ol.priority == "primary" &
                                                       !is.na(ol.category)], collapse = " and "),
             primary_media_age_child = str_detect(ol.category, "Child's age") &&
@@ -174,7 +184,10 @@ process_media_exposure <- function(rawdata) {
             secondary_media_age_adult = str_detect(ol.category, "Adults") &&
                 str_detect(ol.priority, "secondary"),
             screen = sum(str_detect(
-                ol.type, "television|video|Video|internet"
+                ol.type, "television|video|Video|internet|movie|games|Watched|computer"
+            )) > 0,
+            videochat = sum(str_detect(
+                ol.type, "Video chat"
             )) > 0
         )
     return(media_exposure_by_activity)
@@ -195,17 +208,19 @@ process_adult_use <- function(rawdata) {
         ) %>%
         # add primary activities
         left_join(rawdata$tud$nodes$adult_use, by = c(dst = "openlattice.@id")) %>%
+        mutate(duration = as.numeric(ol.duration)) %>%
         # summarise
         rename(primary_activity_id = src) %>%
         group_by(primary_activity_id) %>%
         summarise(
             adult_use = str_detect(ol.status, "Yes"),
             adult_no_use = str_detect(ol.status, "No"),
-            adult_social_media = str_detect(ol.reason, "socialmedia"),
-            adult_work_media = str_detect(ol.reason, "work"),
+            adult_social_media = str_detect(ol.reason, "Social media"),
+            adult_social_call = str_detect(ol.reason, "Social call"),
+            adult_work_media = str_detect(ol.reason, "work|Work"),
             adult_call = str_detect(ol.reason, "call"),
-            adult_duration = sum(as.integer(ol.duration), na.rm = TRUE),
-            adult_duration = ifelse(adult_duration > 0, adult_duration, NA)
+            adult_entertainment = str_detect(ol.reason, "Entertainment"),
+            adult_duration = sum(duration)
         )
     return(adult_use_by_activity)
 }

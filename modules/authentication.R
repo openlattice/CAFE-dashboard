@@ -8,7 +8,7 @@
 # in the app as well.
 
 custom_auth_function <- function(jwt) {
-    role <-  "OpenLattice User Role"
+    role <-  "Cafe READ"
     basepath = "https://api.openlattice.com"
     header_params <-
         unlist(list("Authorization" = paste("Bearer", jwt)))

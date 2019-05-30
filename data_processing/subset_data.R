@@ -17,7 +17,8 @@ subset_data <-
              qualityrange=NULL) {
         output = list(tud = rawdata$tud$preprocessed,
                       maq = rawdata$maq$preprocessed,
-                      alldata = rawdata$alldata_complete
+                      alldata = rawdata$alldata_complete,
+                      chronicle = rawdata$chronicle$preprocessed
                       )
         
         # subset hours
@@ -33,6 +34,8 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
+            output$chronicle <- output$chronicle %>%
+                filter(child_id %in% subset$child_id)
         }
         print(dim(output$tud))
         
@@ -45,6 +48,8 @@ subset_data <-
             output$maq <-
                 output$maq %>% filter(str_detect(study, sites))
             output$alldata <- output$alldata %>%
+                filter(str_detect(study, sites))
+            output$chronicle <- output$chronicle %>%
                 filter(str_detect(study, sites))
         }
         print(dim(output$tud))
@@ -61,6 +66,8 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
+            output$chronicle <- output$chronicle %>%
+                filter(child_id %in% subset$child_id)
         }
         
         if (agebool) {
@@ -74,19 +81,22 @@ subset_data <-
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
                 filter(child_id %in% subset$child_id)
-            
+            output$chronicle <- output$chronicle %>%
+                filter(child_id %in% subset$child_id)
         }
         
         if (qualitybool) {
             print("quality")
             subset <- rawdata$maq$preprocessed %>%
-                filter(mean_quality > qualityrange[1] &
-                           mean_quality < qualityrange[2]) %>% select("child_id")
+                filter(mean_quality >= qualityrange[1] &
+                           mean_quality <= qualityrange[2]) %>% select("child_id")
             output$tud <- output$tud %>%
                 filter(child_id %in% subset$child_id)
             output$maq <- output$maq %>%
                 filter(child_id %in% subset$child_id)
             output$alldata <- output$alldata %>%
+                filter(child_id %in% subset$child_id)
+            output$chronicle <- output$chronicle %>%
                 filter(child_id %in% subset$child_id)
             
         }

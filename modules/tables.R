@@ -72,6 +72,23 @@ chronicle_table <- function(id){
                             ))
 }
 
+linked_table <- function(id){
+    ns <- NS(id)
+    tabPanel("Linked data",
+             fluidRow(box(
+                 width = 12,
+                 column(12, align = "center", downloadButton(ns("download_linked"), "Download"))
+             )),
+             fluidRow(
+                 box(
+                     width = 12,
+                     solidHeader = TRUE,
+                     title = "Linked data",
+                     dataTableOutput(outputId = ns("linked"))
+                 )
+             ))
+}
+
 # SERVER FUNCTIONS
 
 tables <-
@@ -96,11 +113,16 @@ tables <-
         options = list(scrollX = TRUE))
         
         output$chronicle_raw <- renderDataTable({
-            rawdata$chronicle$raw %>% filter(table_access == TRUE) #%>% select(-c("pid"))
+            rawdata$chronicle$processed %>% filter(table_access == TRUE) #%>% select(-c("pid"))
         },
         options = list(scrollX = TRUE))
         
-        output$download_preprocessed <- downloadHandler(
+        output$linked <- renderDataTable({
+            rawdata$alldata %>% filter(table_access == TRUE) #%>% select(-c("pid"))
+        },
+        options = list(scrollX = TRUE))
+
+                output$download_preprocessed <- downloadHandler(
             filename = "CAFE_TUD_preprocessed.csv",
             content = function(file) {
                 write.csv(
@@ -137,11 +159,22 @@ tables <-
             filename = "CAFE_chronicle.csv",
             content = function(file) {
                 write.csv(
-                    rawdata$chronicle$raw %>% filter(table_access == TRUE), #%>% select(-c("pid")),
+                    rawdata$chronicle$processed %>% filter(table_access == TRUE), #%>% select(-c("pid")),
                     file,
                     row.names = FALSE
                 )
             }
         )
         
-}
+        output$download_linked <- downloadHandler(
+            filename = "CAFE_linked.csv",
+            content = function(file) {
+                write.csv(
+                    rawdata$alldata %>% filter(table_access == TRUE), #%>% select(-c("pid")),
+                    file,
+                    row.names = FALSE
+                )
+            }
+        )
+    
+        }

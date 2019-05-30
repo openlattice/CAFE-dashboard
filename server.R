@@ -10,10 +10,7 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=analysis]")
     hide(selector = "#navbar li a[data-value=tables]")
-    hide(selector = "#navbar li a[data-value=plots]")
-    hide(selector = "#navbar li a[data-value=QA]")
-    hide(selector = "#navbar li a[data-value=TUD-MAQ]")
-    hide(selector = "#navbar li a[data-value=ScreenBestPractices]")
+    hide(selector = "#navbar li a[data-value=documentation]")
     hide(id = "waitforauth")
     
     # load data
@@ -56,9 +53,7 @@ shinyServer(function(input, output, session) {
         shinyjs::removeCssClass(id = "emptyplot",
                                 class = "recalculating")
         if (rawdata$auth){
-            columns <-
-                data_get_coltypes(newdat, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
-            data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+            data_r$data <- newdat$alldata[unique(unlist(names(newdat$alldata), use.names=FALSE))]
         }
     })
     
@@ -81,9 +76,10 @@ shinyServer(function(input, output, session) {
         rawdata$tud$summarised <- newdat$summary
         rawdata$maq$processed <- newdat$maq
         rawdata$alldata <- newdat$alldata
+        rawdata$chronicle$processed <- newdat$chronicle
         columns <-
             data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types = c("boolean", "factorial", "numeric"))
-        data_r$data <- newdat$alldata[unique(unlist(columns, use.names=FALSE))]
+        data_r$data <- newdat$alldata[unique(unlist(names(newdat$alldata), use.names=FALSE))]
         rawdata$n_child <- newdat$n_child
         rawdata$n_act <- newdat$n_act
         rawdata$n_nodes <- newdat$n_nodes
@@ -94,10 +90,7 @@ shinyServer(function(input, output, session) {
             shinyjs::show(selector = "#navbar li a[data-value=participants]")
             shinyjs::show(selector = "#navbar li a[data-value=tables]")
             shinyjs::show(selector = "#navbar li a[data-value=analysis]")
-            shinyjs::show(selector = "#navbar li a[data-value=plots]")
-            shinyjs::show(selector = "#navbar li a[data-value=QA]")
-            shinyjs::show(selector = "#navbar li a[data-value=TUD-MAQ]")
-            shinyjs::show(selector = "#navbar li a[data-value=ScreenBestPractices]")
+            shinyjs::show(selector = "#navbar li a[data-value=documentation]")
             shinyjs::show(id = "waitforauth")
         }
     })
@@ -221,5 +214,6 @@ shinyServer(function(input, output, session) {
     callModule(multivariate_server, "analysis", rawdata)
     callModule(multivariate_cor_server, "analysis", rawdata)
     callModule(module = esquisserServer, id = "esquisse", data = data_r)
+    callModule(documentation_server, "documentation")
     
 })

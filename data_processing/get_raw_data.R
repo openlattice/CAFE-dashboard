@@ -1,6 +1,6 @@
 read_data <- function(apis, auth = FALSE, local = FALSE) {
     ptm <- proc.time()
-    filename = "rawdata_20190422.yaml"
+    filename = "rawdata_20190519.yaml"
     if (local) {
         cat(file=stderr(), "Reading the data from disk...\n")
         rawdata <- read_yaml(paste0("data/", filename))
@@ -30,7 +30,7 @@ load_data <-
                     return (paste0(x['src'], "_", x['dst']))
                 })
         }
-        
+
         # MAQ
         if (MAQ) {
             cat(file=stderr(), "  -- MAQ: Getting nodes.\n")
@@ -44,6 +44,13 @@ load_data <-
                 MAQ_associations %>% map_chr(function(x) {
                     return (paste0(x['src'], "_", x['dst']))
                 })
+            
+            # fun fact: sometimes same name in list !
+            maqedges = tibble(maqedgesdata)
+            maqedges['name'] = names(maqedgesdata)
+            maqedges = maqedges %>% unnest() %>% group_by(name) %>% nest()
+            maqedgesdata = maqedges %>% pull(data) %>% map(function(x){return(remove_empty(x, which = c("cols")))})
+            names(maqedgesdata) = maqedges %>% pull(name)
         }
         
         outdata <- list()
