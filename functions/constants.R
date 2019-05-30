@@ -47,7 +47,7 @@ MAQ_entities <- c(
     "VocabularyAssessment_WG_8_18",
     "VocabularyAssessment_WS_18_30",
     "VocabularyAssessment_WS_30_38",
-    "MediaAttitudes"
+    "MediaAttitudes",
 
     "SleepTimes",
     "AwakeTimes",
