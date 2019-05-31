@@ -67,12 +67,10 @@ process_maq <- function(rawdata) {
             ethnicity = ifelse(str_detect(ethnicity, ","), "multiple", ethnicity),
             ethnicity = ifelse(ethnicity == "", NA, ethnicity)
         ) %>%
-        rename(
-            table_access = Children.table_access,
-            sex = Children.nc.PersonSex
-        ) %>%
+        rename(table_access = Children.table_access,
+               sex = Children.nc.PersonSex) %>%
         mutate_at('race', recode,!!!race_key)
-
+    
     children = recombine(list("Respondents", "Children"), rawdata) %>%
         select(child_id, respondent_id, study_id)
     
@@ -148,7 +146,7 @@ process_maq <- function(rawdata) {
             uses_videochat_connect_work,
             uses_videochat_connect_work_text
         )
-
+    
     ######
     ## Media device use/ Parent Attitudes
     ######
@@ -206,7 +204,7 @@ process_maq <- function(rawdata) {
             use_media_for_enjoying,
             enjoying
         )
-
+    
     
     ######
     ## Metadata
@@ -225,11 +223,6 @@ process_maq <- function(rawdata) {
     childrendetails = recombine(list("Children", "ChildrenDetails"), rawdata, joinfnc = full_join) %>%
         mutate(
             birthmonth = match(str_sub(Children.ol.birthmonth, 1, 3), month.abb),
-            birthmonth = ifelse(
-                is.na(birthmonth),
-                as.numeric(Children.ol.birthmonth),
-                birthmonth
-            ),
             birthyear = ifelse(
                 is.na(Children.ol.birthyear),
                 2018 - as.numeric(ChildrenDetails.person.ageatevent),
@@ -241,7 +234,9 @@ process_maq <- function(rawdata) {
         select(birthmonth, birthyear, child_id, age) %>%
         left_join(metadata) %>%
         mutate(
-            birthdate = ymd(paste(birthyear, birthmonth, "01", sep = "-")),
+            fulldate = paste(birthyear, birthmonth, "01", sep = "-"),
+            fulldate = ifelse("NA"%in% fulldate, NA, fulldate),
+            birthdate = ymd(fulldate),
             age_months = time_length(date(date_maq) - ymd(birthdate), unit =
                                          "month"),
             age_months = ifelse(is.na(age_months), as.numeric(age) * 12, age_months)
@@ -257,6 +252,7 @@ process_maq <- function(rawdata) {
         '2 lbs - 3 lbs, 5 oz' = "1250",
         "1000-1500 grams/2lbs 3oz-3lbs 5oz" = '1250',
         "3 lbs, 6 oz - 4 lbs, 7 oz" = '1750',
+        '1501-2000 grams/3lbs 5oz-4lbs 6oz' = '1750',
         "4 lbs, 8 oz - 5 lbs, 8 oz" = '2250',
         "2001-2500 grams/4lbs 6oz-5lbs 8oz" = '2250',
         "5 lbs, 9 oz - 6 lbs, 9 oz" = '2750',
@@ -270,6 +266,7 @@ process_maq <- function(rawdata) {
         '2 lbs - 3 lbs, 5 oz' = "2.76",
         "1000-1500 grams/2lbs 3oz-3lbs 5oz" = '2.76',
         "3 lbs, 6 oz - 4 lbs, 7 oz" = '3.86',
+        '1501-2000 grams/3lbs 5oz-4lbs 6oz' = '3.86',
         "4 lbs, 8 oz - 5 lbs, 8 oz" = '4.96',
         "2001-2500 grams/4lbs 6oz-5lbs 8oz" = '4.96',
         "5 lbs, 9 oz - 6 lbs, 9 oz" = '6.06',
@@ -287,13 +284,15 @@ process_maq <- function(rawdata) {
                 ChildrenDetailsHealth.ol.gestationalage
             ))
         ) %>%
-        mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
-        mutate(birthweight_g = as.numeric(recode(
-            birthweight,!!!birthweight_gram_key
-        )),
-        birthweight_lbs = as.numeric(recode(
-            birthweight,!!!birthweight_pound_key
-        ))) %>%
+        mutate(
+            premature = ifelse(premature == "yes", TRUE, FALSE),
+            birthweight_g_recoded = recode(birthweight,!!!birthweight_gram_key),
+            birthweight_lbs_recoded = recode(birthweight,!!!birthweight_pound_key)
+        ) %>%
+        mutate(
+            birthweight_g = as.numeric(birthweight_g_recoded),
+            birthweight_lbs = as.numeric(birthweight_lbs_recoded)
+        ) %>%
         select(
             child_id,
             birthweight,
@@ -302,7 +301,7 @@ process_maq <- function(rawdata) {
             premature,
             gestationalage
         )
-
+    
     ######
     ## Respondent details
     ######
@@ -348,18 +347,17 @@ process_maq <- function(rawdata) {
         "$90,000 - $99,999",
         "$100,000 - $149,999",
         "More than $150,000",
-        "Don't Know/Prefer not to answer",
-        "Prefer not to answer"
+        "Don't Know/Prefer not to answer"
     )
     
     incomes = recombine(list("Respondents", "Incomes"), rawdata) %>%
         left_join(children, by = 'respondent_id') %>%
-        group_by(child_id) %>%
         mutate(
-            income = as_factor(Incomes.ol.type),
+            income = as.factor(Incomes.ol.type),
             income = fct_relevel(income, levels = incomelevels)
         ) %>%
         arrange(income) %>%
+        group_by(child_id) %>%
         summarise(parental_highest_income = last(income))
     
     ######
@@ -370,12 +368,12 @@ process_maq <- function(rawdata) {
     
     public_assistance = recombine(list("Respondents", "PublicAssistance"), rawdata) %>%
         left_join(children, by = 'respondent_id') %>%
-        group_by(child_id) %>%
         mutate(
             assistance = as_factor(PublicAssistance.ol.type),
             assistance = fct_relevel(assistance, levels = assistancelevels)
         ) %>%
         arrange(assistance) %>%
+        group_by(child_id) %>%
         summarise(parental_least_public_assistance = first(assistance)) %>%
         select(child_id, parental_least_public_assistance)
     
@@ -444,6 +442,440 @@ process_maq <- function(rawdata) {
                   mean_quality = mean(correct, na.rm = TRUE))
     
     ######
+    ## PARENTS OWN MEDIA USE variables
+    ######
+    
+    parentsmediause <-
+        recombine(list("Respondents", "Device_Use"), rawdata) %>%
+        left_join(children, by = 'respondent_id') %>%
+        group_by(child_id) %>%
+        summarize(
+            parent_num_devices_tv_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "television_adultuse")], collapse = ", "),
+            parent_num_devices_dvr_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "dvr_adultuse")], collapse = ", "),
+            parent_num_devices_dvd_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "dvd_adultuse")], collapse = ", "),
+            parent_num_devices_computer_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "personalcomputer_adultuse")], collapse = ", "),
+            parent_num_devices_mobilephone_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "mobilephone_adultuse")], collapse = ", "),
+            parent_num_devices_smartphone_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "smartphone_adultuse")], collapse = ", "),
+            parent_num_devices_ipad_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "ipad_adultuse")], collapse = ", "),
+            parent_num_devices_mp3_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "mp3_adultuse")], collapse = ", "),
+            parent_num_devices_educationalgame_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "educationalgame_adultuse")], collapse = ", "),
+            parent_num_devices_consolegame_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "consolegame_adultuse")], collapse = ", "),
+            parent_num_devices_virtualassistant_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "virtualassistant_adultuse")], collapse = ", "),
+            parent_num_devices_videostreaming_2wks = paste0(Device_Use.ol.number[str_detect(Device_Use.ol.id, "videostreaming_adultuse")], collapse = ", "),
+            parent_num_devices_2wks_all = sum(
+                str_detect(
+                    Device_Use.ol.id,
+                    "television_adultuse|dvr_adultuse|dvd_adultuse|personalcomputer_adultuse|mobilephone_adultuse|smartphone_adultuse|ipad_adultuse|mp3_adultuse|educationalgame_adultuse|consolegame_adultuse|virtualassistant_adultuse|videostreaming_adultuse"
+                )
+            ),
+            parent_weekday_tv_dvd_avoid = sum(
+                str_detect(Device_Use.ol.description, "TV or DVDs") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(
+                        Device_Use.ol.id,
+                        "weekdays_adultuse|yesterday_adultuse"
+                    ) &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Less than 30 minutes|Not used"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_tv_dvd_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "TV or DVDs") &
+                                                                          str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                                                                          str_detect(Device_Use.ol.subject, "adult") &
+                                                                          str_detect(Device_Use.ol.id,
+                                                                                     "weekdays_adultuse|yesterday_adultuse")], collapse = ","),
+            parent_weekday_computer_avoid = sum(
+                str_detect(Device_Use.ol.description, "computer") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(
+                        Device_Use.ol.id,
+                        "weekdays_adultuse|yesterday_adultuse"
+                    ) &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Less than 30 minutes|Not used"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_computer_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "computer") &
+                                                                            str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                                                                            str_detect(Device_Use.ol.subject, "adult") &
+                                                                            str_detect(Device_Use.ol.id,
+                                                                                       "weekdays_adultuse|yesterday_adultuse")], collapse = ","),
+            parent_weekday_read_books_tries = sum(
+                str_detect(
+                    Device_Use.ol.description,
+                    "reads books|reads traditional books"
+                ) &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(
+                        Device_Use.ol.id,
+                        "weekdays_adultuse|yesterday_adultuse"
+                    ) &
+                    !str_detect(Device_Use.ol.duration,
+                                "Never|Not used"),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_read_books_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description,
+                                                                                     "reads traditional books|reads books") &
+                                                                              str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                                                                              str_detect(Device_Use.ol.subject, "adult") &
+                                                                              str_detect(Device_Use.ol.id,
+                                                                                         "weekdays_adultuse|yesterday_adultuse")], collapse = ","),
+            parent_weekday_ebooks_avoid = sum(
+                str_detect(Device_Use.ol.description, "reads electronic books") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekdays_adultuse") &
+                    str_detect(Device_Use.ol.duration,
+                               "Never|Not used"),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_ebooks_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "reads electronic books") &
+                                                                          str_detect(Device_Use.ol.relevantperiod, "weekday") &
+                                                                          str_detect(Device_Use.ol.subject, "adult") &
+                                                                          str_detect(Device_Use.ol.id, "weekdays_adultuse")], collapse =
+                                                   ","),
+            
+            parent_weekday_consolegame_avoid = sum(
+                str_detect(Device_Use.ol.description, "console game player") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(
+                        Device_Use.ol.id,
+                        "weekdays_adultuse|yesterday_adultuse"
+                    ) &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Not used|Less than 30 minutes"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_consolegame_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "console game player") &
+                                                                               str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                                                                               str_detect(Device_Use.ol.subject, "adult") &
+                                                                               str_detect(Device_Use.ol.id,
+                                                                                          "weekdays_adultuse|yesterday_adultuse")], collapse = ","),
+            parent_weekday_ipad_avoid = sum(
+                str_detect(Device_Use.ol.description, "iPad") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(
+                        Device_Use.ol.id,
+                        "weekdays_adultuse|yesterday_adultuse"
+                    ) &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Not used|Less than 30 minutes"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_ipad_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "iPad") &
+                                                                        str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                                                                        str_detect(Device_Use.ol.subject, "adult") &
+                                                                        str_detect(Device_Use.ol.id,
+                                                                                   "weekdays_adultuse|yesterday_adultuse")], collapse = ","),
+            parent_weekday_smartphone_avoid = sum(
+                str_detect(Device_Use.ol.description, "smartphone") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(
+                        Device_Use.ol.id,
+                        "weekdays_adultuse|yesterday_adultuse"
+                    ) &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Not used|Less than 30 minutes"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekday_smartphone_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "smartphone") &
+                                                                              str_detect(Device_Use.ol.relevantperiod, "weekday|yesterday") &
+                                                                              str_detect(Device_Use.ol.subject, "adult") &
+                                                                              str_detect(Device_Use.ol.id,
+                                                                                         "weekdays_adultuse|yesterday_adultuse")], collapse = ","),
+            parent_weekend_tv_dvd_avoid = sum(
+                str_detect(Device_Use.ol.description, "TV or DVDs") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Less than 30 minutes|Not used"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_tv_dvd_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "TV or DVDs") &
+                                                                          str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                          str_detect(Device_Use.ol.subject, "adult") &
+                                                                          str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                   ","),
+            parent_weekend_computer_avoid = sum(
+                str_detect(Device_Use.ol.description, "computer") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Less than 30 minutes|Not used"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_computer_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "computer") &
+                                                                            str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                            str_detect(Device_Use.ol.subject, "adult") &
+                                                                            str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                     ","),
+            parent_weekend_read_books_tries = sum(
+                str_detect(Device_Use.ol.description, "reads traditional books") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    !str_detect(Device_Use.ol.duration,
+                                "Never|Not used"),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_read_books_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "reads traditional books") &
+                                                                              str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                              str_detect(Device_Use.ol.subject, "adult") &
+                                                                              str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                       ","),
+            parent_weekend_ebooks_avoid = sum(
+                str_detect(Device_Use.ol.description, "reads electronic books") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    str_detect(Device_Use.ol.duration,
+                               "Never|Not used"),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_ebooks_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "reads electronic books") &
+                                                                          str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                          str_detect(Device_Use.ol.subject, "adult") &
+                                                                          str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                   ","),
+            
+            parent_weekend_consolegame_avoid = sum(
+                str_detect(Device_Use.ol.description, "console game player") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Not used|Less than 30 minutes"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_consolegame_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "console game player") &
+                                                                               str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                               str_detect(Device_Use.ol.subject, "adult") &
+                                                                               str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                        ","),
+            parent_weekend_ipad_avoid = sum(
+                str_detect(Device_Use.ol.description, "iPad") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Not used|Less than 30 minutes"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_ipad_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "iPad") &
+                                                                        str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                        str_detect(Device_Use.ol.subject, "adult") &
+                                                                        str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                 ","),
+            parent_weekend_smartphone_avoid = sum(
+                str_detect(Device_Use.ol.description, "smartphone") &
+                    str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                    str_detect(Device_Use.ol.subject, "adult") &
+                    str_detect(Device_Use.ol.id, "weekend_adultuse") &
+                    str_detect(
+                        Device_Use.ol.duration,
+                        "Never|Not used|Less than 30 minutes"
+                    ),
+                na.rm =
+                    TRUE
+            ) > 0,
+            parent_weekend_smartphone_use = paste0(Device_Use.ol.duration[str_detect(Device_Use.ol.description, "smartphone") &
+                                                                              str_detect(Device_Use.ol.relevantperiod, "weekend") &
+                                                                              str_detect(Device_Use.ol.subject, "adult") &
+                                                                              str_detect(Device_Use.ol.id, "weekend_adultuse")], collapse =
+                                                       ","),
+            smartphonechecks = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.description, "times respondent checks")], collapse =
+                                          ","),
+            parent_smartphone_use_with_child_during_meals = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.description, "during meals") &
+                                                                                            str_detect(Device_Use.ol.subject, "adult")], collapse = ","),
+            parent_smartphone_use_with_child_ready_for_school = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.description, "child ready for school") &
+                                                                                                str_detect(Device_Use.ol.subject, "adult")], collapse = ","),
+            parent_smartphone_use_with_child_during_playtime = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.description, "during playtime") &
+                                                                                               str_detect(Device_Use.ol.subject, "adult")], collapse = ","),
+            parent_smartphone_use_with_child_during_bedtime = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.description, "during bedtime routine") &
+                                                                                              str_detect(Device_Use.ol.subject, "adult")], collapse = ","),
+            parent_smartphone_use_with_child_while_driving = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.description, "while driving|when riding") &
+                                                                                             str_detect(Device_Use.ol.subject, "adult")], collapse = ","),
+            parent_smartphone_use_with_child_at_playground = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.description, "at the playground") &
+                                                                                             str_detect(Device_Use.ol.subject, "adult")], collapse = ","),
+            parent_total_num_apps_using_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse") &
+                    str_detect(
+                        Device_Use.ol.description,
+                        "what app usually using while with child"
+                    )
+            ),
+            parent_work_email_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_workemail"),
+                na.rm = TRUE
+            ) > 0,
+            parent_personal_email_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_personalemail"),
+                na.rm = TRUE
+            ) > 0,
+            parent_social_media_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_socialmedia"),
+                na.rm = TRUE
+            ) > 0,
+            parent_reading_news_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_readingnews"),
+                na.rm = TRUE
+            ) > 0,
+            parent_looking_something_up_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_lookingsomethingup"),
+                na.rm = TRUE
+            ) > 0,
+            parent_watching_video_alone_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_watchingvideojustme"),
+                na.rm = TRUE
+            ) > 0,
+            parent_watching_video_together_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_watchingvideotogether"),
+                na.rm = TRUE
+            ) > 0,
+            parent_other_apps_with_child = sum(
+                str_detect(Device_Use.ol.id, "apps_adultuse_other"),
+                na.rm = TRUE
+            ) > 0
+            
+        ) %>%
+        select(
+            child_id,
+            parent_num_devices_tv_2wks,
+            parent_num_devices_dvr_2wks,
+            parent_num_devices_dvd_2wks,
+            parent_num_devices_computer_2wks,
+            parent_num_devices_mobilephone_2wks,
+            parent_num_devices_smartphone_2wks,
+            parent_num_devices_ipad_2wks,
+            parent_num_devices_mp3_2wks,
+            parent_num_devices_educationalgame_2wks,
+            parent_num_devices_virtualassistant_2wks,
+            parent_num_devices_videostreaming_2wks,
+            parent_num_devices_2wks_all,
+            parent_weekday_tv_dvd_avoid,
+            parent_weekday_tv_dvd_use,
+            parent_weekday_computer_avoid,
+            parent_weekday_computer_use,
+            parent_weekday_read_books_tries,
+            parent_weekday_read_books_use,
+            parent_weekday_ebooks_avoid,
+            parent_weekday_ebooks_use,
+            parent_weekday_consolegame_avoid,
+            parent_weekday_consolegame_use,
+            parent_weekday_ipad_avoid,
+            parent_weekday_ipad_use,
+            parent_weekday_smartphone_avoid,
+            parent_weekday_smartphone_use,
+            parent_weekend_tv_dvd_avoid,
+            parent_weekend_tv_dvd_use,
+            parent_weekend_computer_avoid,
+            parent_weekend_computer_use,
+            parent_weekend_read_books_tries,
+            parent_weekend_read_books_use,
+            parent_weekend_ebooks_avoid,
+            parent_weekend_ebooks_use,
+            parent_weekend_consolegame_avoid,
+            parent_weekend_consolegame_use,
+            parent_weekend_ipad_avoid,
+            parent_weekend_ipad_use,
+            parent_weekend_smartphone_avoid,
+            parent_weekend_smartphone_use,
+            smartphonechecks,
+            parent_smartphone_use_with_child_during_meals,
+            parent_smartphone_use_with_child_ready_for_school,
+            parent_smartphone_use_with_child_during_playtime,
+            parent_smartphone_use_with_child_during_bedtime,
+            parent_smartphone_use_with_child_while_driving,
+            parent_smartphone_use_with_child_at_playground,
+            parent_total_num_apps_using_with_child,
+            parent_work_email_with_child,
+            parent_personal_email_with_child,
+            parent_social_media_with_child,
+            parent_reading_news_with_child,
+            parent_looking_something_up_with_child,
+            parent_watching_video_alone_with_child,
+            parent_watching_video_together_with_child,
+            parent_other_apps_with_child
+        )
+    parentmediaexposure = recombine(list("Respondents", "MediaExposure"), rawdata) %>%
+        left_join(children, by = 'respondent_id') %>%
+        group_by(child_id) %>%
+        summarize(
+            parent_non_english_media_exposure = sum(
+                str_detect(MediaExposure.ol.id, "nonenglish_mediaexposure_adult") &
+                    str_detect(MediaExposure.ol.status, "Yes"),
+                na.rm = TRUE
+            ) > 0,
+            parent_non_english_media_duration = paste0(MediaExposure.ol.duration[str_detect(MediaExposure.ol.id, "nonenglish_mediaexposure_adult") &
+                                                                                     str_detect(MediaExposure.ol.status, "Yes")], collapse = ",")
+        ) %>%
+        select(parent_non_english_media_exposure,
+               parent_non_english_media_duration)
+    
+    parentmediaattitudes = recombine(list("Respondents", "MediaAttitudes"), rawdata) %>%
+        left_join(children, by = 'respondent_id') %>%
+        group_by(child_id) %>%
+        summarize(
+            need_to_stay_connected_to_work = paste0(MediaAttitudes.ol.workrequirement, collapse = ", "),
+            need_to_stay_connected_to_friends_socialmedia = paste0(MediaAttitudes.ol.socialsupports, collapse = ", "),
+            multitask_easy_between_using_mobile_children = paste0(MediaAttitudes.ol.multitaskingtendency, collapse = ", "),
+            feeling_overwhelmed_by_mobile_device = paste0(MediaAttitudes.ol.overwhelmed, collapse = ", "),
+            prefer_online_interaction_to_inperson = paste0(MediaAttitudes.ol.preferredmethod, collapse = ", "),
+            escape_from_reality_while_with_children = paste0(MediaAttitudes.ol.escapefromreality, collapse = ", "),
+            feel_addicted_mobile_media = paste0(MediaAttitudes.ol.feelsaddicted, collapse = ", ")
+        ) %>%
+        select(
+            child_id,
+            need_to_stay_connected_to_work,
+            need_to_stay_connected_to_friends_socialmedia,
+            multitask_easy_between_using_mobile_children,
+            feeling_overwhelmed_by_mobile_device,
+            prefer_online_interaction_to_inperson,
+            escape_from_reality_while_with_children,
+            feel_addicted_mobile_media
+        )
+    
+    
+    ######
     ## PARENTS MEDIATION variables
     ######
     
@@ -497,10 +929,10 @@ process_maq <- function(rawdata) {
     maq <- children_demographics %>%
         left_join(devices_mediauseattitudes, by = "child_id") %>%
         left_join(videochat, by = "child_id") %>%
-        left_join(mediadeviceuse, by = "child_id") %>% 
+        left_join(mediadeviceuse, by = "child_id") %>%
         left_join(childrendetails, by = "child_id") %>%
-        left_join(respondentdetails, by = "child_id") %>% 
-        left_join(incomes, by = "child_id") %>% 
+        left_join(respondentdetails, by = "child_id") %>%
+        left_join(incomes, by = "child_id") %>%
         left_join(public_assistance, by = "child_id") %>%
         left_join(metadata, by = "child_id") %>%
         left_join(employment, by = "child_id") %>%

@@ -2,8 +2,8 @@ summarise_data <- function(activitydata) {
     
     if (dim(activitydata)[1]==0) {
     return (tibble())
-  }
-
+    }
+    
     summarydata <- activitydata %>% 
     group_by(study, child_id, day_id) %>%
     summarise(
@@ -11,13 +11,21 @@ summarise_data <- function(activitydata) {
       total_time = sum(duration)/60,
       time_deviance_from_24 = abs(total_time - 24),
       total_blocks = n(),
+      background_media_full_hours = sum(background_media_full_hours, na.rm=TRUE),
+      background_tv_full_hours = sum(background_media_tv_full_hours, na.rm=TRUE),
+      background_audio_full_hours = sum(background_media_audio_full_hours, na.rm=TRUE),
+      background_other_full_hours = sum(background_media_other_full_hours, na.rm=TRUE),
+
+      background_media_weighted_hours = sum(background_media_mean_weighted_hours, na.rm=TRUE),
+      background_tv_weighted_hours = sum(background_media_tv_mean_weighted_hours, na.rm=TRUE),
+      background_audio_weighted_hours = sum(background_media_audio_mean_weighted_hours, na.rm=TRUE),
+      background_other_weighted_hours = sum(background_media_other_mean_weighted_hours, na.rm=TRUE),
       
-      background_media_on_hours = sum( duration[background_media_tv | background_media_audio | background_media_other] * background_media_mean_percentage, na.rm=TRUE)/60,
-      background_media_blocks = sum(background_media_tv | background_media_audio | background_media_other, na.rm=TRUE),
-      
-      background_tv_hours = sum(duration[background_media_tv], na.rm = TRUE)/60,
+      background_media_blocks = sum(background_media, na.rm=TRUE),
       background_tv_blocks = sum(background_media_tv, na.rm=TRUE),
-      
+      background_audio_blocks = sum(background_media_audio, na.rm=TRUE),
+      background_other_blocks = sum(background_media_other, na.rm=TRUE),
+
       total_tv_hours = sum(duration[background_media_tv | primary_tv], na.rm=TRUE)/60,
       total_tv_blocks = sum(background_media_tv | primary_tv, na.rm=TRUE),
       
@@ -93,7 +101,8 @@ summarise_data <- function(activitydata) {
           (age_child_primary_media + age_older_primary_media+ age_younger_primary_media + age_adults_primary_media))==1,
       sf_tud_Q10_videochat = videochat_hours > 0,
       monthyear = paste0(year(first(starttime)),"-",str_pad(month(first(starttime)),2,"left",0))
-    )
+    ) %>%
+        select(-c(day_id, table_access))
         
   return(summarydata)
 }

@@ -4,16 +4,29 @@ process_activities <- function(rawdata) {
         return (tibble())
     }
     
+    activity <- process_activity(rawdata)
+
     relatives <- process_relatives(rawdata)
     device_by_activity <- process_devices(rawdata)
-    media_exposure_by_activity <- process_media_exposure(rawdata)
+    media_exposure_by_activity <- process_media_exposure(rawdata, activity)
     adults_by_activity <- process_adult_use(rawdata)
     locations_by_activity <- process_locations(rawdata)
     sites_by_activity <- process_sites(rawdata)
     metadata_by_activity <- process_metadata(rawdata)
     recruitment_by_activity <- process_recruitment(rawdata)
     
-    activity <- process_activity(rawdata)
+    
+    new = activity %>% 
+        left_join(media_exposure_by_activity) %>%
+        mutate(
+            background_media_weighted_duration = duration*background_media_mean_percentage,
+            background_media_tv_weighted_duration = duration*background_media_tv_mean_percentage,
+            background_media_audio_weighted_duration = duration*background_media_audio_mean_percentage,
+            background_media_other_weighted_duration = duration*background_media_other_mean_percentage
+        ) %>%
+        select(
+            duration, background_media_tv_weighted_duration, background_media_tv_mean_percentage, background_media_tv
+        )
     
     activity <- activity %>%
         left_join(relatives, by = "primary_activity_id") %>%
@@ -26,7 +39,6 @@ process_activities <- function(rawdata) {
         left_join(recruitment_by_activity, by = "primary_activity_id") %>%
         select(-c(child_id)) %>% rename(study = site, child_id = nc.SubjectIdentification)
 
-    
     # factor vars to factor
     ndist <- activity %>%
         summarise_all(funs(n_distinct(.)))
@@ -125,7 +137,7 @@ process_devices <- function(rawdata) {
 
 # summarise media exposures by activity
 
-process_media_exposure <- function(rawdata) {
+process_media_exposure <- function(rawdata, activity) {
     if (dim(rawdata$tud$edges$media_exposure_primary_activity)[1] == 0) {
         return (tibble(primary_activity_id = as.character()))
     }
@@ -142,26 +154,42 @@ process_media_exposure <- function(rawdata) {
         # summarise
         rename(primary_activity_id = dst) %>%
         mutate(percentage_background = as.numeric(ol.duration)) %>%
+        left_join(activity, by = "primary_activity_id") %>%
+        arrange(primary_activity_id) %>%
+        mutate(
+            weighted_background = ifelse(is.na(percentage_background), NA, percentage_background*duration/100)/60,
+            duration = duration/60
+        ) %>%
         group_by(primary_activity_id) %>%
         summarise(
             background_media = sum(str_detect(ol.priority, "secondary")) > 0,
-            background_media_tv = str_detect(ol.type, "television") &&
-                str_detect(ol.priority, "secondary"),
-            background_media_audio = str_detect(ol.type, "audio") &&
-                str_detect(ol.priority, "secondary"),
-            background_media_other = str_detect(ol.type, "other") &&
-                str_detect(ol.priority, "secondary"),
+            background_media_tv = sum(str_detect(ol.type, "television") &&
+                str_detect(ol.priority, "secondary")) > 0 ,
+            background_media_audio = sum(str_detect(ol.type, "audio")>0 &&
+                str_detect(ol.priority, "secondary"))>0,
+            background_media_other = sum(str_detect(ol.type, "other") &&
+                str_detect(ol.priority, "secondary"))>0,
             
-            background_media_mean_percentage = mean(percentage_background[background_media]),
-            background_media_tv_mean_percentage = mean(percentage_background[background_media_tv]),
-            background_media_audio_mean_percentage = mean(percentage_background[background_media_audio]),
-            background_media_other_mean_percentage = mean(percentage_background[background_media_other]),
-
+            background_media_mean_percentage = mean(percentage_background[background_media], na.rm=TRUE),
+            background_media_tv_mean_percentage = mean(percentage_background[background_media_tv], na.rm=TRUE),
+            background_media_audio_mean_percentage = mean(percentage_background[background_media_audio], na.rm=TRUE),
+            background_media_other_mean_percentage = mean(percentage_background[background_media_other], na.rm=TRUE),
+            
             background_media_sum_percentage = sum(percentage_background[background_media]),
             background_media_tv_sum_percentage = sum(percentage_background[background_media_tv]),
             background_media_audio_sum_percentage = sum(percentage_background[background_media_audio]),
             background_media_other_sum_percentage = sum(percentage_background[background_media_other]),
 
+            background_media_mean_weighted_hours = mean(weighted_background[background_media], na.rm=TRUE),
+            background_media_tv_mean_weighted_hours = mean(weighted_background[background_media_tv], na.rm=TRUE),
+            background_media_audio_mean_weighted_hours = mean(weighted_background[background_media_audio], na.rm=TRUE),
+            background_media_other_mean_weighted_hours = mean(weighted_background[background_media_other], na.rm=TRUE),
+            
+            background_media_full_hours = sum(duration[background_media]),
+            background_media_tv_full_hours = sum(duration[background_media_tv]),
+            background_media_audio_full_hours = sum(duration[background_media_audio]),
+            background_media_other_full_hours = sum(duration[background_media_other]),
+            
             primary_media_age = paste(ol.category[ol.priority == "primary" &
                                                       !is.na(ol.category)], collapse = " and "),
             primary_media_age_child = str_detect(ol.category, "Child's age") &&
