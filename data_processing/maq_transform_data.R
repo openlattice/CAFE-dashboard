@@ -223,11 +223,6 @@ process_maq <- function(rawdata) {
     childrendetails = recombine(list("Children", "ChildrenDetails"), rawdata, joinfnc = full_join) %>%
         mutate(
             birthmonth = match(str_sub(Children.ol.birthmonth, 1, 3), month.abb),
-            birthmonth = ifelse(
-                is.na(birthmonth),
-                as.numeric(Children.ol.birthmonth),
-                birthmonth
-            ),
             birthyear = ifelse(
                 is.na(Children.ol.birthyear),
                 2018 - as.numeric(ChildrenDetails.person.ageatevent),
@@ -239,7 +234,9 @@ process_maq <- function(rawdata) {
         select(birthmonth, birthyear, child_id, age) %>%
         left_join(metadata) %>%
         mutate(
-            birthdate = ymd(paste(birthyear, birthmonth, "01", sep = "-")),
+            fulldate = paste(birthyear, birthmonth, "01", sep = "-"),
+            fulldate = ifelse("NA"%in% fulldate, NA, fulldate),
+            birthdate = ymd(fulldate),
             age_months = time_length(date(date_maq) - ymd(birthdate), unit =
                                          "month"),
             age_months = ifelse(is.na(age_months), as.numeric(age) * 12, age_months)
@@ -255,6 +252,7 @@ process_maq <- function(rawdata) {
         '2 lbs - 3 lbs, 5 oz' = "1250",
         "1000-1500 grams/2lbs 3oz-3lbs 5oz" = '1250',
         "3 lbs, 6 oz - 4 lbs, 7 oz" = '1750',
+        '1501-2000 grams/3lbs 5oz-4lbs 6oz' = '1750',
         "4 lbs, 8 oz - 5 lbs, 8 oz" = '2250',
         "2001-2500 grams/4lbs 6oz-5lbs 8oz" = '2250',
         "5 lbs, 9 oz - 6 lbs, 9 oz" = '2750',
@@ -268,6 +266,7 @@ process_maq <- function(rawdata) {
         '2 lbs - 3 lbs, 5 oz' = "2.76",
         "1000-1500 grams/2lbs 3oz-3lbs 5oz" = '2.76',
         "3 lbs, 6 oz - 4 lbs, 7 oz" = '3.86',
+        '1501-2000 grams/3lbs 5oz-4lbs 6oz' = '3.86',
         "4 lbs, 8 oz - 5 lbs, 8 oz" = '4.96',
         "2001-2500 grams/4lbs 6oz-5lbs 8oz" = '4.96',
         "5 lbs, 9 oz - 6 lbs, 9 oz" = '6.06',
@@ -285,13 +284,15 @@ process_maq <- function(rawdata) {
                 ChildrenDetailsHealth.ol.gestationalage
             ))
         ) %>%
-        mutate(premature = ifelse(premature == "yes", TRUE, FALSE)) %>%
-        mutate(birthweight_g = as.numeric(recode(
-            birthweight,!!!birthweight_gram_key
-        )),
-        birthweight_lbs = as.numeric(recode(
-            birthweight,!!!birthweight_pound_key
-        ))) %>%
+        mutate(
+            premature = ifelse(premature == "yes", TRUE, FALSE),
+            birthweight_g_recoded = recode(birthweight,!!!birthweight_gram_key),
+            birthweight_lbs_recoded = recode(birthweight,!!!birthweight_pound_key)
+        ) %>%
+        mutate(
+            birthweight_g = as.numeric(birthweight_g_recoded),
+            birthweight_lbs = as.numeric(birthweight_lbs_recoded)
+        ) %>%
         select(
             child_id,
             birthweight,
@@ -346,18 +347,17 @@ process_maq <- function(rawdata) {
         "$90,000 - $99,999",
         "$100,000 - $149,999",
         "More than $150,000",
-        "Don't Know/Prefer not to answer",
-        "Prefer not to answer"
+        "Don't Know/Prefer not to answer"
     )
     
     incomes = recombine(list("Respondents", "Incomes"), rawdata) %>%
         left_join(children, by = 'respondent_id') %>%
-        group_by(child_id) %>%
         mutate(
-            income = as_factor(Incomes.ol.type),
+            income = as.factor(Incomes.ol.type),
             income = fct_relevel(income, levels = incomelevels)
         ) %>%
         arrange(income) %>%
+        group_by(child_id) %>%
         summarise(parental_highest_income = last(income))
     
     ######
@@ -368,12 +368,12 @@ process_maq <- function(rawdata) {
     
     public_assistance = recombine(list("Respondents", "PublicAssistance"), rawdata) %>%
         left_join(children, by = 'respondent_id') %>%
-        group_by(child_id) %>%
         mutate(
             assistance = as_factor(PublicAssistance.ol.type),
             assistance = fct_relevel(assistance, levels = assistancelevels)
         ) %>%
         arrange(assistance) %>%
+        group_by(child_id) %>%
         summarise(parental_least_public_assistance = first(assistance)) %>%
         select(child_id, parental_least_public_assistance)
     
@@ -820,12 +820,12 @@ process_maq <- function(rawdata) {
             parent_weekend_smartphone_avoid,
             parent_weekend_smartphone_use,
             smartphonechecks,
-            parent_media_use_with_child_during_meals,
-            parent_media_use_with_child_ready_for_school,
-            parent_media_use_with_child_during_playtime,
-            parent_media_use_with_child_during_bedtime,
-            parent_media_use_with_child_while_driving,
-            parent_media_use_with_child_at_playground,
+            parent_smartphone_use_with_child_during_meals,
+            parent_smartphone_use_with_child_ready_for_school,
+            parent_smartphone_use_with_child_during_playtime,
+            parent_smartphone_use_with_child_during_bedtime,
+            parent_smartphone_use_with_child_while_driving,
+            parent_smartphone_use_with_child_at_playground,
             parent_total_num_apps_using_with_child,
             parent_work_email_with_child,
             parent_personal_email_with_child,
