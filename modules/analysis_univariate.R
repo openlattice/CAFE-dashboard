@@ -90,7 +90,6 @@ univar_server <-
 # functions
 
 plot_histogram <- function(data, column) {
-    print(names(data))
     if (column %in% names(data)) {
         ggplot(data,
                aes_string(x = column)) +

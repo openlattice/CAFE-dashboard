@@ -1,11 +1,11 @@
 TUD_entities <- c(
-  "primary_activity", 
-  "survey_metadata", 
-  "people", 
-  "relatives", 
-  "devices", 
-  "adult_use", 
-  "media_exposure", 
+  "primary_activity",
+  "survey_metadata",
+  "people",
+  "relatives",
+  "devices",
+  "adult_use",
+  "media_exposure",
   "locations",
   "sites",
   "survey_respondents",
@@ -15,25 +15,25 @@ TUD_entities <- c(
   )
 
 MAQ_entities <- c(
-    
+
     # SUBJECTS
-    
+
     "Children",
     "Respondents",
     "ChildrenDetails",
     "RespondentDetails",
 
     # RESPONDENTS
-    
-    "RespondentDetails", 
-    "Employment", 
-    "Education", 
-    "Incomes", 
+
+    "RespondentDetails",
+    "Employment",
+    "Education",
+    "Incomes",
     "ImmigrationStatus",
-    
+
     # Device Use
     "Device_Use",
-    
+
     # quality
     "QualityControl",
     "PSI_Assessment",
@@ -47,7 +47,9 @@ MAQ_entities <- c(
     "VocabularyAssessment_WG_8_18",
     "VocabularyAssessment_WS_18_30",
     "VocabularyAssessment_WS_30_38",
-    
+    "MediaAttitudes",
+
+
     "SleepTimes",
     "AwakeTimes",
     "InterruptedSleep",
@@ -63,9 +65,9 @@ MAQ_entities <- c(
 )
 
 MAQ_associations <- list(
-    
+
     # SUBJECTS
-    
+
     list(
         src = "Respondents",
         dst = "Children",
@@ -172,9 +174,9 @@ MAQ_associations <- list(
         edge = "InvolvedIn"
     ),
 
-    
+
     # RESPONDENTS
-    
+
     list(
         src = "Respondents",
         dst = "RespondentDetails",
@@ -210,9 +212,24 @@ MAQ_associations <- list(
         dst = "QualityControl",
         edge = "Reported"
     ),
-    
+    list(
+        src = "Respondents",
+        dst = "Device_Use",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "MediaAttitudes",
+        edge = "Reported"
+    ),
+    list(
+        src = "Respondents",
+        dst = "MediaExposure",
+        edge = "Reported"
+    ),
+
     # DEVICES
-    
+
     list(
         src = "Children",
         dst = "Device_Use",
@@ -312,5 +329,5 @@ TUD_associations <- list(
     dst = 'primary_activity',
     edge = 'engagedin'
   )
-  
+
 )
