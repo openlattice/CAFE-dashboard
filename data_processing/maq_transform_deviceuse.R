@@ -207,7 +207,7 @@ deviceuse_transform <- function(rawdata) {
                 na.rm = TRUE
             ),
             sf_maq_Q2_avoid_screen_bedtime = hourbeforebedtimenever == hourbeforebedtime,
-            sf_maq_Q2_avoid_screen_bedtime = if_else(all_NA, NA, sf_maq_Q2_avoid_screen_bedtime),
+            sf_maq_Q2_avoid_screen_bedtime = ifelse(all_NA, NA, sf_maq_Q2_avoid_screen_bedtime),
             sf_maq_Q3_balancemedia_reading_weekday = sum(
                 str_detect(Device_Use.ol.description, "paper books|electronic books") &
                     str_detect(Device_Use.ol.description, "weekday") &
@@ -257,9 +257,8 @@ deviceuse_transform <- function(rawdata) {
             num_devices_recent2wks = sum(str_detect(Device_Use.ol.id, "recent_childuse") &
                 str_detect(Device_Use.ol.status, "used very recently"),
                 na.rm =
-                    TRUE
-            ),
-            num_devices_recent2wks = if_else(all_NA_recent2wks, NA, num_devices_recent2wks),
+                    TRUE),
+            num_devices_recent2wks = ifelse(all_NA_recent2wks == TRUE, NA, num_devices_recent2wks),
             devices_recent2wks = paste0(Device_Use.ol.name[str_detect(Device_Use.ol.status, "used very recently")], collapse = ", "),
             num_devices_start2wks = sum(
                 str_detect(Device_Use.ol.id, "start_childuse") &
