@@ -13,7 +13,7 @@ deviceuse_key = c(
 
 deviceuse_transform <- function(rawdata) {
     deviceuse = recombine(list("Children", "Device_Use"), rawdata) %>%
-        mutate(duration = recode(Device_Use.ol.duration,!!!deviceuse_key)) %>%
+        mutate(duration = recode(Device_Use.ol.duration, !!!deviceuse_key)) %>%
         group_by(child_id) %>% summarise(
             sf_maq_Q1_nomorethan1h_weekday_TV_DVD = sum(
                 str_detect(Device_Use.ol.description, "TV or DVDs") &
@@ -249,9 +249,17 @@ deviceuse_transform <- function(rawdata) {
                     str_detect(Device_Use.ol.status, "Not very likely|I never do this"),
                 na.rm = TRUE
             ) > 0,
-            num_devices_recent2wks = sum(str_detect(
-                Device_Use.ol.status, "used very recently"
-            )),
+            all_NA_recent2wks = sum(is.na(Device_Use.ol.name[str_detect(Device_Use.ol.status,
+                                                                        "used very recently")]))
+            ==
+                length(Device_Use.ol.name[str_detect(Device_Use.ol.status,
+                                                     "used very recently")]),
+            num_devices_recent2wks = sum(str_detect(Device_Use.ol.id, "recent_childuse") &
+                str_detect(Device_Use.ol.status, "used very recently"),
+                na.rm =
+                    TRUE
+            ),
+            num_devices_recent2wks = if_else(all_NA_recent2wks, NA, num_devices_recent2wks),
             devices_recent2wks = paste0(Device_Use.ol.name[str_detect(Device_Use.ol.status, "used very recently")], collapse = ", "),
             num_devices_start2wks = sum(
                 str_detect(Device_Use.ol.id, "start_childuse") &
@@ -303,6 +311,7 @@ deviceuse_transform <- function(rawdata) {
             sf_maq_Q5_minimize_background_play,
             sf_maq_Q6_avoid_media_during_mealtimes,
             sf_maq_Q7_avoid_media_during_play,
+            all_NA_recent2wks,
             num_devices_recent2wks,
             devices_recent2wks,
             num_devices_start2wks,
