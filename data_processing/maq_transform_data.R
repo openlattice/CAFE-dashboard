@@ -80,7 +80,7 @@ process_maq <- function(rawdata) {
     
     devices = recombine(list("Devices", "Children"), rawdata)
     mediauseattitudes = recombine(list("Respondents", "MediaUseAttitudes"), rawdata) %>%
-        left_join(children)
+        left_join(children, by = 'respondent_id')
     devices_mediauseattitudes = devices %>%
         left_join(mediauseattitudes, by = "child_id") %>%
         group_by(child_id) %>%
@@ -232,7 +232,7 @@ process_maq <- function(rawdata) {
         ) %>% arrange(child_id, birthyear) %>%
         group_by(child_id) %>% slice(1) %>% ungroup() %>%
         select(birthmonth, birthyear, child_id, age) %>%
-        left_join(metadata) %>%
+        left_join(metadata, by = 'child_id') %>%
         mutate(
             fulldate = paste(birthyear, birthmonth, "01", sep = "-"),
             fulldate = ifelse("NA"%in% fulldate, NA, fulldate),
@@ -922,7 +922,7 @@ process_maq <- function(rawdata) {
     
     
     
-    children_age_sex = childrendetails %>% left_join(children_demographics) %>% select(c(sex, age_months, child_id))
+    children_age_sex = childrendetails %>% left_join(children_demographics, by = 'child_id') %>% select(c(sex, age_months, child_id))
     childlanguage <-
         childlanguage_transform(rawdata, children_age_sex)
     
@@ -959,6 +959,7 @@ process_maq <- function(rawdata) {
         colndistinct %>% filter(nums <= 3) %>% filter(!(nms %in% numericcols))
     
     maq <- maq %>%
+        ungroup() %>%
         mutate_at(factcols$nms, as.factor) %>%
         mutate_at(boolcols$nms, as.logical) %>%
         mutate(study = study_id)

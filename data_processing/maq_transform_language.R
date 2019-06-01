@@ -12,6 +12,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
             understands_does_not_say = "Understands the word but does not yet say it",
             does_not_understand = "Does not understand the word",
         ) %>%
+        ungroup() %>%
         group_by(child_id) %>%
         mutate(
             n_words = sum(
@@ -40,6 +41,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         spread(VocabularyAssessment_WS_18_30.ol.name, WS_18_30_n) %>%
         rename(says = "Yes (says the word)",
                does_not_say = "No (does not say the word)") %>%
+        ungroup() %>%
         group_by(child_id) %>%
         mutate(n_words = sum(says, does_not_say, na.rm = TRUE)) %>%
         summarise(
@@ -55,15 +57,16 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
             WS_30_38_n = length(WS_30_38_split[!is.na(WS_30_38_split)]),
             WS_30_38_n = ifelse(is.na(VocabularyAssessment_WS_30_38.ol.vocabularyword), NA, WS_30_38_n)
         ) %>%
+        ungroup() %>%
         group_by(child_id) %>%
         summarise(WS_30_38_says = mean(WS_30_38_n, na.rm = TRUE))
     
     childlanguage <- WG_8_18 %>%
-        left_join(WS_30_38) %>%
-        left_join(WS_18_30)
+        left_join(WS_30_38, by = 'child_id') %>%
+        left_join(WS_18_30, by = 'child_id')
     
     childlanguage = childlanguage %>%
-        left_join(children_age_sex) %>%
+        left_join(children_age_sex, by = 'child_id') %>%
         rowwise() %>%
         mutate(
             # percentile_wg_8_18 = get_percentiles(WG_8_18_says, age_months, sex, norms$wg),
@@ -75,6 +78,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
                 rawdata$language_norms$norms_18_30
             )
         )  %>%
+        ungroup() %>%
         select(-c(sex, age_months))
     
     return(childlanguage)
@@ -83,13 +87,15 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
 
 get_percentiles <- function(score, age, sex, norms) {
     cols = names(norms)[str_detect(names(norms), "percentile")]
+    if (is.na(age) | is.na(sex)){return (NA)}
     ind = max(which(norms$age <= age, norms$sex == sex))
-    percentile = cols[which(norms[ind, cols] <= score)] %>%
+    percentiles = cols[which(norms[ind, cols] <= score)] %>%
         str_replace("_percentile", "") %>%
-        as.numeric() %>%
-        max
-    if (!is.finite(percentile)) {
-        return(0)
+        as.numeric()
+    if (length(percentiles) == 0) {
+        return (0)
+    } else {
+        return (max(percentiles))
     }
     return(percentile)
 }

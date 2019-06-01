@@ -197,11 +197,11 @@ pm_transform <- function(rawdata, children) {
         )
     
     pm = instructive_dat %>%
-        full_join(restrictive_dat) %>%
-        full_join(social_dat) %>%
-        full_join(pm_summaries) %>%
-        full_join(restrictions) %>%
-        full_join(restrictions_advice)
+        full_join(restrictive_dat, by = 'child_id') %>%
+        full_join(social_dat, by = 'child_id') %>%
+        full_join(pm_summaries, by = 'child_id') %>%
+        full_join(restrictions, by = 'child_id') %>%
+        full_join(restrictions_advice, by = 'child_id')
     
     
     return (pm)

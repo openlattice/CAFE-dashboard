@@ -17,7 +17,7 @@ process_activities <- function(rawdata) {
     
     
     new = activity %>% 
-        left_join(media_exposure_by_activity) %>%
+        left_join(media_exposure_by_activity, by ='primary_activity_id') %>%
         mutate(
             background_media_weighted_duration = duration*background_media_mean_percentage,
             background_media_tv_weighted_duration = duration*background_media_tv_mean_percentage,

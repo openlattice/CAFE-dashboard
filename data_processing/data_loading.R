@@ -113,6 +113,7 @@ data_add_processed <- function(rawdata) {
                table_access = table_access.x & table_access.y) %>%
         group_by(study, child_id, tud_present, maq_present, chr_present) %>%
         filter(row_number() <= 1) %>%
+        ungroup %>%
         select(-c(study.x, study.y, table_access.x, table_access.y))
     print(paste0(
         "    ---- Putting data together took: ",

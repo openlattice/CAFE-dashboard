@@ -120,9 +120,9 @@ psi_transform <- function(rawdata, children_respondents) {
         PSI_total = mean(psi_total, na.rm=TRUE)
     )
     psi = pd_dat %>% 
-        left_join(pcdi_dat) %>%
-        left_join(dc_dat) %>%
-        left_join(defensive_dat) %>%
-        left_join(psi_summaries)
+        left_join(pcdi_dat, by = 'child_id') %>%
+        left_join(dc_dat, by = 'child_id') %>%
+        left_join(defensive_dat, by = 'child_id') %>%
+        left_join(psi_summaries, by = 'child_id')
     return (psi)
 }
