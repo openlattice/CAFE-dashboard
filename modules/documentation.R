@@ -58,6 +58,33 @@ codebook <- function(id){
                          dataTableOutput(outputId = ns("codebook_childsleep"))
                      )
                  )),
+        tabPanel(title = "Codebook: language",
+                 fluidRow(
+                     box(
+                         width = 12,
+                         solidHeader = TRUE,
+                         title = "Codebook",
+                         dataTableOutput(outputId = ns("codebook_childlanguage"))
+                     )
+                 )),
+        tabPanel(title = "Codebook: parents media use",
+                 fluidRow(
+                     box(
+                         width = 12,
+                         solidHeader = TRUE,
+                         title = "Codebook",
+                         dataTableOutput(outputId = ns("codebook_parentsmediause"))
+                     )
+                 )),
+        tabPanel(title = "Codebook: parents media attitudes",
+                 fluidRow(
+                     box(
+                         width = 12,
+                         solidHeader = TRUE,
+                         title = "Codebook",
+                         dataTableOutput(outputId = ns("codebook_parentsmediaattitude"))
+                     )
+                 )),
         tabPanel(title = "Codebook: parents mediation",
                  fluidRow(
                      box(
@@ -74,6 +101,15 @@ codebook <- function(id){
                          solidHeader = TRUE,
                          title = "Codebook",
                          dataTableOutput(outputId = ns("codebook_tuactivity"))
+                     )
+                 )),
+        tabPanel(title = "Codebook: passive sensing summary (Time Use Diary)",
+                 fluidRow(
+                     box(
+                         width = 12,
+                         solidHeader = TRUE,
+                         title = "Codebook",
+                         dataTableOutput(outputId = ns("codebook_tusummary"))
                      )
                  )),
         tabPanel(title = "Codebook: other",
@@ -116,8 +152,14 @@ documentation_server <-
             codebook_qa = "Quality Control",
             codebook_deviceuse = "Device Use",
             codebook_childsleep = "Child Sleep",
+            codebook_childlanguage = "Child Language",
+            codebook_parentsmediause = "Parent's Media Use",
+            codebook_parentsmediaexposure = "Parent's Media Exposure",
+            codebook_parentsmediaattitude = "Parent's Media Attitudes",
+            # codebook_coview = "Media Content",
             codebook_parentmediation = "Parent Mediation",
-            codebook_tuactivity = "Time Use Diary activity"
+            codebook_tuactivity = "Time Use Diary activity",
+            codebook_tusummary = "Time Use Diary summary"
         )
         
         output$codebook_short_form <- renderDataTable({
@@ -140,8 +182,24 @@ documentation_server <-
             doc %>% filter(str_detect(Domain, keywords[['codebook_qa']]) & !Variable %in% sfvars) %>% select(Variable, Description)
         }, options = list(scrollX = TRUE))
         
+        output$codebook_parentsmediause <- renderDataTable({
+            doc %>% filter(str_detect(Domain, keywords[['codebook_parentsmediause']]) & !Variable %in% sfvars) %>% select(Variable, Description)
+        }, options = list(scrollX = TRUE))
+        
+        output$codebook_parentsmediaexposure <- renderDataTable({
+            doc %>% filter(str_detect(Domain, keywords[['codebook_parentsmediaexposure']]) & !Variable %in% sfvars) %>% select(Variable, Description)
+        }, options = list(scrollX = TRUE))
+
+        output$codebook_parentsmediaattitude <- renderDataTable({
+            doc %>% filter(str_detect(Domain, keywords[['codebook_parentsmediaattitude']]) & !Variable %in% sfvars) %>% select(Variable, Description)
+        }, options = list(scrollX = TRUE))
+
+        output$codebook_childlanguage <- renderDataTable({
+            doc %>% filter(str_detect(Domain, keywords[['codebook_childlanguage']]) & !Variable %in% sfvars) %>% select(Variable, Description)
+        }, options = list(scrollX = TRUE))
+        
         # output$codebook_coview <- renderDataTable({
-        #     doc %>% filter(str_detect(Domain, "Media Content") & !Variable %in% sfvars) %>% select(Variable, Description)
+        #     doc %>% filter(str_detect(Domain, keywords[['codebook_coview']]) & !Variable %in% sfvars) %>% select(Variable, Description)
         # }, options = list(scrollX = TRUE))
         
         output$codebook_deviceuse <- renderDataTable({
