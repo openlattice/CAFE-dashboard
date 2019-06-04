@@ -30,12 +30,18 @@ MAQ_entities <- c(
     "Education",
     "Incomes",
     "ImmigrationStatus",
+    "ChildCare_Weekdays",
+    "ChildCare_Weekends",
+    "Households",
+    "RelatedTo",
+    "Household_Communication",
 
     # Device Use
     "Device_Use",
 
     # quality
     "QualityControl",
+    "ChildLanguageAssessment",
     "PSI_Assessment",
     "SurveyMetadata",
     "ChildrenDetailsHealth",
@@ -44,12 +50,14 @@ MAQ_entities <- c(
     "Devices",
     "MediaUseAttitudes",
     "MediaDeviceUse",
+    "MobileDeviceUse",
     "VocabularyAssessment_WG_8_18",
     "VocabularyAssessment_WS_18_30",
     "VocabularyAssessment_WS_30_38",
     "MediaAttitudes",
-
-
+    "RegularlyLocatedDevices",
+    "DeviceLocations",
+    "MediaUseConcerns",
     "SleepTimes",
     "AwakeTimes",
     "InterruptedSleep",
@@ -61,7 +69,8 @@ MAQ_entities <- c(
     "NapDuringDay",
     "FallAsleep",
     "SleepConcerns",
-    "MediaExposure"
+    "MediaExposure",
+    "ParentingMoodAssessment"
 )
 
 MAQ_associations <- list(
@@ -74,9 +83,59 @@ MAQ_associations <- list(
         edge = "RelatedTo"
     ),
     list(
+        src = "Respondents",
+        dst = "ParentingMoodAssessment",
+        edge = "AssessedBy"
+    ),
+    list(
+        src = "Children",
+        dst = "MediaUseConcerns",
+        edge = "SubjectOf"
+    ),
+    list(
+        src = "RegularlyLocatedDevices",
+        dst = "DeviceLocations",
+        edge = "LocatedAt"
+    ),
+    list(
+        src = "MediaDevices",
+        dst = "Households",
+        edge = "OwnedBy"
+    ),
+    list(
         src = "Children",
         dst = "MediaExposure",
         edge = "SubjectOf"
+    ),
+    list(
+        src = "Children",
+        dst = "MobileDeviceUse",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "ChildCare_Weekdays",
+        edge = "SubjectOf"
+    ),
+    list(
+        src = "Children",
+        dst = "ChildCare_Weekends",
+        edge = "SubjectOf"
+    ),
+    list(
+        src = "Children",
+        dst = "Households",
+        edge = "PartOf"
+    ),
+    list(
+        src = "Children",
+        dst = "Household_Communication",
+        edge = "InvolvedIn"
+    ),
+    list(
+        src = "Children",
+        dst = "ChildLanguageAssessment",
+        edge = "ScreenedWith"
     ),
     list(
         src = "Children",
@@ -259,6 +318,11 @@ MAQ_associations <- list(
         src = "Respondents",
         dst = "ParentMediationScale",
         edge = "Reported"
+    ),
+    list(
+        src = "Children",
+        dst = "MediaDeviceUse",
+        edge = "InvolvedIn"
     )
 )
 

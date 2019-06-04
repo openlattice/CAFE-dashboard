@@ -11,7 +11,7 @@ deviceuse_key = c(
     .default = NA_integer_
 )
 
-deviceuse_transform <- function(rawdata) {
+deviceuse_transform <- function(rawdata, children) {
     deviceuse = recombine(list("Children", "Device_Use"), rawdata) %>%
         mutate(duration = recode(Device_Use.ol.duration, !!!deviceuse_key)) %>%
         group_by(child_id) %>% summarise(
@@ -189,8 +189,9 @@ deviceuse_transform <- function(rawdata) {
                 length(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
                                                                "hour before bedtime|while falling asleep")]),
             
-            hourbeforebedtimequants = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
-                                                                                     "hour before bedtime|while falling asleep")], collapse = ","),
+            hourbeforebedtimequants = first(Device_Use.general.frequency[str_detect(Device_Use.ol.description,
+                                                                                     "hour before bedtime|while falling asleep")]),
+            
             hourbeforebedtime = sum(
                 str_detect(
                     Device_Use.ol.description,
@@ -206,6 +207,7 @@ deviceuse_transform <- function(rawdata) {
                     str_detect(Device_Use.general.frequency, "Never|Less than once a week"),
                 na.rm = TRUE
             ),
+            
             sf_maq_Q2_avoid_screen_bedtime = hourbeforebedtimenever == hourbeforebedtime,
             sf_maq_Q2_avoid_screen_bedtime = ifelse(all_NA, NA, sf_maq_Q2_avoid_screen_bedtime),
             sf_maq_Q3_balancemedia_reading_weekday = sum(
@@ -284,39 +286,91 @@ deviceuse_transform <- function(rawdata) {
                                                                   Device_Use.ol.status,
                                                                   "Started using in the last 6 months|Started using in last 6 months"
                                                               )], collapse = ", "),
-        ) %>%
-        select(
-            child_id,
-            sf_maq_Q1_nomorethan1h_weekday_TV_DVD,
-            sf_maq_Q1_nomorethan1h_weekday_computer,
-            sf_maq_Q1_nomorethan1h_weekday_ebooks,
-            sf_maq_Q1_nomorethan1h_weekday_consolevideo,
-            sf_maq_Q1_nomorethan1h_weekday_mobiledevice,
-            sf_maq_Q1_nomorethan1h_weekday_smartphone,
-            sf_maq_Q1_nomorethan1h_weekday_virtualassistant,
-            sf_maq_Q1_nomorethan1h_weekday_all,
-            sf_maq_Q1_nomorethan1h_weekend_TV_DVD,
-            sf_maq_Q1_nomorethan1h_weekend_computer,
-            sf_maq_Q1_nomorethan1h_weekend_ebooks,
-            sf_maq_Q1_nomorethan1h_weekend_consolevideo,
-            sf_maq_Q1_nomorethan1h_weekend_mobiledevice,
-            sf_maq_Q1_nomorethan1h_weekend_smartphone,
-            sf_maq_Q1_nomorethan1h_weekend_virtualassistant,
-            sf_maq_Q1_nomorethan1h_weekend_all,
-            sf_maq_Q2_avoid_screen_bedtime,
-            hourbeforebedtimequants,
-            sf_maq_Q3_balancemedia_reading_weekday,
-            sf_maq_Q3_balancemedia_reading_weekend,
-            sf_maq_Q5_minimize_background_play,
-            sf_maq_Q6_avoid_media_during_mealtimes,
-            sf_maq_Q7_avoid_media_during_play,
-            all_NA_recent2wks,
-            num_devices_recent2wks,
-            devices_recent2wks,
-            num_devices_start2wks,
-            devices_start2wks,
-            num_devices_start6mos,
-            devices_start6mos
+            internet_access = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.id, "internet_access")], collapse=", "),
+            transitmedia = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.id, "media_in_transit")], collapse=", "),
+            television_on_household = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.id, "television_in_home")], collapse=", "),
         )
+    
+    start_childuse = recombine(list("Children", "Device_Use"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(Device_Use.ol.id, "_start_childuse") & !is.na(Device_Use.ol.status)) %>%
+        mutate(
+            id = strsplit(Device_Use.ol.id, "-"),
+            id = paste0(id[length(id)], collapse="_")
+        ) %>%
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, Device_Use.ol.status) %>%
+        spread( key = id, value = Device_Use.ol.status)
+    
+    hourbeforebed_childuse = recombine(list("Children", "Device_Use"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(Device_Use.ol.id, "_hourbeforebed_childuse") & !is.na(Device_Use.general.frequency)) %>%
+        mutate(
+            id = strsplit(Device_Use.ol.id, "-"),
+            id = paste0(id[length(id)], collapse="_")
+        ) %>%
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, Device_Use.general.frequency) %>%
+        spread( key = id, value = Device_Use.general.frequency)
+    
+    fallingasleep_childuse = recombine(list("Children", "Device_Use"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(Device_Use.ol.id, "_fallingasleep_childuse") & !is.na(Device_Use.general.frequency)) %>%
+        mutate(
+            id = strsplit(Device_Use.ol.id, "-"),
+            id = paste0(id[length(id)], collapse="_")
+        ) %>%
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, Device_Use.general.frequency) %>%
+        spread( key = id, value = Device_Use.general.frequency)
+    
+    timespent = recombine(list("Children", "Device_Use"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(Device_Use.ol.id, "Time spent") & !is.na(Device_Use.ol.duration)) %>%
+        mutate(
+            id = strsplit(Device_Use.ol.id, "-"),
+            id = paste0(id[length(id)], collapse="_")
+        ) %>%
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, Device_Use.general.frequency) %>%
+        spread( key = id, value = Device_Use.general.frequency)
+    
+    adultuse = recombine(list("Respondents", "Device_Use"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(Device_Use.ol.id, "_adultuse") & !is.na(Device_Use.ol.number)) %>%
+        mutate(
+            id = strsplit(Device_Use.ol.id, "-"),
+            id = paste0(id[length(id)], collapse="_"),
+            number = as.numeric(Device_Use.ol.number)
+        ) %>%
+        full_join(children, by = 'respondent_id') %>%
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, number) %>%
+        filter(!is.na(id)) %>%
+        spread( key = id, value = number)
+    
+    deviceuse = deviceuse %>%
+        full_join(start_childuse, by = "child_id") %>%
+        full_join(hourbeforebed_childuse, by = "child_id") %>%
+        full_join(fallingasleep_childuse, by = "child_id") %>%
+        full_join(timespent, by = "child_id") %>%
+        full_join(adultuse, by = "child_id") %>%
+        select(
+            -c(
+                "all_NA",
+                "hourbeforebedtime",
+                "hourbeforebedtimequants",
+                "hourbeforebedtimenever"
+            )
+        )
+    
     return(deviceuse)
 }
+
+
+
+
+
+
+
+

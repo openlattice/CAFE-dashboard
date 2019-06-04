@@ -36,7 +36,11 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         mutate(
             WS_18_30_split = strsplit(VocabularyAssessment_WS_18_30.ol.vocabularyword, ","),
             WS_18_30_n = length(WS_18_30_split[!is.na(WS_18_30_split)]),
-            WS_18_30_n = ifelse(is.na(VocabularyAssessment_WS_18_30.ol.vocabularyword), NA, WS_18_30_n)
+            WS_18_30_n = ifelse(
+                is.na(VocabularyAssessment_WS_18_30.ol.vocabularyword),
+                NA,
+                WS_18_30_n
+            )
         ) %>%
         spread(VocabularyAssessment_WS_18_30.ol.name, WS_18_30_n) %>%
         rename(says = "Yes (says the word)",
@@ -55,7 +59,11 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         mutate(
             WS_30_38_split = strsplit(VocabularyAssessment_WS_30_38.ol.vocabularyword, ","),
             WS_30_38_n = length(WS_30_38_split[!is.na(WS_30_38_split)]),
-            WS_30_38_n = ifelse(is.na(VocabularyAssessment_WS_30_38.ol.vocabularyword), NA, WS_30_38_n)
+            WS_30_38_n = ifelse(
+                is.na(VocabularyAssessment_WS_30_38.ol.vocabularyword),
+                NA,
+                WS_30_38_n
+            )
         ) %>%
         ungroup() %>%
         group_by(child_id) %>%
@@ -64,6 +72,8 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
     childlanguage <- WG_8_18 %>%
         left_join(WS_30_38, by = 'child_id') %>%
         left_join(WS_18_30, by = 'child_id')
+    
+    # childlanguage <- recombine(list("Children", "ChildLanguageAssessment"), rawdata)
     
     childlanguage = childlanguage %>%
         left_join(children_age_sex, by = 'child_id') %>%
@@ -79,7 +89,7 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
             )
         )  %>%
         ungroup() %>%
-        select(-c(sex, age_months))
+        select(-c(sex, age_months, table_access))
     
     return(childlanguage)
 }
@@ -87,7 +97,9 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
 
 get_percentiles <- function(score, age, sex, norms) {
     cols = names(norms)[str_detect(names(norms), "percentile")]
-    if (is.na(age) | is.na(sex)){return (NA)}
+    if (is.na(age) | is.na(sex)) {
+        return (NA)
+    }
     ind = max(which(norms$age <= age, norms$sex == sex))
     percentiles = cols[which(norms[ind, cols] <= score)] %>%
         str_replace("_percentile", "") %>%

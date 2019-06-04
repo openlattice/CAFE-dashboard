@@ -17,14 +17,8 @@ respondentdetails_transform <- function(rawdata, children) {
             unique(RespondentDetails.person.maritalstatus),
             collapse = ", "
         ),
-        parental_nationality = paste(unique(RespondentDetails.ol.nationality), collapse = ", ")
-    ) %>%
-    select(
-        child_id,
-        parental_mean_age,
-        parental_mean_numchildren,
-        parental_marital,
-        parental_nationality
+        parental_nationality = paste(unique(RespondentDetails.ol.nationality), collapse = ", "),
+        parent_birthplace = paste0(unique(Respondents.nc.PersonBirthPlace), collapse=", ")
     )
     return(respondentdetails)
 }

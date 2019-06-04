@@ -109,14 +109,6 @@ pm_transform <- function(rawdata, children) {
             mediarestrictions_contentrestrictions = first(ParentMediationScale.ol.contentrestrictions)
         )
     
-    # non_english_exposure = recombine(list("Respondents", "MediaExposure"), rawdata) %>%
-    #     left_join(children, by = "respondent_id") %>%
-    #     filter(str_detect(ParentMediationScale.ol.id, "nonenglish_mediaexposure")) %>%
-    #     group_by(child_id) %>%
-    #     summarise(
-    #         non_english_proportion = mean(as.numeric(ol.duration))
-    #     )
-    
     restrictions_advice = recombine(list("Respondents", "ParentMediationScale"), rawdata) %>%
         left_join(children, by = "respondent_id") %>%
         filter(str_detect(ParentMediationScale.ol.id, "setlimits_advicesource")) %>%

@@ -398,12 +398,19 @@ parentsmediaexposure_transform <- function(rawdata, children) {
                     str_detect(MediaExposure.ol.status, "Yes"),
                 na.rm = TRUE
             ) > 0,
-            parent_non_english_media_duration = first(MediaExposure.ol.duration[str_detect(MediaExposure.ol.id, "nonenglish_mediaexposure_adult") &
-                                                                                     str_detect(MediaExposure.ol.status, "Yes")])
-        ) %>%
-        select(parent_non_english_media_exposure,
-               parent_non_english_media_duration,
-               child_id)
+            parent_non_english_media_percent = first(MediaExposure.ol.duration[str_detect(MediaExposure.ol.id, "nonenglish_mediaexposure_adult") &
+                                                                                     str_detect(MediaExposure.ol.status, "Yes")]),
+            parent_non_english_media_percent = str_extract(parent_non_english_media_percent, "[0-9]{1,3}"),
+            child_non_english_media_exposure = sum(
+                str_detect(MediaExposure.ol.id, "nonenglish_mediaexposure_child") &
+                    str_detect(MediaExposure.ol.status, "Yes"),
+                na.rm = TRUE
+            ) > 0,
+            child_non_english_media_percent = first(MediaExposure.ol.duration[str_detect(MediaExposure.ol.id, "nonenglish_mediaexposure_child") &
+                                                                                    str_detect(MediaExposure.ol.status, "Yes")]),
+            child_non_english_media_percent = str_extract(child_non_english_media_percent, "[0-9]{1,3}")
+            
+        )
     
     return(parentmediaexposure)
 }
