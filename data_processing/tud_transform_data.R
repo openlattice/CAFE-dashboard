@@ -185,10 +185,10 @@ process_media_exposure <- function(rawdata, activity) {
             background_media_audio_mean_weighted_hours = mean(weighted_background[background_media_audio], na.rm=TRUE),
             background_media_other_mean_weighted_hours = mean(weighted_background[background_media_other], na.rm=TRUE),
             
-            background_media_full_hours = sum(duration[background_media]),
-            background_media_tv_full_hours = sum(duration[background_media_tv]),
-            background_media_audio_full_hours = sum(duration[background_media_audio]),
-            background_media_other_full_hours = sum(duration[background_media_other]),
+            background_media_full_hours = min(sum(duration[background_media]), mean(duration)),
+            background_media_tv_full_hours = min(sum(duration[background_media_tv]), mean(duration)),
+            background_media_audio_full_hours = min(sum(duration[background_media_audio]), mean(duration)),
+            background_media_other_full_hours = min(sum(duration[background_media_other]), mean(duration)),
             
             primary_media_age = paste(ol.category[ol.priority == "primary" &
                                                       !is.na(ol.category)], collapse = " and "),
