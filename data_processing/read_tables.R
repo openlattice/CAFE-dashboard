@@ -129,7 +129,7 @@ get_edge_table <- function(cafeedge, datasets, apis) {
             unnest(tbl, .preserve = srcId) %>% 
             unnest() %>%
             select(-c("src")) %>%
-            rename(src = srcId, dst = neighborId, edge = edgeId) %>%
+            rename(src = srcId, dst = neighborId, edge = associationId) %>%
             select(src, dst)
         
         # bind_rows(edges_cafeedge)  %>% rename() %>% mutate(srcId = unnest())

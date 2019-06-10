@@ -38,6 +38,9 @@ process_maq <- function(rawdata) {
     
     videochat <- videochat_transform(rawdata, children)
     
+    households <- household_transform(rawdata)
+    childcare <- childcare_transform(rawdata)
+    
     maq <- children %>%
         left_join(childrendemographics, by = "child_id") %>%
         left_join(deviceuse, by = "child_id") %>%
@@ -55,7 +58,9 @@ process_maq <- function(rawdata) {
         left_join(education, by = "child_id")  %>%
         left_join(public_assistance, by = "child_id")  %>%
         left_join(employment, by = "child_id")  %>%
-        left_join(sleep, by = "child_id")
+        left_join(sleep, by = "child_id") %>%
+        left_join(households, by = "child_id") %>%
+        left_join(childcare, by = "child_id")
     
     # factor vars to factor
     numericcols <- maq %>% select_if(is.numeric) %>% names()
