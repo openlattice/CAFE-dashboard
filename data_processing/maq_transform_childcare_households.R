@@ -25,8 +25,8 @@ childcare_transform <- function(rawdata) {
             childcare_firstage = first(ChildCare_Weekdays.ol.ageatonset)
         )
 
-    childcare_weekend = recombine(list("Children", "Households"), rawdata) %>%
-        group_by(child_id)
+    childcare_weekend = recombine(list("Children", "ChildCare_Weekends"), rawdata) %>%
+        group_by(child_id) %>%
         rowwise() %>%
         mutate(
             relationship = str_replace_all(ChildCare_Weekends.ol.relationship,"\"|c\\(|\\)", ""),
@@ -38,17 +38,17 @@ childcare_transform <- function(rawdata) {
         ) %>%
         group_by(child_id) %>%
         summarise(
-            childcare_weekday_mother = sum(str_detect(relationship, regex("mother", ignore_case=T))) > 0,
-            childcare_weekday_father = sum(str_detect(relationship, regex("father", ignore_case=T))) > 0,
-            childcare_weekday_family = sum(str_detect(relationship, regex("family", ignore_case=T))) > 0,
-            childcare_weekday_babysitter = sum(str_detect(relationship, regex("babysitter", ignore_case=T))) > 0,
-            childcare_weekday_childcare_preschool = sum(str_detect(relationship, regex("childcare/preschool", ignore_case=T))) > 0,
-            childcare_weekday_equally = sum(str_detect(relationship, regex("equally", ignore_case=T))) > 0,
-            childcare_weekday_other = sum(str_detect(relationship, regex("other", ignore_case=T))) > 0,
-            childcare_weekday_do_not_know = paste0(relationship, collapse=", ")
+            childcare_weekend_mother = sum(str_detect(relationship, regex("mother", ignore_case=T))) > 0,
+            childcare_weekend_father = sum(str_detect(relationship, regex("father", ignore_case=T))) > 0,
+            childcare_weekend_family = sum(str_detect(relationship, regex("family", ignore_case=T))) > 0,
+            childcare_weekend_babysitter = sum(str_detect(relationship, regex("babysitter", ignore_case=T))) > 0,
+            childcare_weekend_childcare_preschool = sum(str_detect(relationship, regex("childcare/preschool", ignore_case=T))) > 0,
+            childcare_weekend_equally = sum(str_detect(relationship, regex("equally", ignore_case=T))) > 0,
+            childcare_weekend_other = sum(str_detect(relationship, regex("other", ignore_case=T))) > 0,
+            childcare_weekend_do_not_know = paste0(relationship, collapse=", ")
         )
         
-        childcare = childcare_week %>% full_join(childcare_weekend)
+        childcare = childcare_week %>% full_join(childcare_weekend, by = )
     
     return(childcare)
 }

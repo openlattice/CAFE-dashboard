@@ -84,5 +84,9 @@ process_maq <- function(rawdata) {
         mutate_at(c("mean_quality"), as.numeric) %>%
         drop_na(child_id)
     
+    oldnames = names(maq)
+    newnames = str_replace_all(oldnames, " |\\(|\\)|/", "_") %>% tolower()
+    maq = maq %>% rename_at(vars(oldnames), ~newnames)
+    
     return(maq)
 }

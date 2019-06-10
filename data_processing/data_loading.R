@@ -158,31 +158,39 @@ data_get_coltypes <-
         coltype = list(
             tud_activity = list(
                 factorial = rawdata$tud$processed %>% select(which(sapply(., is.factor))) %>% names %>% setdiff(toremove),
-                boolean = rawdata$tud$processed %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove)
+                boolean = rawdata$tud$processed %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove),
+                character = rawdata$tud$processed %>% select(which(sapply(., is.character))) %>% names %>% setdiff(toremove)
             ),
             tud = list(
                 factorial = rawdata$tud$summarised %>% select(which(sapply(., is.factor))) %>% names %>% setdiff(toremove),
-                boolean = rawdata$tud$summarised %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove)
+                boolean = rawdata$tud$summarised %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove),
+                character = rawdata$tud$summarised %>% select(which(sapply(., is.character))) %>% names %>% setdiff(toremove)
             ),
             maq = list(
                 factorial = rawdata$maq$processed %>% select(which(sapply(., is.factor))) %>% names %>% setdiff(toremove),
-                boolean = rawdata$maq$processed %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove)
+                boolean = rawdata$maq$processed %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove),
+                character = rawdata$maq$processed %>% select(which(sapply(., is.character))) %>% names %>% setdiff(toremove)
             ),
             chronicle = list(
                 factorial = rawdata$chronicle$processed %>% select(which(sapply(., is.factor))) %>% names %>% setdiff(toremove),
-                boolean = rawdata$chronicle$processed %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove)
+                boolean = rawdata$chronicle$processed %>% select(which(sapply(., is.logical))) %>% names %>% setdiff(toremove),
+                character = rawdata$chronicle$processed %>% select(which(sapply(., is.character))) %>% names %>% setdiff(toremove)
             )
         )
         
         done = c(
             coltype$tud_activity$factorial,
             coltype$tud_activity$boolean,
+            coltype$tud_activity$character,
             coltype$tud$factorial,
             coltype$tud$boolean,
+            coltype$tud$character,
             coltype$maq$factorial,
             coltype$maq$boolean,
+            coltype$maq$character,
             coltype$chronicle$factorial,
-            coltype$chronicle$boolean
+            coltype$chronicle$boolean,
+            coltype$chronicle$character
         )
         coltype$tud_activity[['numeric']] = setdiff(names(rawdata$tud$processed), c(done, toremove))
         coltype$tud[['numeric']] = setdiff(names(rawdata$tud$summarised), c(done, toremove))

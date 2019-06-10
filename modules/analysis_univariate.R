@@ -56,7 +56,7 @@ univar_server <-
         output$con_column <- renderUI(selectInput(
             inputId = ns("concol"),
             "Choose column:",
-            choices = c(data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric", "factor")), other = c("n"))
+            choices = c(data_get_coltypes(rawdata, datasets = c("tud", "maq", "chronicle"), types=c("numeric", "factor", "boolean")), other = c("n"))
         ))
         
         output$con_text <-
@@ -91,7 +91,7 @@ univar_server <-
 
 plot_histogram <- function(data, column) {
     if (column %in% names(data)) {
-        if (class(data[[column]]) == "factor"){
+        if (class(data[[column]]) == "factor" | class(data[[column]]) == "logical"){
             ggplot(data,
                    aes_string(x = column)) +
                 geom_bar(fill = "#4c14c4") +
