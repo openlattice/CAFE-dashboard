@@ -101,8 +101,7 @@ summarise_data <- function(activitydata) {
           (age_child_primary_media + age_older_primary_media+ age_younger_primary_media + age_adults_primary_media))==1,
       sf_tud_Q10_videochat = videochat_hours > 0,
       monthyear = paste0(year(first(starttime)),"-",str_pad(month(first(starttime)),2,"left",0))
-    ) %>%
-        select(-c(table_access))
+    )
         
   return(summarydata)
 }
