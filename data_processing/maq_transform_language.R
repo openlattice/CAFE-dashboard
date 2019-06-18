@@ -73,8 +73,18 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
         left_join(WS_30_38, by = 'child_id') %>%
         left_join(WS_18_30, by = 'child_id')
     
-    # childlanguage <- recombine(list("Children", "ChildLanguageAssessment"), rawdata)
-    
+    childlanguageassessment <- recombine(list("Children", "ChildLanguageAssessment"), rawdata) 
+    removecols = c(names(childlanguageassessment)[str_detect(names(childlanguageassessment), "Children")], 
+                   "ChildLanguageAssessment.ol.id", 
+                   "ChildLanguageAssessment.study",
+                   "src", "study_id", 
+                   "dst")
+    childlanguageassessment <- childlanguageassessment %>% 
+        select(-removecols)
+    oldnames = childlanguageassessment %>% names
+    newnames <- str_replace(oldnames, "ChildLanguageAssessment.ol.|ChildLanguageAssessment.", "")
+    childlanguageassessment <- childlanguageassessment %>% rename_at(vars(oldnames), ~newnames)
+
     childlanguage = childlanguage %>%
         left_join(children_age_sex, by = 'child_id') %>%
         rowwise() %>%
@@ -89,7 +99,8 @@ childlanguage_transform <- function(rawdata, children_age_sex) {
             )
         )  %>%
         ungroup() %>%
-        select(-c(sex, age_months, table_access))
+        select(-c(sex, age_months, table_access)) %>%
+        full_join(childlanguageassessment, by = "child_id")
     
     return(childlanguage)
 }

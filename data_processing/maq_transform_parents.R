@@ -3,6 +3,21 @@
 ######
 
 parentsmediause_transform <- function(rawdata, children) {
+    
+    adultuse = recombine(list("Respondents", "Device_Use"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(Device_Use.ol.id, "_adultuse") & !is.na(Device_Use.ol.number)) %>%
+        mutate(
+            id = strsplit(Device_Use.ol.id, "-"),
+            id = paste0(id[length(id)], collapse="_"),
+            number = as.numeric(Device_Use.ol.number)
+        ) %>%
+        full_join(children, by = 'respondent_id') %>%
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, number) %>%
+        filter(!is.na(id)) %>%
+        spread( key = id, value = number)
+    
     parentsmediause <-
         recombine(list("Respondents", "Device_Use"), rawdata) %>%
         left_join(children, by = 'respondent_id') %>%
@@ -325,66 +340,10 @@ parentsmediause_transform <- function(rawdata, children) {
                 na.rm = TRUE
             ) > 0
             
-        ) %>%
-        select(
-            child_id,
-            parent_num_devices_tv_2wks,
-            parent_num_devices_dvr_2wks,
-            parent_num_devices_dvd_2wks,
-            parent_num_devices_computer_2wks,
-            parent_num_devices_mobilephone_2wks,
-            parent_num_devices_smartphone_2wks,
-            parent_num_devices_ipad_2wks,
-            parent_num_devices_mp3_2wks,
-            parent_num_devices_educationalgame_2wks,
-            parent_num_devices_virtualassistant_2wks,
-            parent_num_devices_videostreaming_2wks,
-            parent_num_devices_2wks_all,
-            parent_weekday_tv_dvd_avoid,
-            parent_weekday_tv_dvd_use,
-            parent_weekday_computer_avoid,
-            parent_weekday_computer_use,
-            parent_weekday_read_books_tries,
-            parent_weekday_read_books_use,
-            parent_weekday_ebooks_avoid,
-            parent_weekday_ebooks_use,
-            parent_weekday_consolegame_avoid,
-            parent_weekday_consolegame_use,
-            parent_weekday_ipad_avoid,
-            parent_weekday_ipad_use,
-            parent_weekday_smartphone_avoid,
-            parent_weekday_smartphone_use,
-            parent_weekend_tv_dvd_avoid,
-            parent_weekend_tv_dvd_use,
-            parent_weekend_computer_avoid,
-            parent_weekend_computer_use,
-            parent_weekend_read_books_tries,
-            parent_weekend_read_books_use,
-            parent_weekend_ebooks_avoid,
-            parent_weekend_ebooks_use,
-            parent_weekend_consolegame_avoid,
-            parent_weekend_consolegame_use,
-            parent_weekend_ipad_avoid,
-            parent_weekend_ipad_use,
-            parent_weekend_smartphone_avoid,
-            parent_weekend_smartphone_use,
-            smartphonechecks,
-            parent_smartphone_use_with_child_during_meals,
-            parent_smartphone_use_with_child_ready_for_school,
-            parent_smartphone_use_with_child_during_playtime,
-            parent_smartphone_use_with_child_during_bedtime,
-            parent_smartphone_use_with_child_while_driving,
-            parent_smartphone_use_with_child_at_playground,
-            parent_total_num_apps_using_with_child,
-            parent_work_email_with_child,
-            parent_personal_email_with_child,
-            parent_social_media_with_child,
-            parent_reading_news_with_child,
-            parent_looking_something_up_with_child,
-            parent_watching_video_alone_with_child,
-            parent_watching_video_together_with_child,
-            parent_other_apps_with_child
+        ) %>% left_join(
+            adultuse, by = "child_id"
         )
+    
     return (parentsmediause)
 }
 
@@ -427,16 +386,6 @@ parentsmediaattitudes_transform <- function(rawdata, children) {
         prefer_online_interaction_to_inperson = first(MediaAttitudes.ol.preferredmethod),
         escape_from_reality_while_with_children = first(MediaAttitudes.ol.escapefromreality),
         feel_addicted_mobile_media = first(MediaAttitudes.ol.feelsaddicted)
-    ) %>%
-    select(
-        child_id,
-        need_to_stay_connected_to_work,
-        need_to_stay_connected_to_friends_socialmedia,
-        multitask_easy_between_using_mobile_children,
-        feeling_overwhelmed_by_mobile_device,
-        prefer_online_interaction_to_inperson,
-        escape_from_reality_while_with_children,
-        feel_addicted_mobile_media
     )
     return(parentmediaattitudes)
 }

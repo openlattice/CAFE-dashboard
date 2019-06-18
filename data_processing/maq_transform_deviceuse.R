@@ -286,9 +286,9 @@ deviceuse_transform <- function(rawdata, children) {
                                                                   Device_Use.ol.status,
                                                                   "Started using in the last 6 months|Started using in last 6 months"
                                                               )], collapse = ", "),
-            internet_access = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.id, "internet_access")], collapse=", "),
-            transitmedia = paste0(Device_Use.ol.status[str_detect(Device_Use.ol.id, "media_in_transit")], collapse=", "),
-            television_on_household = paste0(Device_Use.general.frequency[str_detect(Device_Use.ol.id, "television_in_home")], collapse=", "),
+            internet_access = first(Device_Use.ol.status[str_detect(Device_Use.ol.id, "internet_access")]),
+            transitmedia = first(Device_Use.ol.status[str_detect(Device_Use.ol.id, "media_in_transit")]),
+            television_on_household = first(Device_Use.general.frequency[str_detect(Device_Use.ol.id, "television_in_home")])
         )
     
     start_childuse = recombine(list("Children", "Device_Use"), rawdata) %>%
@@ -298,7 +298,7 @@ deviceuse_transform <- function(rawdata, children) {
             id = strsplit(Device_Use.ol.id, "-"),
             id = paste0(id[length(id)], collapse="_")
         ) %>%
-        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        group_by(child_id, id) %>% slice(1) %>% ungroup() %>%
         select(child_id, id, Device_Use.ol.status) %>%
         spread( key = id, value = Device_Use.ol.status)
     
@@ -309,7 +309,7 @@ deviceuse_transform <- function(rawdata, children) {
             id = strsplit(Device_Use.ol.id, "-"),
             id = paste0(id[length(id)], collapse="_")
         ) %>%
-        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        group_by(child_id, id) %>% slice(1) %>% ungroup() %>%
         select(child_id, id, Device_Use.general.frequency) %>%
         spread( key = id, value = Device_Use.general.frequency)
     
@@ -320,7 +320,7 @@ deviceuse_transform <- function(rawdata, children) {
             id = strsplit(Device_Use.ol.id, "-"),
             id = paste0(id[length(id)], collapse="_")
         ) %>%
-        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        group_by(child_id, id) %>% slice(1) %>% ungroup() %>%
         select(child_id, id, Device_Use.general.frequency) %>%
         spread( key = id, value = Device_Use.general.frequency)
     
@@ -331,30 +331,15 @@ deviceuse_transform <- function(rawdata, children) {
             id = strsplit(Device_Use.ol.id, "-"),
             id = paste0(id[length(id)], collapse="_")
         ) %>%
-        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        group_by(child_id, id) %>% slice(1) %>% ungroup() %>%
         select(child_id, id, Device_Use.general.frequency) %>%
         spread( key = id, value = Device_Use.general.frequency)
-    
-    adultuse = recombine(list("Respondents", "Device_Use"), rawdata) %>%
-        rowwise() %>%
-        filter(str_detect(Device_Use.ol.id, "_adultuse") & !is.na(Device_Use.ol.number)) %>%
-        mutate(
-            id = strsplit(Device_Use.ol.id, "-"),
-            id = paste0(id[length(id)], collapse="_"),
-            number = as.numeric(Device_Use.ol.number)
-        ) %>%
-        full_join(children, by = 'respondent_id') %>%
-        group_by(child_id) %>% slice(1) %>% ungroup() %>%
-        select(child_id, id, number) %>%
-        filter(!is.na(id)) %>%
-        spread( key = id, value = number)
     
     deviceuse = deviceuse %>%
         full_join(start_childuse, by = "child_id") %>%
         full_join(hourbeforebed_childuse, by = "child_id") %>%
         full_join(fallingasleep_childuse, by = "child_id") %>%
         full_join(timespent, by = "child_id") %>%
-        full_join(adultuse, by = "child_id") %>%
         select(
             -c(
                 "all_NA",
@@ -369,8 +354,42 @@ deviceuse_transform <- function(rawdata, children) {
 
 
 
+mobile_deviceuse_transform <- function(rawdata, children) {
+    mobiledeviceuse = recombine(list("Children", "MobileDeviceUse"), rawdata) %>%
+        filter(str_detect(MobileDeviceUse.ol.relevantperiod, "2 weeks") & str_detect(MobileDeviceUse.ol.name, "mobile device") & str_detect(MobileDeviceUse.ol.subject, "child")) %>%
+        rowwise() %>% 
+        mutate(
+            device = str_split(MobileDeviceUse.ol.id, "-"),
+            device = device[[length(device)]],
+            device = str_split(device, "_")[[1]][1],
+            freq = MobileDeviceUse.general.frequency
+        ) %>% select(device, freq, child_id) %>%
+        group_by(child_id, device) %>% slice(1) %>% ungroup() %>%
+        spread( key = device, value = freq)
 
-
-
+    oldnames = names(mobiledeviceuse[-1])
+    newnames = paste0("mobile_device_2weeks_", oldnames)
+    mobiledeviceuse = mobiledeviceuse %>% rename_at(vars(oldnames), ~newnames)
+    
+    adultmobiledeviceuse = recombine(list("Respondents", "MobileDeviceUse"), rawdata) %>%
+        left_join(children, by = "respondent_id") %>%
+        filter(str_detect(MobileDeviceUse.ol.id, "appsdownloaded") & str_detect(MobileDeviceUse.ol.subject, "adult")) %>%
+        group_by(child_id) %>% 
+        mutate(appnumber = as.numeric(MobileDeviceUse.ol.number)) %>%
+        summarise(number_installed_adult_apps = mean(appnumber, na.rm=TRUE))
+    childmobiledeviceuse = recombine(list("Respondents", "MobileDeviceUse"), rawdata) %>%
+        left_join(children, by = "respondent_id") %>%
+        filter(str_detect(MobileDeviceUse.ol.id, "appsdownloaded") & str_detect(MobileDeviceUse.ol.subject, "child")) %>%
+        group_by(child_id) %>% 
+        mutate(appnumber = as.numeric(MobileDeviceUse.ol.number)) %>%
+        summarise(number_installed_child_apps = mean(appnumber, na.rm=TRUE))
+    apps = adultmobiledeviceuse %>% 
+        full_join(childmobiledeviceuse, by = "child_id") %>%
+        mutate(
+            percentage_child_apps = number_installed_child_apps / number_installed_adult_apps
+        )
+    
+    return(mobiledeviceuse %>% full_join(apps, by = 'child_id'))
+}
 
 

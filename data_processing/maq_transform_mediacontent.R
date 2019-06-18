@@ -51,15 +51,32 @@ mediacontent_transform <- function(rawdata, children) {
 # 
 
 
-# services = recombine(list("Children", "MediaDeviceUse"), rawdata) %>%
-#     rowwise() %>%
-#     filter(str_detect(MediaDeviceUse.ol.id, "_tvservices") & MediaDeviceUse.ol.subject == "child") %>%
-#     mutate(
-#         id = strsplit(Device_Use.ol.id, "-"),
-#         id = paste0(id[length(id)], collapse="_")
-#     ) %>%
-#     group_by(child_id) %>% slice(1) %>% ungroup() %>%
-#     select(child_id, id, Device_Use.general.frequency) %>%
-#     spread( key = id, value = Device_Use.general.frequency)
+mediadeviceuse_transform <- function(rawdata) {
+    services = recombine(list("Children", "MediaDeviceUse"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(MediaDeviceUse.ol.id, "_tvservices") & MediaDeviceUse.ol.subject == "child") %>%
+        mutate(
+            id = str_extract(MediaDeviceUse.ol.id, "[a-z]*use")
+        ) %>% 
+        group_by(child_id,id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, id, MediaDeviceUse.general.frequency) %>%
+        spread( key = id, value = MediaDeviceUse.general.frequency)
+
+    oldnames = names(services[-1])
+    newnames = paste0("tv_source_", oldnames) %>% tolower()
+    services = services %>% rename_at(vars(oldnames), ~newnames)
+
+    services_other = recombine(list("Children", "MediaDeviceUse"), rawdata) %>%
+        rowwise() %>%
+        filter(str_detect(MediaDeviceUse.ol.id, "_tvservices") & MediaDeviceUse.ol.subject == "child") %>%
+        mutate(tv_source_other_sources = MediaDeviceUse.ol.description) %>% 
+        group_by(child_id) %>% slice(1) %>% ungroup() %>%
+        select(child_id, tv_source_other_sources) 
+    
+    services = services %>% left_join(services_other, by = "child_id")
+
+    
+    return(services)
+}
 
     

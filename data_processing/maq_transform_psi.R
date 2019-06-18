@@ -42,7 +42,7 @@ dc_vars = c('ol.affect',
             'ol.easilyupset' , 
             'neurological.sleeppattern' , 
             'ol.discipline', 
-            'ol.number',
+            # 'ol.number',
             'ol.botheredbyactions' , 
             'ol.moreproblematic' , 
             'ol.demanding')

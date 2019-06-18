@@ -6,15 +6,24 @@ process_maq <- function(rawdata) {
     children = recombine(list("Respondents", "Children"), rawdata) %>%
         select(child_id, respondent_id, study_id)
     
+    childrenrole = recombine(list("Respondents", "Children"), rawdata, association = "RelatedTo") %>%
+        rename(respondent_relationship = 'RelatedTo.ol.role') %>%
+        select(child_id, respondent_relationship) %>% 
+        group_by(child_id)  %>% slice(1) %>% ungroup()
+
     childrendemographics <-
         childdemographics_transform(rawdata, children)
     deviceuse <- deviceuse_transform(rawdata, children)
+    mobile_deviceuse <- mobile_deviceuse_transform(rawdata, children)
+    devices <- devices_transform(rawdata, children)
+    devicelocations <- devicelocations_transform(rawdata)
     
     children_age_sex = childrendemographics %>% select(c(sex, age_months, child_id))
     childlanguage <-
         childlanguage_transform(rawdata, children_age_sex)
     
     mediacontent <- mediacontent_transform(rawdata, children)
+    mediadeviceuse <- mediadeviceuse_transform(rawdata)
     
     parentsmediause <- parentsmediause_transform(rawdata, children)
     parentsmediaexposure <-
@@ -23,6 +32,7 @@ process_maq <- function(rawdata) {
         parentsmediaattitudes_transform(rawdata, children)
     parentsmediation <-
         parentsmediation_transform(rawdata, children)
+    parentingmood <- parentingmood_transform(rawdata, children)
     pm <- pm_transform(rawdata, children)
     psi <- psi_transform(rawdata, children)
     qa <- qa_transform(rawdata, children)
@@ -41,15 +51,21 @@ process_maq <- function(rawdata) {
     households <- household_transform(rawdata)
     childcare <- childcare_transform(rawdata)
     
-    maq <- children %>%
+
+    maq <-  children %>%
+        left_join(childrenrole, by = "child_id") %>%
         left_join(childrendemographics, by = "child_id") %>%
-        left_join(deviceuse, by = "child_id") %>%
-        left_join(childlanguage, by = "child_id") %>%
+        left_join(deviceuse, by = "child_id") %>% 
+        left_join(mobile_deviceuse, by = "child_id") %>%
+        left_join(devicelocations, by = "child_id") %>%
+        left_join(childlanguage, by = "child_id") %>% 
         left_join(mediacontent, by = "child_id") %>%
+        left_join(mediadeviceuse, by = "child_id") %>%
         left_join(parentsmediause, by = "child_id") %>%
         left_join(parentsmediaexposure, by = "child_id") %>%
         left_join(parentmediaattitudes, by = "child_id") %>%
-        left_join(parentsmediation, by = "child_id") %>%
+        left_join(parentingmood, by = "child_id") %>%
+        left_join(parentsmediation, by = "child_id") %>% 
         left_join(pm, by = "child_id") %>%
         left_join(psi, by = "child_id")  %>%
         left_join(qa, by = "child_id") %>%
