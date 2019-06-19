@@ -345,7 +345,8 @@ deviceuse_transform <- function(rawdata, children) {
                 "all_NA",
                 "hourbeforebedtime",
                 "hourbeforebedtimequants",
-                "hourbeforebedtimenever"
+                "hourbeforebedtimenever",
+                "all_NA_recent2wks"
             )
         )
     

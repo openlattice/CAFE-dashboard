@@ -42,13 +42,22 @@ mediacontent_transform <- function(rawdata, children) {
     return(mediacontent)
 }
 
-# mediauseconcerns = recombine(list("Respondents", "MediaUseConcerns"), rawdata) %>%
-#     rowwise() %>%
-#     filter(str_detect(MediaDeviceUse.ol.id, "mediaconcerns")) %>%
-#     group_by(child_id) %>% slice(1) %>% ungroup() %>%
-#     select(child_id, id, Device_Use.general.frequency) %>%
-#     spread( key = id, value = Device_Use.general.frequency)
-# 
+mediaconcerns_transform <- function(rawdata){
+    variables = c(
+        "MediaUseConcerns.ol.inappropriatecontent",
+        "MediaUseConcerns.ol.exposuretoradiation",
+        "MediaUseConcerns.ol.opportunitycost",
+        "MediaUseConcerns.ol.addictionpotential",
+        "MediaUseConcerns.ol.languagedevelopment",
+        "MediaUseConcerns.ol.inattention"
+    )
+    
+    mediauseconcerns = recombine(list("Children", "MediaUseConcerns"), rawdata) %>%
+        select(c(variables, "child_id")) %>%
+        rename_at(vars(variables), ~str_replace(variables, "MediaUseConcerns.ol.", "mediauseconcerns_"))
+    return(mediauseconcerns)    
+}
+    
 
 
 mediadeviceuse_transform <- function(rawdata) {

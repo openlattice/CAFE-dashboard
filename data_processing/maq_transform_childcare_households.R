@@ -67,7 +67,7 @@ household_transform <- function(rawdata) {
 household_communication_transform <- function(rawdata) {
     householdcom = recombine(list("Children", "Household_Communication"), rawdata) %>%
         group_by(child_id) %>%
-        mutate(
+        summarise(
             children_language_num = first(Household_Communication.ol.number),
             children_language_main = first(Household_Communication.ol.language),
             children_language_percent_main = as.numeric(first(Household_Communication.ol.pcttime)),
@@ -90,4 +90,3 @@ household_communication_transform <- function(rawdata) {
 
 
 
-c("c(\"Child's mother or mother figure\", \"Child's father or father figure\")")

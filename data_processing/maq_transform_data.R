@@ -6,10 +6,6 @@ process_maq <- function(rawdata) {
     children = recombine(list("Respondents", "Children"), rawdata) %>%
         select(child_id, respondent_id, study_id)
     
-    childrenrole = recombine(list("Respondents", "Children"), rawdata, association = "RelatedTo") %>%
-        rename(respondent_relationship = 'RelatedTo.ol.role') %>%
-        select(child_id, respondent_relationship) %>% 
-        group_by(child_id)  %>% slice(1) %>% ungroup()
 
     childrendemographics <-
         childdemographics_transform(rawdata, children)
@@ -24,6 +20,8 @@ process_maq <- function(rawdata) {
     
     mediacontent <- mediacontent_transform(rawdata, children)
     mediadeviceuse <- mediadeviceuse_transform(rawdata)
+    
+    mediauseconcerns <- mediaconcerns_transform(rawdata)
     
     parentsmediause <- parentsmediause_transform(rawdata, children)
     parentsmediaexposure <-
@@ -50,17 +48,20 @@ process_maq <- function(rawdata) {
     
     households <- household_transform(rawdata)
     childcare <- childcare_transform(rawdata)
+    householdcommunication <- household_communication_transform(rawdata)
     
 
     maq <-  children %>%
-        left_join(childrenrole, by = "child_id") %>%
         left_join(childrendemographics, by = "child_id") %>%
         left_join(deviceuse, by = "child_id") %>% 
+        left_join(devices, by = "child_id") %>% 
         left_join(mobile_deviceuse, by = "child_id") %>%
         left_join(devicelocations, by = "child_id") %>%
         left_join(childlanguage, by = "child_id") %>% 
+        left_join(householdcommunication, by = "child_id") %>%
         left_join(mediacontent, by = "child_id") %>%
         left_join(mediadeviceuse, by = "child_id") %>%
+        left_join(mediauseconcerns, by = "child_id") %>%
         left_join(parentsmediause, by = "child_id") %>%
         left_join(parentsmediaexposure, by = "child_id") %>%
         left_join(parentmediaattitudes, by = "child_id") %>%
@@ -76,7 +77,8 @@ process_maq <- function(rawdata) {
         left_join(employment, by = "child_id")  %>%
         left_join(sleep, by = "child_id") %>%
         left_join(households, by = "child_id") %>%
-        left_join(childcare, by = "child_id")
+        left_join(childcare, by = "child_id") %>%
+        left_join(videochat, by = "child_id")
     
     # factor vars to factor
     numericcols <- maq %>% select_if(is.numeric) %>% names()
