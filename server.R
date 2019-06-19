@@ -214,6 +214,6 @@ shinyServer(function(input, output, session) {
     callModule(multivariate_server, "analysis", rawdata)
     callModule(multivariate_cor_server, "analysis", rawdata)
     callModule(module = esquisserServer, id = "esquisse", data = data_r)
-    callModule(documentation_server, "documentation")
+    callModule(documentation_server, "documentation", rawdata)
     
 })
