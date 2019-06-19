@@ -44,8 +44,7 @@ get_scales_columns <- function(rawdata, scale = "PSI") {
 
 
 ## combine everything
-
-recombine <- function(nodes, rawdata, joinfnc = left_join, association_vars = c()) {
+recombine <- function(nodes, rawdata, joinfnc = left_join, association = NULL) {
     src = rawdata$maq$nodes[[nodes[[1]]]]
     names(src) = paste0(nodes[[1]], ".", names(src))
     dst = rawdata$maq$nodes[[nodes[[2]]]]
@@ -57,6 +56,12 @@ recombine <- function(nodes, rawdata, joinfnc = left_join, association_vars = c(
                  c("not1", 'not2', 'study_id', 'not3'),
                  sep = "_") %>%
         select(-c(not1, not2, not3)) %>% unique()
+    
+    if (!is.null(association)){
+        edge = rawdata$maq$nodes[[association]]
+        names(edge) = paste0(association, ".", names(edge))
+        combined = combined %>% left_join(edge, by = c(edge = paste0(association, ".openlattice.@id")))
+    }
     
     if ("Children.nc.SubjectIdentification" %in% names(combined)) {
         combined = combined %>% rename(child_id = Children.nc.SubjectIdentification)
