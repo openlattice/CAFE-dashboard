@@ -98,8 +98,18 @@ MAQ_associations <- list(
         edge = "LocatedAt"
     ),
     list(
+        src = "Children",
+        dst = "DeviceLocations",
+        edge = "LocatedAt"
+    ),
+    list(
         src = "Devices",
         dst = "Households",
+        edge = "OwnedBy"
+    ),
+    list(
+        src = "Devices",
+        dst = "Respondents",
         edge = "OwnedBy"
     ),
     list(
@@ -111,6 +121,11 @@ MAQ_associations <- list(
         src = "Children",
         dst = "MobileDeviceUse",
         edge = "InvolvedIn"
+    ),
+    list(
+        src = "Respondents",
+        dst = "MobileDeviceUse",
+        edge = "Reported"
     ),
     list(
         src = "Children",
