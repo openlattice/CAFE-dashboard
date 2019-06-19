@@ -135,10 +135,27 @@ childdemographics_transform <- function(rawdata, children) {
             table_access,
             birthdate,
             fulldate,
-            birthmonth,
             birthweight,
             age
         ))
+    
+    childrenrole = recombine(list("Respondents", "Children"), rawdata, association = "RelatedTo") %>%
+        rename(respondent_relationship = 'RelatedTo.ol.role') %>%
+        select(child_id, respondent_relationship) %>% 
+        group_by(child_id)  %>% slice(1) %>% ungroup()
+    
+    immigration = recombine(list("Respondents", "ImmigrationStatus"), rawdata) %>%
+        left_join(children, by = "respondent_id") %>%
+        rename(
+            immigration_time_in_us = 'ImmigrationStatus.ol.status'
+        ) %>%
+        select(
+            child_id, immigration_time_in_us
+        )
+
+    children_demographics = children_demographics %>% 
+        left_join(childrenrole, by = "child_id") %>%
+        left_join(immigration, by = "child_id")
     
     return(children_demographics)
 }

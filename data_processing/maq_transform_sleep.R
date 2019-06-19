@@ -25,7 +25,7 @@ childsleep_transform <- function(rawdata) {
             ) %>% 
         group_by(child_id) %>%
         slice(1) %>%
-        ungroup()
+        ungroup() %>% select(-c(sleep, awake))
  
     interruptedtimes = recombine(list("Children", "InterruptedSleep"), rawdata) %>%
         group_by(child_id) %>%

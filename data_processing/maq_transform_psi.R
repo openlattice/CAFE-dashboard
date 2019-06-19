@@ -51,7 +51,7 @@ names(pd_replace) = pd_vars %>% str_replace("ol\\.", "PSI_parental_distress_")
 pcdi_replace = pcdi_vars
 names(pcdi_replace) = pcdi_vars %>% str_replace("ol\\.", "PSI_dysfunctional_interaction_")
 dc_replace = dc_vars
-names(dc_replace) = dc_vars %>% str_replace("ol\\.", "PSI_difficult_child_") %>% str_replace("neurological\\.", "PSI_difficult_child_")
+names(dc_replace) = dc_vars %>% str_replace("ol\\.|bhr.", "PSI_difficult_child_") %>% str_replace("neurological\\.", "PSI_difficult_child_")
 defensive_replace = defensive_vars
 names(defensive_replace) = defensive_vars %>% str_replace("ol\\.", "PSI_defensive_responses_")
 
