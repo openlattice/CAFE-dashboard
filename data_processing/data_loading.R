@@ -41,16 +41,16 @@ get_raw_data <-
         }
         voc_prod_fem <-
             read_csv(paste0(
-                basedir,
-                "vocabulary_production_norms_table_lvl_IIA_female.csv"
+                dirname(sys.frame(1)$ofile),
+                "constants/vocabulary_production_norms_table_lvl_IIA_female.csv"
             ))
         voc_prod_fem$sex = "Female"
         # cols = names(voc_prod_fem)[str_detect(names(voc_prod_fem), "percentile")]
         # voc_prod_fem[cols] = voc_prod_fem[cols]/max(voc_prod_fem[cols])
         voc_prod_mal <-
             read_csv(paste0(
-                basedir,
-                "vocabulary_production_norms_table_lvl_IIA_male.csv"
+                dirname(sys.frame(1)$ofile),
+                "constants/vocabulary_production_norms_table_lvl_IIA_male.csv"
             ))
         voc_prod_mal$sex <- "Male"
         voc_prod = bind_rows(voc_prod_fem, voc_prod_mal)
