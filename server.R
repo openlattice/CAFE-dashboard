@@ -1,4 +1,6 @@
 shinyServer(function(input, output, session) {
+    html("statusupdate", "Starting session")    
+    
     ###########################################
     # loading data and observing column names #
     ###########################################
