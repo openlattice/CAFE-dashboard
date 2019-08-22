@@ -103,12 +103,17 @@
   border-left-color:#dcdce7!important;
   border-right-color:#dcdce7!important;
   border-top-color:#dcdce7!important;
-  color: #2e2e34!important;
+  color: #2e2e34;
   background:#ffffff!important;
   border-bottom-width:1px!important;
   border-left-width:1px!important;
   border-right-width:1px!important;
   border-top-width:1px!important;
+}
+
+.statusupdate {
+    color: #cdd1db!important;
+    font-weight: bold;
 }
 
 .box-primary {
@@ -159,4 +164,5 @@
 @font-face {  
   font-family: Open Sans, sans serif!important;
 }
+
 
