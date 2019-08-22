@@ -13,11 +13,14 @@ home <- tabPanel(
             width = 12,
             solidHeader =  TRUE,
             status = "primary",
-            column(addSpinner(
-                plotOutput("emptyplot", height = "200px"),
-                spin = "bounce",
-                color = cols[1]
-            ),
+            column(
+                br(),
+                addSpinner(
+                    plotOutput("emptyplot", height = "200px"),
+                    spin = "bounce",
+                    color = cols[1]
+                ),
+                p(id = "statusupdate", "", align = "center", class="statusupdate"),
             width = 12)
         ))
     ),
