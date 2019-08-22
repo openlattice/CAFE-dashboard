@@ -89,6 +89,7 @@ authentication_server <-
                 )
                 
                 local_jwt <- query[['id_token']]
+                jwt(local_jwt)
                 # setcookiecmd <- paste0(
                 #     'Cookies.set("authorization", "',
                 #     paste("Bearer", local_jwt),
