@@ -89,17 +89,17 @@ authentication_server <-
                 )
                 
                 local_jwt <- query[['id_token']]
-                # setcookiecmd <- paste0(
-                #     'Cookies.set("authorization", "',
-                #     paste("Bearer", local_jwt),
-                #     '", {',
-                #     'SameSite: "strict',
-                #     '", domain: "',
-                #     cookiedomain,
-                #     '", path: "/',
-                #     '", secure: true',
-                #     "});"
-                # )
+                setcookiecmd <- paste0(
+                    'Cookies.set("authorization", "',
+                    paste("Bearer", local_jwt),
+                    '", {',
+                    'SameSite: "strict',
+                    '", domain: "',
+                    cookiedomain,
+                    '", path: "/',
+                    '", secure: true',
+                    "});"
+                )
 
                 runjs(setcookiecmd)
                 redirect(redirectbackurl)
