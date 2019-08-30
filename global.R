@@ -34,7 +34,14 @@ cols <- c("#6124e2",
 
 nacol <- "#dcdce7"
 
-
+greys <- c(
+    "#555e6f",
+    "#8e929b",
+    "#b6bbc7",
+    "#cdd1db",
+    "#e6e6f7",
+    "#eaeaf0"
+)
 source("data_processing/get_raw_data.R")
 source("data_processing/data_loading.R")
 source("data_processing/tud_transform_data.R")
