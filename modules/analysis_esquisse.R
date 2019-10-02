@@ -11,7 +11,9 @@ esquisse_ui <- function(id) {
                  esquisserUI(
                      id = "esquisse",
                      header = FALSE, # dont display gadget title
-                     choose_data = FALSE # dont display button to change data
+                     choose_data = FALSE, # dont display button to change data
+                     container = esquisseContainer(height = "700px"),
+                     disable_filters = TRUE
                  )
              )
              )

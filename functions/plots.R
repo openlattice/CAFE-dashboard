@@ -103,7 +103,7 @@ plot_total_age_distribution <- function(maqdata) {
                        fill = study,
                        colour = study
                    )) +
-            geom_density(alpha = 0.2, bw = 7) +
+            geom_histogram(alpha = 0.2, bw = 7) +
             theme_light() +
             labs(x = "Age in months", y = "Frequency") +
             scale_fill_manual(values = cols) +
