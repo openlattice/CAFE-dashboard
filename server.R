@@ -4,10 +4,12 @@ shinyServer(function(input, output, session) {
     ###########################################
     # loading data and observing column names #
     ###########################################
-    
     token = "NA"
     jwt <- reactiveVal(token)
-    jwt <- callModule(authentication_server, "authentication", jwt)
+    
+    observe({
+        jwt <- callModule(authentication_server, "authentication", jwt)
+    })
     
     hide(selector = "#navbar li a[data-value=participants]")
     hide(selector = "#navbar li a[data-value=analysis]")
@@ -28,9 +30,8 @@ shinyServer(function(input, output, session) {
         n_child = 0,
         n_nodes = 0
     )
-    
     data_r <- reactiveValues(data = tibble(), name = "CAFE")
-    
+
     # authentication via cookie
     observe({
         # be careful not to create dependencies on rawdata here:
@@ -216,6 +217,6 @@ shinyServer(function(input, output, session) {
     callModule(multivariate_server, "analysis", rawdata)
     callModule(multivariate_cor_server, "analysis", rawdata)
     callModule(module = esquisserServer, id = "esquisse", data = data_r)
-    callModule(documentation_server, "documentation", rawdata)
+    # callModule(documentation_server, "documentation", rawdata)
     
 })
